@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.3.32804.467
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.33130.400
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4 Web", "4 Web", "{83B39544-39C5-41C4-85E4-A1A8DB6CAF07}"
 EndProject
@@ -18,6 +18,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClinicaDomain", "2 Domain\ClinicaDomain\ClinicaDomain.csproj", "{746FD367-AD64-427C-8D3A-9A1E98D4D291}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClinicaInfrastructure", "1 Infrastructure\ClinicaInfrastructure\ClinicaInfrastructure.csproj", "{692B3289-5FFE-49E5-B98A-059799133905}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{56171960-0303-4998-9E46-87115A5B27AA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,6 +52,7 @@ Global
 		{A1A2E728-BD6F-4768-84F7-B6A9EE75101A} = {B35A3675-3E82-448D-A4D8-8573C152A635}
 		{746FD367-AD64-427C-8D3A-9A1E98D4D291} = {E9BDC1CE-ED75-48CA-B4F9-6364A3C296CC}
 		{692B3289-5FFE-49E5-B98A-059799133905} = {36A6D179-E067-4E09-B5D1-8CD4BADA9682}
+		{56171960-0303-4998-9E46-87115A5B27AA} = {E9BDC1CE-ED75-48CA-B4F9-6364A3C296CC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F45A23D1-0EC5-4087-99C1-D2F519839929}

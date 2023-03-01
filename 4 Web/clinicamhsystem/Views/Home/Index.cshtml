@@ -1,8 +1,21 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
-
+@model HomeViewModel
 <div class="text-center">
     <h1 class="display-4">Welcome Testing</h1>
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
+
+@foreach (var item in Model.Usuarios)
+{
+    <label>@item.UsuarioNombre</label>
+    <br />
+}
+
+
+<form method="post" action="@Url.Action("TestingLogin")">
+    <input name="user" />
+    <input name="password" type="password" />
+    <button type="submit">Click Me Baby</button>
+</form>

@@ -1,7 +1,5 @@
-﻿namespace ClinicaInfrastructure
-{
+﻿namespace ClinicaInfrastructure;
     public class Class1
     {
 
     }
-}

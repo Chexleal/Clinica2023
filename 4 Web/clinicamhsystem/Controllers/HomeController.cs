@@ -1,4 +1,5 @@
 ﻿using clinicamhsystem.Models;
+using ClinicaServices;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -6,16 +7,17 @@ namespace clinicamhsystem.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly IUserServices _userServices;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(IUserServices userServices)
         {
-            _logger = logger;
+            _userServices = userServices;
         }
 
         public IActionResult Index()
         {
-            return View();
+           var users= _userServices.GetAll();
+            return View(new HomeViewModel { Usuarios=users});
         }
 
         public IActionResult Privacy()

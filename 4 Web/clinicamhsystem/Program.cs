@@ -1,7 +1,20 @@
+using ClinicaServices;
+using clinicaWeb.Extensions;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddDbContext<ClinicaDbtraumhaContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+}, ServiceLifetime.Singleton);
+
+builder.Services.AddRazorPages();
+
+builder.Services.WebInjections();
 
 var app = builder.Build();
 
@@ -19,6 +32,8 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+
+app.MapRazorPages();
 
 app.MapControllerRoute(
     name: "default",

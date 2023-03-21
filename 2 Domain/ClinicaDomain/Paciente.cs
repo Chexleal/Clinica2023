@@ -5,7 +5,7 @@ namespace clinicaWeb.Models;
 
 public partial class Paciente
 {
-    public decimal IdPaciente { get; set; }
+    public Guid IdPaciente { get; set; }
 
     public string? Dpi { get; set; }
 
@@ -37,7 +37,7 @@ public partial class Paciente
 
     public string? TipoSangre { get; set; }
 
-    public bool? EstadoEliminado { get; set; }
+    public bool EstadoEliminado { get; set; }
 
     public string? NoRegistro { get; set; }
 

@@ -15,10 +15,7 @@ public partial class Usuario
 
     public string? RespuestaSeg { get; set; }
 
-    public string? Huella { get; set; }
-
     public decimal? IdEmpleado { get; set; }
-
     public virtual Empleado? IdEmpleadoNavigation { get; set; }
 
     public virtual ICollection<RolDetalle> RolDetalles { get; } = new List<RolDetalle>();

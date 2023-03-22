@@ -1,21 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace clinicaWeb.Models;
+namespace ClinicaDomain;
 
-public partial class Detallecobro
+public partial class DetalleCobro
 {
-    public decimal IdDetalleCobro { get; set; }
+    public Guid IdDetalleCobro { get; set; }
 
-    public decimal? IdConsulta { get; set; }
+    public Guid? IdConsulta { get; set; }
 
-    public decimal? IdMotivoCobro { get; set; }
+    public Guid? IdMotivoCobro { get; set; }
 
-    public decimal? SubTotal { get; set; }
+    public decimal Subtotal { get; set; }
 
-    public decimal? Valor { get; set; }
+    public decimal Valor { get; set; }
 
-    public string? Producto { get; set; }
+    public string Producto { get; set; } = null!;
 
-    public virtual Motivocobro? IdMotivoCobroNavigation { get; set; }
+    public virtual Consulta? IdConsultaNavigation { get; set; }
+
+    public virtual MotivoCobro? IdMotivoCobroNavigation { get; set; }
 }

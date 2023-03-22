@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace clinicaWeb.Models;
+namespace ClinicaDomain;
 
-public partial class Motivocobro
+public partial class MotivoCobro
 {
-    public decimal IdMotivoCobro { get; set; }
+    public Guid IdMotivoCobro { get; set; }
 
-    public string? Descripción { get; set; }
+    public string Descripcion { get; set; } = null!;
 
-    public virtual ICollection<Detallecobro> Detallecobros { get; } = new List<Detallecobro>();
+    public virtual ICollection<DetalleCobro> DetalleCobros { get; } = new List<DetalleCobro>();
 }

@@ -1,5 +1,5 @@
 ﻿using Azure.Core;
-using clinicaWeb.Models;
+using ClinicaDomain;
 
 namespace ClinicaServices;
 
@@ -14,8 +14,8 @@ public interface IPacienteServices
 }
 public class PacienteServices : IPacienteServices
 {
-	private readonly ClinicaDbtraumhaContext _dbContext;
-	public PacienteServices(ClinicaDbtraumhaContext dbContext)
+	private readonly ClinicaContext _dbContext;
+	public PacienteServices(ClinicaContext dbContext)
 	{
 		_dbContext = dbContext;
 	}

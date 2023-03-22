@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace clinicaWeb.Models;
+namespace ClinicaDomain;
 
 public partial class Receta
 {
-    public decimal IdReceta { get; set; }
+    public Guid IdReceta { get; set; }
 
-    public decimal? IdConsulta { get; set; }
+    public Guid? IdConsulta { get; set; }
 
-    public DateTime? Fecha { get; set; }
+    public DateTime Fecha { get; set; }
 
     public virtual ICollection<DetalleReceta> DetalleReceta { get; } = new List<DetalleReceta>();
 

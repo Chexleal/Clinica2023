@@ -1,4 +1,4 @@
-﻿using clinicaWeb.Models;
+﻿using ClinicaDomain;
 
 namespace ClinicaServices;
 
@@ -9,15 +9,15 @@ public interface IUserServices
 }
 public class UserServices : IUserServices
 {
-	private readonly ClinicaDbtraumhaContext _dbContext;
-	public UserServices(ClinicaDbtraumhaContext dbContext)
+	private readonly ClinicaContext _dbContext;
+	public UserServices(ClinicaContext dbContext)
 	{
 		_dbContext = dbContext;
 	}
 
 	public bool Authenticate(string user, string password)
 	{
-		var userItem= _dbContext.Usuarios.FirstOrDefault(x=>x.Password == password && x.UsuarioNombre==user);
+		var userItem= _dbContext.Usuarios.FirstOrDefault(x=>x.Password == password && x.NombreUsuario==user);
 		if (userItem == null) return false;
 		return true;
 	}

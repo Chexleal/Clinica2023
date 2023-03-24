@@ -1,4 +1,4 @@
-using clinicaWeb.Models;
+using ClinicaDomain;
 
 namespace clinicamhsystem.Models
 {

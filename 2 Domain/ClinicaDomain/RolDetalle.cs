@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace clinicaWeb.Models;
+namespace ClinicaDomain;
 
 public partial class RolDetalle
 {
-    public decimal IdRolDetalle { get; set; }
+    public Guid IdRolDetalle { get; set; }
 
-    public decimal? IdPermiso { get; set; }
+    public Guid? IdUsuario { get; set; }
 
-    public string? Descripcion { get; set; }
+    public string Permiso { get; set; } = null!;
 
-    public decimal? IdUser { get; set; }
+    public string Descripcion { get; set; } = null!;
 
-    public virtual Permiso? IdPermisoNavigation { get; set; }
-
-    public virtual Usuario? IdUserNavigation { get; set; }
+    public virtual Usuario? IdUsuarioNavigation { get; set; }
 }

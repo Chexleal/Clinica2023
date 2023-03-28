@@ -13,6 +13,64 @@ html {
   min-height: 100%;
 }
 
-body {
-  margin-bottom: 60px;
+.container-fluid {
+    display: block;
+    margin: 0;
+    padding: 0;
+}
+
+.menu {
+    text-align: center;
+    align-content: center;
+    display: block;
+    background-color: #66ADEA;
+    /*background-color: #8bc2f2;*/
+    width: 20%;
+    padding: 0;
+    margin: 0;
+}
+
+.logo {
+    display: block;
+    width: 100%;
+}
+
+.header {
+    display: block;
+}
+
+.content{
+    margin:20px;
+}
+
+hr {
+    margin: 0;
+}
+
+.botones{
+    display: block;
+    justify-content:left;
+}
+
+.menu_bt {
+    display:flex;
+    background-color: transparent;
+    border:0px;
+    width:100%;
+    padding: 2%;
+    text-decoration:none;
+    color:black;
+    cursor:pointer;
+}
+
+.menu_icon{
+    margin-left:5%;
+    margin-right: 5%;
+}
+
+.menu_bt:hover{
+    background-color:#85c3f8;
+}
+.logout:hover{
+    color:#8e0404;
 }

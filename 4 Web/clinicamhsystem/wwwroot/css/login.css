@@ -23,18 +23,23 @@
     display: block;
     width: 250px;
     border: 2px solid #66ADEA;
-    padding: 7px 7px;
+    padding: 6px 6px;
     margin: auto;
     color: #3f4a55;
     outline: none;
     transition: 0.25s
 }
 
-    .form input[type="text"]:focus,
-    .form input[type="password"]:focus {
-        width: 270px;
-        border: 2px solid #37bb6e;
-    }
+.form input[type="text"]:focus,
+.form input[type="password"]:focus {
+    width: 270px;
+    border: 2px solid #37bb6e;
+}
+
+.form input[type="text"]:focus::placeholder,
+.form input[type="password"]:focus::placeholder {
+    color: transparent;
+}
 
 .form button[type="submit"] {
     border-radius: 12px;
@@ -45,14 +50,14 @@
     color: #3f4a55;
 }
 
-    .form button[type="submit"]:hover {
-        background: #37bb6e;
-        color: white
-    }
+.form button[type="submit"]:hover {
+    background: #37bb6e;
+    color: white
+}
 
 .forgot {
     display: block;
-    padding-bottom: 50px;
+    padding-bottom: 30px;
     color: #6CB1FF;
     text-decoration: none;
 }

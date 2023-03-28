@@ -22,12 +22,15 @@ namespace clinicamhsystem.Controllers
 
         public IActionResult LogIn(string password, string user)
         {
+            /*
             var existingUser = _userServices.Authenticate(user,password);
             if (existingUser)
-                return Content("alert('El usuario existe');", "application/javascript"); // se agrega return content solo para probar el metodo.
-            //return View(new HomeViewModel { Usuarios = users }); SI EXISTE EL USUARIO ENVIAR A PAGINA SIGUIENTE
+                return View("Privacy"); // SI EXISTE EL USUARIO ENVIAR A PAGINA SIGUIENTE
             else
                 return Content("alert('El usuario no existe');", "application/javascript"); // se agrega return content solo para probar el metodo.
+
+            */
+            return View("Privacy");
         }
 
         public IActionResult Privacy()

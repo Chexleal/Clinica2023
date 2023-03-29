@@ -33,6 +33,19 @@ namespace clinicamhsystem.Controllers
             return View("Privacy");
         }
 
+        public IActionResult RecoverAccount(string password, string user)
+        {
+            /*
+            var existingUser = _userServices.Authenticate(user,password);
+            if (existingUser)
+                return View("Privacy"); // SI EXISTE EL USUARIO ENVIAR A PAGINA SIGUIENTE
+            else
+                return Content("alert('El usuario no existe');", "application/javascript"); // se agrega return content solo para probar el metodo.
+
+            */
+            return View("Privacy");
+        }
+
         public IActionResult Privacy()
         {
             return View();

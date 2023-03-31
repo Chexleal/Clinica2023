@@ -44,7 +44,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="FechaNacimiento" class="control-label">Fecha de nacimiento</label>
-                <input asp-for="FechaNacimiento" class="form-control" />
+                <input asp-for="FechaNacimiento" type="date" class="form-control" />
                 <span asp-validation-for="FechaNacimiento" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -86,11 +86,6 @@
                 <label asp-for="TipoSange" class="control-label">Tipo de sangre</label>
                 <input asp-for="TipoSange" class="form-control" />
                 <span asp-validation-for="TipoSange" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="NoRegistro" class="control-label"></label>
-                <input asp-for="NoRegistro" class="form-control" />
-                <span asp-validation-for="NoRegistro" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Password" class="control-label">Contraseña</label>

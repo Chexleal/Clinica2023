@@ -22,28 +22,58 @@ namespace clinicamhsystem.Controllers
 
         public IActionResult LogIn(string password, string user)
         {
-            /*
             var existingUser = _userServices.Authenticate(user,password);
             if (existingUser)
+            {
                 return View("Privacy"); // SI EXISTE EL USUARIO ENVIAR A PAGINA SIGUIENTE
+            }
             else
+            {
                 return Content("alert('El usuario no existe');", "application/javascript"); // se agrega return content solo para probar el metodo.
-
-            */
-            return View("Privacy");
+            }
+            
+            //return View("Privacy");
         }
 
-        public IActionResult RecoverAccount(string password, string user)
+        public IActionResult UsuarioExistente(string userName)
         {
-            /*
-            var existingUser = _userServices.Authenticate(user,password);
+            
+            var existingUser = _userServices.CheckUserExist(userName);
             if (existingUser)
-                return View("Privacy"); // SI EXISTE EL USUARIO ENVIAR A PAGINA SIGUIENTE
+                return View("RecoverAccount",userName); // Si el usuario existe en la db, entonces se mostrara su pregunta de seguridad
             else
-                return Content("alert('El usuario no existe');", "application/javascript"); // se agrega return content solo para probar el metodo.
+                return Content("alert('El usuario no existe sss');", "application/javascript"); // se agrega return content solo para probar el metodo.
+        }
 
-            */
-            return View("Privacy");
+        public IActionResult SecurityQuestion(string userName)
+        {
+
+            string? preguntaSeg = _userServices.SecurityQuestion(userName);
+            if (preguntaSeg != null) {
+
+               return Content($"La pregunta es{preguntaSeg}", "application/javascript");
+
+            }
+            else
+            {
+               return  Content($"No hay pregunta", "application/javascript");
+            }
+        }
+
+        public IActionResult CheckAnswer(string answer)
+        {
+
+            string? preguntaSegCheck = _userServices.CheckAnswer(answer);
+            if (preguntaSegCheck != null)
+                return Content("alert('Respuesta Correcta');", "application/javascript"); // Si la respuesta es correcta
+            else
+                return Content("alert('Respuesta Incorrecta');", "application/javascript"); // Si la respuesta es incorrecta
+
+        }
+
+        public IActionResult RecuperarCuenta()
+        {
+            return View("CheckUser");
         }
 
         public IActionResult Privacy()

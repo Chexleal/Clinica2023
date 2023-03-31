@@ -7,7 +7,14 @@ namespace ClinicaServices;
 public interface IUserServices
 {
 	bool Authenticate(string user, string password);
-	List<Usuario> GetAll();
+
+    bool CheckUserExist(string userName);
+
+    string? CheckAnswer(string userName);
+
+    string? SecurityQuestion(string userName);
+
+    List<Usuario> GetAll();
 }
 public class UserServices : IUserServices
 {
@@ -32,7 +39,7 @@ public class UserServices : IUserServices
     public bool RecoverAccount(string email)
     {
         // Check if the email is registered in the database
-        if (!CheckEmailExists(email))
+        if (!CheckUserExist(email))
         {
             return false;
         }
@@ -77,14 +84,36 @@ public class UserServices : IUserServices
         }
     }
 
-    public bool CheckEmailExists(string email)
+    public bool CheckUserExist(string userName)
     {
         // Check if the email is registered in the database
         // Return true if it exists, false otherwise
-        var userItem = _dbContext.Usuarios.FirstOrDefault(x => x.Correo == email);
+        var userItem = _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == userName);
         if (userItem == null) return false;
         return true;
     }
+
+    public string? SecurityQuestion(string userName)
+    {
+        var userItem = _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario.ToLower().Trim() == userName.ToLower().Trim());
+        if (userItem == null) {
+
+            return null;
+        }
+        else
+        {
+            var preguntaSegura = userItem.PreguntaSeg.ToString();
+            return preguntaSegura;
+        } 
+    }
+
+    public string? CheckAnswer(string answer)
+    {
+        var userItem = _dbContext.Usuarios.FirstOrDefault(x => x.RespuestaSeg.ToLower().Trim() == answer.ToLower().Trim());
+        if (userItem != null) return userItem.RespuestaSeg.ToString();
+        return null;
+    }
+
 
     public string GeneratePassword()
     {

@@ -28,21 +28,21 @@ public partial class Usuario
 
     public bool UsuarioActivo { get; set; }
 
-    public string EstadoCivil { get; set; } = null!;
+    public string? EstadoCivil { get; set; } = null!;
 
     public string Profesion { get; set; } = null!;
 
-    public string Nacionalidad { get; set; } = null!;
+    public string? Nacionalidad { get; set; } = null!;
 
     public string Remitido { get; set; } = null!;
 
-    public string Antecedentes { get; set; } = null!;
+    public string? Antecedentes { get; set; } = null;
 
-    public string TipoSange { get; set; } = null!;
+    public string? TipoSange { get; set; } = null!;
 
     public bool EstadoEliminado { get; set; }
 
-    public string NoRegistro { get; set; } = null!;
+    public int NoRegistro { get; set; }
 
     public string Password { get; set; } = null!;
 

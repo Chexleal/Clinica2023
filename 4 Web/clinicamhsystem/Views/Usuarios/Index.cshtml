@@ -38,20 +38,35 @@
     <tbody>
 @foreach (var item in Model) {
         <tr>
-            <td> @Html.DisplayFor(modelItem => item.NoRegistro)</td>
-            <td>@Html.DisplayFor(modelItem => item.NombreUsuario)</td>
-            <td>@Html.DisplayFor(modelItem => item.Nombre)</td>
-            <td>@Html.DisplayFor(modelItem => item.Apellido)</td>
-            <td>@Html.DisplayFor(modelItem => item.Telefono)</td>
-            <td>@Html.DisplayFor(modelItem => item.Correo)</td>
-            <td>@Html.DisplayFor(modelItem => item.Dpi)</td>
+            <td>@item.NoRegistro</td>
+            <td>@item.NombreUsuario</td>
+            <td>@item.Nombre</td>
+            <td>@item.Apellido</td>
+            <td>@item.Telefono</td>
+            <td>@item.Correo</td>
+            <td>@item.Dpi</td>
             <td>@Html.DisplayFor(modelItem => item.Profesion)</td>
             <td>@Html.DisplayFor(modelItem => item.Remitido)</td>
             <td>
-                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+                @Html.ActionLink("Editar", "Editar", new { id=item.IdUsuario }) |
+                @Html.ActionLink("Detalles", "Detalles", new { id=item.IdUsuario }) |
+                @Html.ActionLink("Eliminar", "Eliminar", new { id=item.IdUsuario })
             </td>
+                <td>
+                    <button class="btn" type="button" id="rowMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                        ...
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="/Usuarios/Detalles/@item.IdUsuario">Ver</a>
+                        <a class="dropdown-item" href="/Usuarios/Editar/@item.IdUsuario">Editar</a>
+                        <form asp-action="Eliminar" asp-route-id="@item.IdUsuario">
+                            <button class="dropdown-item" type="submit">Eliminar</button>
+                        </form>
+                        <a class="dropdown-item" href="/Usuarios/Eliminar/@item.IdUsuario">Eliminar2</a>
+                        <a class="dropdown-item" href="/Usuarios/Eliminar/@item.IdUsuario">Eliminar3</a>
+
+                    </div>
+                </td>
         </tr>
 }
     </tbody>

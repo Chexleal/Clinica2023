@@ -33,6 +33,7 @@ public partial class ClinicaContext : DbContext
     public virtual DbSet<RolDetalle> RolDetalles { get; set; }
 
     public virtual DbSet<Usuario> Usuarios { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Cita>(entity =>

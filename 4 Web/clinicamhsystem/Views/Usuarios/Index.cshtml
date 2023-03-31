@@ -16,6 +16,13 @@
             </div>
         </div>
     </form>
+    <div>
+        <document>
+            $('#buscar').on('keyup', function () {
+            tabla.search(this.value).draw();
+            });
+        </document>
+    </div>
 </div>
 <p>
     <a asp-action="Create" method="get">Crear usuario</a>
@@ -23,7 +30,7 @@
 <table class="table">
     <thead>
         <tr>
-            <th>No. Registro</th>
+            <th>No.</th>
             <th>Usuario</th>
             <th>Nombre</th>
             <th>Apellido</th>
@@ -32,7 +39,7 @@
             <th>Dpi</th>
             <th>Profesión</th>
             <th>Remitido por</th>
-            <th></th>
+            <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
@@ -45,12 +52,28 @@
             <td>@item.Telefono</td>
             <td>@item.Correo</td>
             <td>@item.Dpi</td>
-            <td>@Html.DisplayFor(modelItem => item.Profesion)</td>
-            <td>@Html.DisplayFor(modelItem => item.Remitido)</td>
+            <td>@item.Profesion</td>
+            <td>@item.Remitido</td>
             <td>
-                @Html.ActionLink("Editar", "Editar", new { id=item.IdUsuario }) |
-                @Html.ActionLink("Detalles", "Detalles", new { id=item.IdUsuario }) |
-                @Html.ActionLink("Eliminar", "Eliminar", new { id=item.IdUsuario })
+                    <div class="options">
+                        <a class="option" href="/Usuarios/Detalles/@item.IdUsuario">Ver</a>
+                        <a class="option" href="/Usuarios/Editar/@item.IdUsuario">Editar</a>
+                        <form asp-action="Eliminar" asp-route-id="@item.IdUsuario">
+                            <button class="option" type="submit">Eliminar</button>
+                        </form>
+                        @if (item.UsuarioActivo == true)
+                        {
+                            <form asp-action="Desactivar" asp-route-id="@item.IdUsuario">
+                                <button class="option" type="submit">Desactivar</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form asp-action="Activar" asp-route-id="@item.IdUsuario">
+                                <button class="option" type="submit">Activar</button>
+                            </form>
+                        }
+                    </div>
             </td>
                 <td>
                     <button class="btn" type="button" id="rowMenu" data-bs-toggle="dropdown" aria-expanded="false">
@@ -62,8 +85,9 @@
                         <form asp-action="Eliminar" asp-route-id="@item.IdUsuario">
                             <button class="dropdown-item" type="submit">Eliminar</button>
                         </form>
-                        <a class="dropdown-item" href="/Usuarios/Eliminar/@item.IdUsuario">Eliminar2</a>
-                        <a class="dropdown-item" href="/Usuarios/Eliminar/@item.IdUsuario">Eliminar3</a>
+                        <form asp-action="Desactivar" asp-route-id="@item.IdUsuario">
+                            <button class="dropdown-item" type="submit">Desactivar</button>
+                        </form>
 
                     </div>
                 </td>

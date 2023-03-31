@@ -77,8 +77,8 @@ namespace clinicaWeb.Controllers
                 usuario.Remitido = collection["Remitido"];
                 usuario.Antecedentes = collection["Antecedentes"];
                 usuario.TipoSange = collection["TipoSange"];
-                usuario.NoRegistro = collection["NoRegistro"];
                 usuario.Password = collection["Password"];
+                usuario.NoRegistro = 1;
                 usuario.EstadoEliminado = false;
                 usuario.UsuarioActivo = true;
 
@@ -123,55 +123,18 @@ namespace clinicaWeb.Controllers
                 usuario.Remitido = collection["Remitido"];
                 usuario.Antecedentes = collection["Antecedentes"];
                 usuario.TipoSange = collection["TipoSange"];
-                usuario.NoRegistro = "1";
-                usuario.Password = "";
+                usuario.Password = collection["Password"];
+                usuario.NoRegistro = 1;
                 usuario.EstadoEliminado = false;
                 usuario.UsuarioActivo = true;
+
 
                 _userServices.UpdateUser(usuario);
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
-                return View("Privacy");
-            }
-        }
-
-        // POST: UsuariosController/Save
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Guardar(Guid id, IFormCollection collection)
-        {
-            try
-            {
-                Usuario usuario = new Usuario();
-                usuario.IdUsuario = id;
-                usuario.NombreUsuario = collection["NombreUsuario"];
-                usuario.PreguntaSeg = collection["PreguntaSeg"];
-                usuario.RespuestaSeg = collection["RespuestaSeg"];
-                usuario.Dpi = collection["Dpi"];
-                usuario.Nombre = collection["Nombre"];
-                usuario.Apellido = collection["Apellido"];
-                usuario.FechaNacimiento = DateTime.Parse(collection["FechaNacimiento"]);
-                usuario.Telefono = Int32.Parse(collection["Telefono"]);
-                usuario.Correo = collection["Correo"];
-                usuario.EstadoCivil = collection["EstadoCivil"];
-                usuario.Profesion = collection["Profesion"];
-                usuario.Nacionalidad = collection["Nacionalidad"];
-                usuario.Remitido = collection["Remitido"];
-                usuario.Antecedentes = collection["Antecedentes"];
-                usuario.TipoSange = collection["TipoSange"];
-                usuario.NoRegistro = collection["NoRegistro"];
-                usuario.Password = "";
-                usuario.EstadoEliminado = false;
-                usuario.UsuarioActivo = true;
-
-                _userServices.UpdateUser(usuario);
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View("Privacy");
+                return View("Error");
             }
         }
 

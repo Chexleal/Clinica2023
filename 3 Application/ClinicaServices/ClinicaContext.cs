@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ClinicaDomain;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace ClinicaServices;
 
@@ -329,7 +330,8 @@ public partial class ClinicaContext : DbContext
             entity.Property(e => e.NoRegistro)
                 .HasMaxLength(50)
                 .IsUnicode(false)
-                .HasColumnName("no_registro");
+                .HasColumnName("no_registro")
+                .UseIdentityColumn();
             entity.Property(e => e.Nombre)
                 .HasMaxLength(50)
                 .IsUnicode(false)

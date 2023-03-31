@@ -46,7 +46,6 @@ public class UserServices : IUserServices
             userDB.Remitido = user.Remitido;
             userDB.Antecedentes = user.Antecedentes;
             userDB.TipoSange = user.TipoSange;
-            _dbContext.Usuarios.Update(userDB);
             _dbContext.SaveChanges();
         }
     }
@@ -100,7 +99,7 @@ public class UserServices : IUserServices
                 user.Remitido.Contains(input) ||
                 user.Antecedentes.Contains(input) ||
                 user.TipoSange.Contains(input) ||
-                user.NoRegistro.Contains(input) ||
+                user.NoRegistro.ToString().Contains(input) ||
                 user.Password.Contains(input)
                 )
                 result.Add(GetUser(user.IdUsuario));

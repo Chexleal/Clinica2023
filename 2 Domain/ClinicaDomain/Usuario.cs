@@ -34,7 +34,7 @@ public partial class Usuario
 
     public string? Nacionalidad { get; set; } = null!;
 
-    public string Remitido { get; set; } = null!;
+    public string? Remitido { get; set; } = null!;
 
     public string? Antecedentes { get; set; } = null;
 

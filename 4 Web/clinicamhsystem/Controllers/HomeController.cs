@@ -16,13 +16,14 @@ namespace clinicamhsystem.Controllers
 
         public IActionResult Index()
         {
-           var users= _userServices.GetAll();
-            return View(new HomeViewModel { Usuarios=users});
+            var users = _userServices.GetAll();
+            return View(new HomeViewModel { Usuarios = users });
         }
 
         public IActionResult LogIn(string password, string user)
         {
-            var existingUser = _userServices.Authenticate(user,password);
+            /*
+            var existingUser = _userServices.Authenticate(user, password);
             if (existingUser)
             {
                 return View("Privacy"); // SI EXISTE EL USUARIO ENVIAR A PAGINA SIGUIENTE
@@ -31,16 +32,16 @@ namespace clinicamhsystem.Controllers
             {
                 return Content("alert('El usuario no existe');", "application/javascript"); // se agrega return content solo para probar el metodo.
             }
-            
-            //return View("Privacy");
+            */
+            return View("/Pacientes/Pacientes");
         }
 
         public IActionResult UsuarioExistente(string userName)
         {
-            
+
             var existingUser = _userServices.CheckUserExist(userName);
             if (existingUser)
-                return View("RecoverAccount",userName); // Si el usuario existe en la db, entonces se mostrara su pregunta de seguridad
+                return View("RecoverAccount", userName); // Si el usuario existe en la db, entonces se mostrara su pregunta de seguridad
             else
                 return Content("alert('El usuario no existe sss');", "application/javascript"); // se agrega return content solo para probar el metodo.
         }
@@ -49,14 +50,15 @@ namespace clinicamhsystem.Controllers
         {
 
             string? preguntaSeg = _userServices.SecurityQuestion(userName);
-            if (preguntaSeg != null) {
+            if (preguntaSeg != null)
+            {
 
-               return Content($"La pregunta es{preguntaSeg}", "application/javascript");
+                return Content($"La pregunta es{preguntaSeg}", "application/javascript");
 
             }
             else
             {
-               return  Content($"No hay pregunta", "application/javascript");
+                return Content($"No hay pregunta", "application/javascript");
             }
         }
 

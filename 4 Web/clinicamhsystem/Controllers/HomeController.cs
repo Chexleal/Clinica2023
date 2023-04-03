@@ -33,7 +33,8 @@ namespace clinicamhsystem.Controllers
                 return Content("alert('El usuario no existe');", "application/javascript"); // se agrega return content solo para probar el metodo.
             }
             */
-            return View("/Pacientes/Pacientes");
+            return RedirectToAction("Index", "Pacientes");
+            //return View("/Pacientes/Pacientes");
         }
 
         public IActionResult UsuarioExistente(string userName)

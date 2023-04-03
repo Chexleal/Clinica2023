@@ -6,7 +6,7 @@ namespace clinicaWeb.Controllers
 {
     public class PacientesController: Controller
     {
-            public IActionResult Pacientes()
+            public IActionResult Index()
             {
                 return View();
             }

@@ -60,7 +60,7 @@ namespace clinicaWeb.Controllers
             try
             {             
                 _userServices.AddUser(usuario);
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index");
             }
             catch
             {

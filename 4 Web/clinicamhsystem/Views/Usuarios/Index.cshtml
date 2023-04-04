@@ -61,7 +61,7 @@
                         <div class="options">
                             <a class="option" href="/Usuarios/Detalles/@item.IdUsuario">Ver</a>
                             @*<a class="option" href="/Usuarios/Editar/@item.IdUsuario">Editar</a>*@
-                            <a class="option" href="@Url.Action("Editar","Usuarios",new{@item.IdUsuario}) ">Editar</a>
+                            <a class="option" href="@Url.Action("Editar","Usuarios",new{id=item.IdUsuario}) ">Editar</a>
                             <form asp-action="Eliminar" asp-route-id="@item.IdUsuario">
                                 <button class="option" type="submit">Eliminar</button>
                             </form>

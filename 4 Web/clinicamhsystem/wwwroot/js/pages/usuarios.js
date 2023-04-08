@@ -9,13 +9,13 @@ $(document).ready(function () {
 
 function CreateTable() {
     $('#tableUser').DataTable({
-        "autoWidth": false,
+        "autoWidth": true,
         "ordering": true,
         "lengthChange": true,
         dom: 'Bfrtip',
         "pageLength": 20,
         "language": {
-            searchPlaceholder:'Buscar ...',
+            searchPlaceholder:'Buscar usuario',
             sSearch: '',
             lengthMenu: 'MENU items/page',
             paginate: {

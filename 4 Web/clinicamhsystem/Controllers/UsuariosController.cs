@@ -30,12 +30,12 @@ namespace clinicaWeb.Controllers
             if (String.IsNullOrEmpty(input))
             {
                 var users = _userServices.GetAll();
-                return View("Index", users);
+                return RedirectToAction("Index", users);
             }
             else
             {
                 var idResult = _userServices.SearchUser(input);
-                return View(idResult);
+                return RedirectToAction("Search", idResult);
             }
         }
 
@@ -43,13 +43,13 @@ namespace clinicaWeb.Controllers
         public ActionResult Detalles(Guid id)
         {
             var user = _userServices.GetUser(id);
-            return View(user);
+            return RedirectToAction("Detalles", user);
         }
 
         // GET: UsuariosController/Create
         public ActionResult Create()
         {
-            return View();
+            return View("Create");
         }
 
         // POST: UsuariosController/Create
@@ -60,11 +60,13 @@ namespace clinicaWeb.Controllers
             try
             {             
                 _userServices.AddUser(usuario);
-                return RedirectToAction(nameof(Index));
+                var users = _userServices.GetAll();
+                return View("Index", users);
             }
             catch
             {
-                return View();
+                var users = _userServices.GetAll();
+                return View("Index", users);
             }
         }
 
@@ -72,7 +74,7 @@ namespace clinicaWeb.Controllers
         public ActionResult Editar(Guid id)
         {
             var user = _userServices.GetUser(id);
-            return View(user);
+            return RedirectToAction("Editar", user);
         }
 
         // POST: UsuariosController/Editar/fj33-4ra4r
@@ -82,31 +84,9 @@ namespace clinicaWeb.Controllers
         {
             try
             {
-                //Usuario usuario = new Usuario();
-                //usuario.IdUsuario = id;
-                //usuario.NombreUsuario = collection["NombreUsuario"];
-                //usuario.PreguntaSeg = collection["PreguntaSeg"];
-                //usuario.RespuestaSeg = collection["RespuestaSeg"];
-                //usuario.Dpi = collection["Dpi"];
-                //usuario.Nombre = collection["Nombre"];
-                //usuario.Apellido = collection["Apellido"];
-                //usuario.FechaNacimiento = DateTime.Parse(collection["FechaNacimiento"]);
-                //usuario.Telefono = Int32.Parse(collection["Telefono"]);
-                //usuario.Correo = collection["Correo"];
-                //usuario.EstadoCivil = collection["EstadoCivil"];
-                //usuario.Profesion = collection["Profesion"];
-                //usuario.Nacionalidad = collection["Nacionalidad"];
-                //usuario.Remitido = collection["Remitido"];
-                //usuario.Antecedentes = collection["Antecedentes"];
-                //usuario.TipoSange = collection["TipoSange"];
-                //usuario.Password = collection["Password"];
-                //usuario.NoRegistro = 1;
-                //usuario.EstadoEliminado = false;
-                //usuario.UsuarioActivo = true;
-
-
                 _userServices.UpdateUser(usuario);
-                return RedirectToAction("Index");
+                var users = _userServices.GetAll();
+                return RedirectToAction("Index", users);
             }
             catch
             {
@@ -126,6 +106,20 @@ namespace clinicaWeb.Controllers
             catch { }
             var users = _userServices.GetAll();
             return View("Index",users);
+        }
+
+        // POST: UsuariosController/Active/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Activate(Guid id, bool state)
+        {
+            try
+            {
+                _userServices.SetActive(id,state);
+            }
+            catch { }
+            var users = _userServices.GetAll();
+            return RedirectToAction("Index", users);
         }
     }
 }

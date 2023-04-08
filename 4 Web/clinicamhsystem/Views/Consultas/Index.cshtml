@@ -1,0 +1,138 @@
+﻿@model IEnumerable<ClinicaDomain.Paciente>
+
+@{
+    ViewData["Title"] = "Consultas";
+}
+
+<h1>Consultas</h1>
+@*
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.IdPaciente)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Dpi)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Nombre)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Apellido)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FechaNacimiento)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Genero)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Telefono)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Correo)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Direccion)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Alergias)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EstadoCivil)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Profesion)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Nacionalidad)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Remitido)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Antecedentes)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TipoSange)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EstadoEliminado)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NoRegistro)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdPaciente)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Dpi)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Nombre)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Apellido)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FechaNacimiento)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Genero)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Telefono)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Correo)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Direccion)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Alergias)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EstadoCivil)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Profesion)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Nacionalidad)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Remitido)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Antecedentes)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TipoSange)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EstadoEliminado)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.NoRegistro)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+*@

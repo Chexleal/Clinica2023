@@ -4,34 +4,35 @@
 @{
     ViewData["Title"] = "Usuarios";
 }
+@section Links{
+    <link rel="stylesheet" href="~/css/pages/Usuarios.css" asp-append-version="true" />
+}
 
 <h1>Usuarios</h1>
 
-<div class="row">
+@*<div class="row">
     <form asp-action="Search" method="get">
         <div class="input-group">
             <input type="text" class="form-control" placeholder="Buscar usuario" id="input" name="input">
             <div class="input-group-append">
-                <input type="submit" class="btn btn-secondary" type="button" id="botonBusqueda" value="Buscar" />
+                <input type="submit" class="btn btn-secondary" id="botonBusqueda" value="Buscar" />
             </div>
         </div>
     </form>
-    <div>
-        <document>
-            $('#buscar').on('keyup', function () {
-            tabla.search(this.value).draw();
-            });
-        </document>
-    </div>
-</div>
-<p>
-    <a asp-action="Create" method="get">Crear usuario</a>
-</p>
+</div>*@
+
 <div class="card card-body ">
+    <p>
+        <a asp-action="Create" method="get">Crear usuario</a>
+    </p>
+    <p>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal"">
+           Agregar Usuario
+        </button>
+    </p>
     <table id="tableUser" class="table">
         <thead>
             <tr>
-                <th>No.</th>
                 <th>Usuario</th>
                 <th>Nombre</th>
                 <th>Apellido</th>
@@ -41,14 +42,13 @@
                 <th>Profesión</th>
                 <th>Remitido por</th>
                 <th>Acciones</th>
-                <th>Acciones</th>
+                @*<th>Acciones</th>*@
             </tr>
         </thead>
         <tbody>
             @foreach (var item in Model)
             {
                 <tr>
-                    <td>@item.NoRegistro</td>
                     <td>@item.NombreUsuario</td>
                     <td>@item.Nombre</td>
                     <td>@item.Apellido</td>
@@ -58,28 +58,30 @@
                     <td>@item.Profesion</td>
                     <td>@item.Remitido</td>
                     <td>
-                        <div class="options">
+                        <div class="options d-flex ">
                             <a class="option" href="/Usuarios/Detalles/@item.IdUsuario">Ver</a>
                             @*<a class="option" href="/Usuarios/Editar/@item.IdUsuario">Editar</a>*@
-                            <a class="option" href="@Url.Action("Editar","Usuarios",new{@item.IdUsuario}) ">Editar</a>
+                            <a class="option" href="@Url.Action("Editar","Usuarios",new{id = @item.IdUsuario}) ">Editar</a>
                             <form asp-action="Eliminar" asp-route-id="@item.IdUsuario">
                                 <button class="option" type="submit">Eliminar</button>
                             </form>
                             @if (item.UsuarioActivo == true)
                             {
-                                <form asp-action="Desactivar" asp-route-id="@item.IdUsuario">
+                                <form asp-action="Activate" asp-route-id="@item.IdUsuario">
+                                    <input type="hidden" value="false" name="state"/>
                                     <button class="option" type="submit">Desactivar</button>
                                 </form>
                             }
                             else
                             {
-                                <form asp-action="Activar" asp-route-id="@item.IdUsuario">
+                                <form asp-action="Activate" asp-route-id="@item.IdUsuario">
+                                    <input type="hidden" value="true" name="state" />
                                     <button class="option" type="submit">Activar</button>
                                 </form>
                             }
                         </div>
                     </td>
-                    <td>
+                    @*<td>
                         <button class="btn" type="button" id="rowMenu" data-bs-toggle="dropdown" aria-expanded="false">
                             ...
                         </button>
@@ -94,11 +96,117 @@
                             </form>
 
                         </div>
-                    </td>
+                </td>*@
                 </tr>
             }
         </tbody>
     </table>
+</div>
+
+<!-- Modal Crear Usuario-->
+<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Crear Usuario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group">
+                        <label asp-for="NombreUsuario" class="control-label">Usuario</label>
+                        <input asp-for="NombreUsuario" class="form-control" />
+                        <span asp-validation-for="NombreUsuario" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="PreguntaSeg" class="control-label">Pregunta de Seguridad</label>
+                        <input asp-for="PreguntaSeg" class="form-control" />
+                        <span asp-validation-for="PreguntaSeg" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="RespuestaSeg" class="control-label">Respuesta de seguridad</label>
+                        <input asp-for="RespuestaSeg" class="form-control" />
+                        <span asp-validation-for="RespuestaSeg" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Dpi" class="control-label">Dpi</label>
+                        <input asp-for="Dpi" class="form-control" />
+                        <span asp-validation-for="Dpi" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Nombre" class="control-label">Nombre</label>
+                        <input asp-for="Nombre" class="form-control" />
+                        <span asp-validation-for="Nombre" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Apellido" class="control-label">Apellido</label>
+                        <input asp-for="Apellido" class="form-control" />
+                        <span asp-validation-for="Apellido" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="FechaNacimiento" class="control-label">Fecha de nacimiento</label>
+                        <input asp-for="FechaNacimiento" type="date" class="form-control" />
+                        <span asp-validation-for="FechaNacimiento" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Telefono" class="control-label">Teléfono</label>
+                        <input asp-for="Telefono" class="form-control" />
+                        <span asp-validation-for="Telefono" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Correo" class="control-label">Correo</label>
+                        <input asp-for="Correo" class="form-control" />
+                        <span asp-validation-for="Correo" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="EstadoCivil" class="control-label">Estado civil</label>
+                        <input asp-for="EstadoCivil" class="form-control" />
+                        <span asp-validation-for="EstadoCivil" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Profesion" class="control-label">Profesion</label>
+                        <input asp-for="Profesion" class="form-control" />
+                        <span asp-validation-for="Profesion" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Nacionalidad" class="control-label">Nacionalidad</label>
+                        <input asp-for="Nacionalidad" class="form-control" />
+                        <span asp-validation-for="Nacionalidad" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Remitido" class="control-label">Remitido por</label>
+                        <input asp-for="Remitido" class="form-control" />
+                        <span asp-validation-for="Remitido" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Antecedentes" class="control-label">Antecedentes</label>
+                        <input asp-for="Antecedentes" class="form-control" />
+                        <span asp-validation-for="Antecedentes" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="TipoSange" class="control-label">Tipo de sangre</label>
+                        <input asp-for="TipoSange" class="form-control" />
+                        <span asp-validation-for="TipoSange" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Password" class="control-label">Contraseña</label>
+                        <input asp-for="Password" class="form-control" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    @*
+                    <div class="form-group">
+                        <input type="submit" value="Create" class="btn btn-primary" />
+                    </div>
+                    *@
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts{

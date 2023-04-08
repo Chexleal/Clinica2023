@@ -4,6 +4,7 @@ using System.Net.Mail;
 using System.Net;
 using PaaS.Framework.Utils.Extensions;
 using ServiceStack;
+using ServiceStack.Html;
 
 namespace ClinicaServices;
 
@@ -20,6 +21,7 @@ public interface IUserServices
     Usuario GetUser(Guid id);
     void DeleteUser(Guid id);
     void UpdateUser(Usuario user);
+    void SetActive(Guid id, bool state);
 }
 public class UserServices : IUserServices
 {
@@ -47,7 +49,11 @@ public class UserServices : IUserServices
 
     public List<Usuario> GetAll()
     {
-        return _dbContext.Usuarios.ToList();
+        List<Usuario> result = _dbContext.Usuarios.Where(x =>
+        x.EstadoEliminado.Equals(false)).ToList();
+
+        return result;
+        //return _dbContext.Usuarios.ToList();
     }
 
     public bool RecoverAccount(string email)
@@ -164,6 +170,16 @@ public class UserServices : IUserServices
             userDB.TipoSange = user.TipoSange;
             _dbContext.SaveChanges();
         }
+    }
+
+    public void SetActive(Guid id,bool state)
+    {
+        var userDB = GetUser(id);
+        if (userDB is not null)
+        {
+            userDB.UsuarioActivo = state;
+        }
+            _dbContext.SaveChanges();
     }
 
     public void DeleteUser(Guid id)

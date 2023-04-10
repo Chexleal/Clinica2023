@@ -1,4 +1,3 @@
-﻿@model Views_Home_RecoverAccount 
 @{
     Layout = null; var emailCensored = ViewData["emailCensored"]; var userEmail = ViewData["emailCensored"];
 } <!DOCTYPE html>
@@ -6,9 +5,20 @@
 <head>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/recoverAccoutEmail.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/recoverAccountEmail.css" asp-append-version="true" />
 </head>
 <body>
-    <div class="container vh-100 d-flex justify-content-center align-items-center"> <div class="mb-md-1 mt-md-1"> <h4 id="tittle" class="text-center">Introduce tu email</h4> <div class="mx-auto my-auto"> <form action="@Url.Action("CheckEmails")" class="form text-center"> <h1>Ingresa el email registrado</h1> <input type="text" id="email" class="mb-3" name="email" /> <h1>Confirma el email registrado</h1> <input type="text" id="emailConfirmed" class="mb-3" name="emailConfirmed" /> <button type="submit">Aceptar</button> </form> </div> </div> </div>
+    <div class="container vh-100 d-flex justify-content-center align-items-center">
+        <div class="mb-md-1 mt-md-1">
+            <h4 id="tittle" class="text-center">Introduce tu email</h4>
+            <div class="mx-auto my-auto">
+                <form action="@Url.Action("CheckEmails")" class="form text-center">
+                    <h1>Ingresa el email registrado</h1>
+                    <input type="text" id="email" class="mb-3" name="email" />
+                    <h1>Confirma el email registrado</h1>
+                    <input type="text" id="emailConfirmed" class="mb-3" name="emailConfirmed" />
+                    <button type="submit">Aceptar</button>
+                </form>
+            </div> </div> </div>
 </body>
 </html>

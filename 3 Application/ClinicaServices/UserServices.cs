@@ -18,8 +18,8 @@ public interface IUserServices
     List<Usuario> GetAll();
     void AddUser(Usuario user);
     List<Usuario> SearchUser(string input);
-    Usuario GetUser(Guid id);
-    Usuario GetUserByName(string userName);
+    Usuario? GetUser(Guid id);
+    Usuario? GetUserByName(string userName);
     bool CheckEmails(string email, string emailConfirmed);
     bool UpdatePassword(string newPassword, string newPasswordConfirmed, string userName);
     void DeleteUser(Guid id);
@@ -172,7 +172,7 @@ public class UserServices : IUserServices
         else { return false; }
     }
 
-    public Usuario GetUser(Guid id)
+    public Usuario? GetUser(Guid id)
     {
         //return _dbContext.Usuarios.Find(id);
         return _dbContext.Usuarios.FirstOrDefault(p => p.IdUsuario == id);

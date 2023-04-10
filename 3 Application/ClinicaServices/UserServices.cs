@@ -4,6 +4,9 @@ using System.Net;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using Azure.Core;
+using PaaS.Framework.Utils.Extensions;
+using ServiceStack;
+using ServiceStack.Html;
 
 namespace ClinicaServices;
 

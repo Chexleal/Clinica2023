@@ -1,14 +1,24 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using ClinicaServices;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace clinicaWeb.Controllers
 {
     public class ConsultasController : Controller
     {
-        // GET: ConsultasController
+
+        private readonly IConsultaServices _consultaServices;
+
+        public ConsultasController(IConsultaServices consultaServices)
+        {
+            _consultaServices = consultaServices;
+        }
+
+        // GET: UsuariosController
         public ActionResult Index()
         {
-            return View();
+            var consultas = _consultaServices.GetAll();
+            return View(consultas);
         }
 
         // GET: ConsultasController/Details/5

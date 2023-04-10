@@ -1,6 +1,9 @@
-﻿using clinicamhsystem.Models;
+﻿using ClinicaDomain;
+using clinicamhsystem.Models;
 using ClinicaServices;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace clinicamhsystem.Controllers
@@ -34,30 +37,31 @@ namespace clinicamhsystem.Controllers
             
             //return View("Privacy");
         }
-
+        
         public IActionResult UsuarioExistente(string userName)
         {
-            
             var existingUser = _userServices.CheckUserExist(userName);
             if (existingUser)
-                return View("RecoverAccount",userName); // Si el usuario existe en la db, entonces se mostrara su pregunta de seguridad
-            else
-                return Content("alert('El usuario no existe sss');", "application/javascript"); // se agrega return content solo para probar el metodo.
-        }
-
-        public IActionResult SecurityQuestion(string userName)
-        {
-
-            string? preguntaSeg = _userServices.SecurityQuestion(userName);
-            if (preguntaSeg != null) {
-
-               return Content($"La pregunta es{preguntaSeg}", "application/javascript");
-
-            }
-            else
             {
-               return  Content($"No hay pregunta", "application/javascript");
+                Usuario userInfo = _userServices.GetUserByName(userName);
+                ViewData["username"] = userInfo.NombreUsuario.ToString();
+                ViewData["securityQuestion"] = userInfo.PreguntaSeg.ToString(); // usa el servicio para recuperar la pregunta de seguridad del usuario, y se la asigna a un ViewData
+                ViewData["userEmail"] = userInfo.Correo.ToString();
+              
+                string[] emailSplited = userInfo.Correo.ToString().Split('@');
+                string beforeArroba = emailSplited[0];
+                var emailCensored = string.Concat(Enumerable.Repeat("*", 3)) + beforeArroba.Substring(3);
+                var userEmailCesored = emailCensored.ToString() + "@" + emailSplited[1].ToString();
+
+                ViewData["emailCensored"] = userEmailCesored.ToString();
+
+                return View("RecoverAccount"); //retorna la vista para recuperar cuenta       
+            }       
+            else
+            { 
+                 return Content("alert('El usuario no existe');", "application/javascript"); // se agrega return content solo para probar el metodo.
             }
+               
         }
 
         public IActionResult CheckAnswer(string answer)
@@ -71,9 +75,41 @@ namespace clinicamhsystem.Controllers
 
         }
 
+        public IActionResult CheckEmails(string email, string emailConfirmed)
+        {
+
+            bool emailCheck = _userServices.CheckEmails(email, emailConfirmed);
+            if (emailCheck)
+                return Content("alert('Email Correcto');", "application/javascript"); // Si la respuesta es correcta
+            else
+                return Content("alert('Email Incorrecto');", "application/javascript"); // Si la respuesta es incorrecta
+
+        }
+
         public IActionResult RecuperarCuenta()
         {
             return View("CheckUser");
+        }
+
+        public IActionResult NuevaClave(string userName)
+        {
+            return View("NewPassword");
+        }
+
+        public IActionResult CrearNuevaClave(string newPassword, string newPasswordConfirmed)
+        {
+            ViewData["userName"] = Request.Query["userName"];
+            string userName = ViewData["userName"].ToString();
+            bool newPAssword = _userServices.UpdatePassword(newPassword, newPasswordConfirmed, userName);
+            if (newPAssword)
+                return Content("alert('Contrase;a igual y existe usuario');", "application/javascript"); // Si la respuesta es correcta
+            else
+                return Content("alert('contrase;a distinta');", "application/javascript"); // Si la respuesta es incorrecta
+        }
+
+        public IActionResult RecuperarCuentaEmail(string userName)
+        {
+            return View("RecoverAccountEmail");
         }
 
         public IActionResult Privacy()

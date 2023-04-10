@@ -54,6 +54,7 @@ public class PacienteServices : IPacienteServices
 		_dbContext.Pacientes.Update(paciente);
     }
 
+
     public void Delete(Guid id)
     {
         var paciente = Get(id);

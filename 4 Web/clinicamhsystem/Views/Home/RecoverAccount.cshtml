@@ -1,5 +1,7 @@
 ﻿@{
     Layout = null;
+    var securityQuestion = ViewData["securityQuestion"];
+    var emailCesored = ViewData["emailCensored"];
 }
 
 <!DOCTYPE html>
@@ -16,9 +18,9 @@
             <h4 id="tittle" class="text-center">Pregunta de seguridad</h4>
             <div class="mx-auto my-auto">
                 <form action="@Url.Action("CheckAnswer")" class="form text-center">
-                    <h1>"@Url.Action("SecurityQuestion")"</h1>
+                    <h1>@securityQuestion</h1>
                     <input type="text" id="answer" class="mb-3" placeholder="Respuesta" name="answer" />
-                    <a class="forgot" href="#" class="mb-4">Recuperar via email</a>
+                    <a class="forgot" href="@Url.Action("RecuperarCuentaEmail")" class="mb-4">Recuperar via email: @emailCesored</a>
                     <button type="submit">Aceptar</button>
                 </form>
             </div>

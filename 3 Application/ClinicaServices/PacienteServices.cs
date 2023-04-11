@@ -1,16 +1,16 @@
 ﻿using Azure.Core;
 using ClinicaDomain;
+using PaaS.Framework.Utils.Extensions;
 
 namespace ClinicaServices;
 
 public interface IPacienteServices
 {
-	int Create(Paciente paciente);
-	Paciente Get(Guid id);
-    List<Paciente> GetAll();
-    void Update(Paciente paciente);
-    void Delete(Guid id);
-	void PermantlyDelete(Guid id);
+	int AddPaciente(Paciente paciente);
+	Paciente? GetPacienteById(Guid id);
+    List<Paciente>? GetAll();
+    void UpdatePaciente(Paciente paciente);
+    void DeletePaciente(Guid id);
 }
 public class PacienteServices : IPacienteServices
 {
@@ -20,7 +20,7 @@ public class PacienteServices : IPacienteServices
 		_dbContext = dbContext;
 	}
 
-	public int Create(Paciente paciente)
+	public int AddPaciente(Paciente paciente)
 	{
 		//CAMBIAR INT POR ENUM 
 		try
@@ -29,9 +29,11 @@ public class PacienteServices : IPacienteServices
 
 			var pacienteExsitente = _dbContext.Pacientes.FirstOrDefault(x => x.IdPaciente == paciente.IdPaciente && !x.EstadoEliminado);
 			if (pacienteExsitente is not null) return 2;
-
-			_dbContext.Pacientes.Add(paciente);
-			_dbContext.SaveChanges();
+            paciente.IdPaciente = $"{paciente.Nombre.Trim().ToLower()}".ToGuid();
+            paciente.EstadoEliminado = false;
+			paciente.NoRegistro = "1";
+            _dbContext.Pacientes.Add(paciente);
+            _dbContext.SaveChanges();
 			return 1;
 		}
 		catch (Exception)
@@ -40,30 +42,48 @@ public class PacienteServices : IPacienteServices
 		}
 	}
 
-	public Paciente Get(Guid id)
-	{
-		return _dbContext.Pacientes.FirstOrDefault(x => x.IdPaciente == id && !x.EstadoEliminado);
-	}
-	public List<Paciente> GetAll()
-	{
-		return _dbContext.Pacientes.Where(x => !x.EstadoEliminado).ToList();
-	}
-
-	public void Update(Paciente paciente)
-	{
-		_dbContext.Pacientes.Update(paciente);
+    public Paciente? GetPacienteById(Guid id)
+    {
+        return _dbContext.Pacientes.FirstOrDefault(p => p.IdPaciente == id);
     }
 
-    public void Delete(Guid id)
+    public List<Paciente>? GetAll()
+	{
+        return _dbContext.Pacientes.Where(x => !x.EstadoEliminado).ToList();
+	}
+
+    public void UpdatePaciente(Paciente paciente)
     {
-        var paciente = Get(id);
-		paciente.EstadoEliminado = true;
-		Update(paciente);
+        var pacienteDB = GetPacienteById(paciente.IdPaciente);
+        if (pacienteDB is not null)
+        {
+            pacienteDB.Dpi = paciente.Dpi;
+            pacienteDB.Nombre = paciente.Nombre;
+            pacienteDB.Apellido = paciente.Apellido;
+            pacienteDB.FechaNacimiento = paciente.FechaNacimiento;
+            pacienteDB.Genero = paciente.Genero;
+            pacienteDB.Telefono = paciente.Telefono;
+            pacienteDB.Correo = paciente.Correo;
+            pacienteDB.Direccion = paciente.Direccion;
+            pacienteDB.Alergias = paciente.Alergias;
+            pacienteDB.EstadoCivil = paciente.EstadoCivil;
+            pacienteDB.Profesion = paciente.Profesion;
+            pacienteDB.Nacionalidad = paciente.Nacionalidad;
+            pacienteDB.Remitido = paciente.Remitido;
+            pacienteDB.Antecedentes = paciente.Antecedentes;
+            pacienteDB.TipoSange = paciente.TipoSange;
+            _dbContext.SaveChanges();
+        }
     }
-    public void PermantlyDelete(Guid id)
+
+    public void DeletePaciente(Guid id)
     {
-		var paciente= Get(id);
-        _dbContext.Pacientes.Remove(paciente);
+        var paciente = GetPacienteById(id);
+        if (paciente is not null)
+        {
+            paciente.EstadoEliminado = true;
+            _dbContext.SaveChanges();
+        }
     }
 
 }

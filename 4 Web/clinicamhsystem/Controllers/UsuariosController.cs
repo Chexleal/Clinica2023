@@ -43,7 +43,7 @@ namespace clinicaWeb.Controllers
         public ActionResult Detalles(Guid id)
         {
             var user = _userServices.GetUser(id);
-            return RedirectToAction("Detalles", user);
+            return View("Detalles", user);
         }
 
         // GET: UsuariosController/Create
@@ -74,7 +74,7 @@ namespace clinicaWeb.Controllers
         public ActionResult Editar(Guid id)
         {
             var user = _userServices.GetUser(id);
-            return RedirectToAction("Editar", user);
+            return View("Editar", user);
         }
 
         // POST: UsuariosController/Editar/fj33-4ra4r
@@ -105,7 +105,7 @@ namespace clinicaWeb.Controllers
             }
             catch { }
             var users = _userServices.GetAll();
-            return View("Index",users);
+            return RedirectToAction("Index",users);
         }
 
         // POST: UsuariosController/Active/5

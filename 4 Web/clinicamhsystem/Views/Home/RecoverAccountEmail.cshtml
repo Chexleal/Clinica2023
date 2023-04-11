@@ -1,4 +1,3 @@
-﻿@model Views_Home_RecoverAccount
 @{
     Layout = null; var emailCensored = ViewData["emailCensored"]; var userEmail = ViewData["emailCensored"];
 } <!DOCTYPE html>
@@ -14,7 +13,7 @@
             <h4 id="tittle" class="text-center">Introduce tu email</h4>
             <div class="mx-auto my-auto">
                 <form action="@Url.Action("CheckEmails")" class="form text-center">
-                    <h1>Ingresa el email registrado</h1>
+                    <h1>Ingresar el email registrado</h1>
                     <input type="text" id="email" class="mb-3" name="email" />
                     <h1>Confirma el email registrado</h1>
                     <input type="text" id="emailConfirmed" class="mb-3" name="emailConfirmed" />

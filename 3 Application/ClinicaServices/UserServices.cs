@@ -178,7 +178,7 @@ public class UserServices : IUserServices
         return _dbContext.Usuarios.FirstOrDefault(p => p.IdUsuario == id);
     }
 
-    public Usuario? GetUserByName(string userName)
+    public Usuario GetUserByName(string userName)
     {
         return _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario.ToLower().Trim() == userName.ToLower().Trim());
     }

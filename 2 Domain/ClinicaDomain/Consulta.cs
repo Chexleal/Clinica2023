@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 
@@ -41,4 +42,7 @@ public partial class Consulta
     public virtual Paciente? IdPacienteNavigation { get; set; }
 
     public virtual ICollection<Receta> Receta { get; } = new List<Receta>();
+
+    public static ICollection<Paciente> getPaciente{ get; } = new List<Paciente>();
+    
 }

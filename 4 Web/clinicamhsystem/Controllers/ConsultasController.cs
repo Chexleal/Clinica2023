@@ -1,4 +1,5 @@
-﻿using ClinicaServices;
+﻿using ClinicaDomain;
+using ClinicaServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,6 +9,7 @@ namespace clinicaWeb.Controllers
     {
 
         private readonly IConsultaServices _consultaServices;
+        private readonly IPacienteServices _pacienteServices;
 
         public ConsultasController(IConsultaServices consultaServices)
         {
@@ -18,76 +20,98 @@ namespace clinicaWeb.Controllers
         public ActionResult Index()
         {
             var consultas = _consultaServices.GetAll();
+            //var pacientes = _pacienteServices.GetAll();
             return View(consultas);
         }
 
-        // GET: ConsultasController/Details/5
-        public ActionResult Details(int id)
+        //GET: Usuarios/Search? input = t
+        public ActionResult Search(string input)
         {
-            return View();
+            if (String.IsNullOrEmpty(input))
+            {
+                var consultas = _consultaServices.GetAll();
+                return RedirectToAction("Index", consultas);
+            }
+            else
+            {
+                var idResult = _consultaServices.SearchConsulta(input);
+                return RedirectToAction("Search", idResult);
+            }
+        }
+
+        // GET: ConsultasController/Details/5
+        public ActionResult Detalles(Guid id)
+        {
+            var consultas = _consultaServices.GetConsulta(id);
+            return View("Detalles", consultas);
         }
 
         // GET: ConsultasController/Create
         public ActionResult Create()
         {
-            return View();
+            return View("Create");
         }
 
         // POST: ConsultasController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public ActionResult Create(Consulta consulta)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                _consultaServices.AddConsulta(consulta);
+                var consultas = _consultaServices.GetAll();
+                return View("Index", consultas);
             }
             catch
             {
-                return View();
+                var consultas = _consultaServices.GetAll();
+                return View("Index", consultas);
             }
         }
 
         // GET: ConsultasController/Edit/5
-        public ActionResult Edit(int id)
+        public ActionResult Editar(Guid id)
         {
-            return View();
+            var consultas = _consultaServices.GetConsulta(id);
+            return RedirectToAction("Editar", consultas);
         }
 
         // POST: ConsultasController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public ActionResult Edit(Consulta consulta)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                _consultaServices.UpdateConsulta(consulta);
+                var consultas = _consultaServices.GetAll();
+                return RedirectToAction("Index", consultas);
             }
             catch
             {
-                return View();
+                return View("Error");
             }
         }
 
         // GET: ConsultasController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
+        //public ActionResult Delete(int id)
+        //{
+       //     return View();
+        //
 
         // POST: ConsultasController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public ActionResult Eliminar(Guid id)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                _consultaServices.DeleteConsulta(id);
             }
-            catch
-            {
-                return View();
-            }
+            catch {  }
+            var consultas = _consultaServices.GetAll();
+            return View("Index", consultas);
         }
     }
 }

@@ -45,4 +45,6 @@ public partial class Paciente
     public virtual ICollection<Cita> Cita { get; } = new List<Cita>();
 
     public virtual ICollection<Consulta> Consulta { get; } = new List<Consulta>();
+
+
 }

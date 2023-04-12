@@ -1,113 +1,213 @@
 ﻿@model IEnumerable<ClinicaDomain.Consulta>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.IdConsulta)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IdPaciente)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Fecha)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Peso)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.TiempoDuracion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Radiografias)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PresionArterial)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Temperatura)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.NoRegistro)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.MotivoConsulta)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Diagnostico)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Observaciones)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Pagada)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Total)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Terminada)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.IdConsulta)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IdPaciente)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Fecha)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Peso)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TiempoDuracion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Radiografias)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PresionArterial)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Temperatura)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.NoRegistro)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.MotivoConsulta)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Diagnostico)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Observaciones)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Pagada)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Total)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Terminada)
-            </td>
-            <td>
-                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
-            </td>
-        </tr>
+
+@{
+    ViewData["Title"] = "Consultas";
 }
-    </tbody>
-</table>
+@section Links{
+    <link rel="stylesheet" href="~/css/pages/Consultas.css" asp-append-version="true" />
+}
+
+<h1>Consultas</h1>
+
+@*<div class="row">
+    <form asp-action="Search" method="get">
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="Buscar usuario" id="input" name="input">
+            <div class="input-group-append">
+                <input type="submit" class="btn btn-secondary" id="botonBusqueda" value="Buscar" />
+            </div>
+        </div>
+    </form>
+</div>*@
+
+<div class="card card-body ">
+    <p>
+        <a asp-action="Create" method="get">Crear Consulta</a>
+    </p>
+    <p>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+            Agregar Consulta
+        </button>
+    </p>
+    <table id="tableUser" class="table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Peso</th>
+                <th>Duración</th>
+                <th>Radiografias</th>
+                <th>Presion Arterial</th>
+                <th>Temperatura</th>
+                <th>No. de registro</th>
+                <th>Motivo de consulta</th>
+                <th>Diagnostico</th>
+                <th>Observaciones</th>
+                <th>Pagada</th>
+                <th>Total</th>
+                <th>Terminada</th>
+                @*<th>Acciones</th>*@
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Fecha</td>
+                    <td>@item.Peso</td>
+                    <td>@item.TiempoDuracion</td>
+                    <td>@item.Radiografias</td>
+                    <td>@item.PresionArterial</td>
+                    <td>@item.Temperatura</td>
+                    <td>@item.NoRegistro</td>
+                    <td>@item.MotivoConsulta</td>
+                    <td>@item.Diagnostico</td>
+                    <td>@item.Observaciones</td>
+                    <td>@item.Pagada</td>
+                    <td>@item.Total</td>
+                    <td>@item.Terminada</td>
+                    <td>
+                        <div class="options d-flex ">
+                            <a class="option" href="/Usuarios/Detalles/@item.IdConsulta">Ver</a>
+                            @*<a class="option" href="/Usuarios/Editar/@item.IdUsuario">Editar</a>*@
+                            <a class="option" href="@Url.Action("Editar","Consultas",new{id = @item.IdConsulta}) ">Editar</a>
+                            <form asp-action="Eliminar" asp-route-id="@item.IdConsulta">
+                                <button class="option" type="submit">Eliminar</button>
+                            </form>
+                            @if (item.Terminada == false)
+                            {
+                                <form asp-action="Activate" asp-route-id="@item.IdPaciente">
+                                    <input type="hidden" value="false" name="state" />
+                                    <button class="option" type="submit">Desactivar</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-action="Activate" asp-route-id="@item.IdPaciente">
+                                    <input type="hidden" value="true" name="state" />
+                                    <button class="option" type="submit">Activar</button>
+                                </form>
+                            }
+                        </div>
+                    </td>
+                    @*<td>
+                <button class="btn" type="button" id="rowMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                ...
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="/Usuarios/Detalles/@item.IdUsuario">Ver</a>
+                <a class="dropdown-item" href="/Usuarios/Editar/@item.IdUsuario">Editar</a>
+                <form asp-action="Eliminar" asp-route-id="@item.IdUsuario">
+                <button class="dropdown-item" type="submit">Eliminar</button>
+                </form>
+                <form asp-action="Desactivar" asp-route-id="@item.IdUsuario">
+                <button class="dropdown-item" type="submit">Desactivar</button>
+                </form>
+
+                </div>
+                </td>*@
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</div>
+
+<!-- Modal Crear Usuario-->
+<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Crear Consulta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="crear" asp-action="Create" method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="control-label">Paciente</label>
+                                <select name="Paciente" class="form-control">
+                                    @foreach (var paciente in ClinicaDomain.Consulta.getPaciente)
+                                    {
+                                        <option value="@paciente.Correo">@paciente.Direccion</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Fecha</label>
+                                <input name="Fecha" type="date" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Peso del paciente</label>
+                                <input name="Peso" id="Peso" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Duracion</label>
+                                <input name="Duracion" id="Duracion" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Radiografias</label>
+                                <input name="Radiografias" id="Radiografias" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Presion Arterial</label>
+                                <input name="PresionArterial" id="PresionArterial" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Temperatura</label>
+                                <input name="Temperatura" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="control-label">No. de registro</label>
+                                <input name="NoRegistro" id="NoRegistro" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Motivo de Consulta</label>
+                                <input name="MotivoConsulta" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Diagnostico</label>
+                                <input name="Diagnostico" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Observaciones</label>
+                                <input name="Observaciones" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Pagada</label>
+                                <select name="Pagada" class="form-select" required>
+                                    <option value="true">Sí</option>
+                                    <option value="false">No</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Total</label>
+                                <input name="Total" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Terminada</label>
+                                <select name="Terminada" class="form-select" required>
+                                    <option value="true">Sí</option>
+                                    <option value="false">No</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary" form="crear">Agregar</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script src="~/js/pages/consultas.js" asp-append-version="true"></script>
+}

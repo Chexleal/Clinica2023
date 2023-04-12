@@ -86,3 +86,8 @@ function ShowEditModal(id) {
         }
     });
 }
+
+function ShowConsultaModal(id) {
+    $('#createConsultaModal').modal('show');
+    $('#IdPaciente').val(id);
+}

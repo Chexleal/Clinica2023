@@ -10,6 +10,7 @@
 
     <partial name="~/Views/Shared/_modalEdit.cshtml" />
     <partial name="Partials/_modalCrear.cshtml" />
+    <partial name="Partials/_modalCrearConsulta.cshtml" />
 
     <h1>Pacientes</h1>
 
@@ -39,19 +40,20 @@
                 @foreach (var item in Model)
                 {
                     <tr>
-                        <td><a class="option" href="@Url.Action("Consulta","Pacientes",new{id = @item.IdPaciente}) ">Generar consulta</a></td>
+                    <td><button class="option" onclick="ShowConsultaModal('@item.IdPaciente')">Generar consulta</button></td>
                         <td>@item.NoRegistro</td>
                         <td>@item.Nombre</td>
                         <td>@item.Apellido</td>
                         <td>@item.Dpi</td>
-                        <td>@(DateTime.Now.Year - item.FechaNacimiento.Year)</td>
+                    @*    <td>@(DateTime.Now.Year - item.FechaNacimiento.Year)</td>*@
+                    <td>@(DateTime.Now.Year - item.FechaNacimiento.Year - ((DateTime.Now.Month < item.FechaNacimiento.Month || (DateTime.Now.Month == item.FechaNacimiento.Month && DateTime.Now.Day < item.FechaNacimiento.Day)) ? 1 : 0))</td>
                         <td>@item.Telefono</td>
                         <td>@item.Correo</td>
                         <td>@item.Direccion</td>
                         <td>@item.TipoSange</td>
                         <td>
                             <div class="options d-flex ">
-                                <a class="option" href="@Url.Action("Historial","Pacientes",new{id = @item.IdPaciente}) ">Historial</a>
+                                <a class="option" href="@Url.Action("Historial","Pacientes",new{id = item.IdPaciente}) ">Historial</a>
                                 <a class="option" href="/Pacientes/Detalles/@item.IdPaciente">Ver</a>
                                 @*<button class="option modal-editar" data-bs-toggle="modal" data-bs-target="#editModal" data-paciente="@JsonConvert.SerializeObject(item)">Editar</button>*@
                                 <button class="option" onclick="ShowEditModal('@item.IdPaciente')">Editar</button>
@@ -93,7 +95,7 @@
                     </div>
                     <div class="form-group">
                         <label class="control-label">Fecha de nacimiento</label>
-                        <input name="FechaNacimiento" type="date" class="form-control" />
+                        <input name="item.FechaNacimiento" type="date" class="form-control" />
                     </div>
                     <div class="form-group">
                         <label class="control-label">Genero</label>
@@ -163,7 +165,7 @@
                 $('#editModal #Nombre').val(paciente.Nombre);
                 $('#editModal #Apellido').text(paciente.Nombre);
                 $('#editModal #Dpi').text(paciente.Nombre);
-                $('#editModal #FechaNacimiento').text(paciente.Nombre);
+                $('#editModal #item.FechaNacimiento').text(paciente.Nombre);
                 $('#editModal #Genero').text(paciente.Nombre);
                 $('#editModal #Telefono').text(paciente.Nombre);
                 $('#editModal #Correo').text(paciente.Nombre);

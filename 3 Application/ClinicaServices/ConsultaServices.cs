@@ -28,7 +28,7 @@ namespace ClinicaServices
 
         public void AddConsulta(Consulta consulta)
         {
-            consulta.IdConsulta = $"{consulta.IdConsulta.ToString().Trim().ToLower()}".ToGuid();
+            consulta.IdConsulta = Guid.NewGuid();
             consulta.Terminada = false;
             _dbContext.Consulta.Add(consulta);
             _dbContext.SaveChanges();

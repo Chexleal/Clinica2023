@@ -12,7 +12,12 @@ builder.Services.AddDbContext<ClinicaContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 }, ServiceLifetime.Singleton);
 
-builder.Services.AddRazorPages();
+
+builder.Host.ConfigureServices(services =>
+{
+    services.AddRazorPages();
+    services.AddRazorPages().AddRazorRuntimeCompilation();
+});
 
 builder.Services.WebInjections();
 

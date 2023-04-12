@@ -29,9 +29,9 @@ public class PacienteServices : IPacienteServices
 
 			var pacienteExsitente = _dbContext.Pacientes.FirstOrDefault(x => x.IdPaciente == paciente.IdPaciente && !x.EstadoEliminado);
 			if (pacienteExsitente is not null) return 2;
-            paciente.IdPaciente = $"{paciente.Nombre.Trim().ToLower()}".ToGuid();
+            paciente.IdPaciente = $"{paciente.Nombre.Trim().ToLower()}|{paciente.Apellido.Trim().ToLower()}".ToGuid();
             paciente.EstadoEliminado = false;
-			paciente.NoRegistro = "1";
+            paciente.NoRegistro = "1";
             _dbContext.Pacientes.Add(paciente);
             _dbContext.SaveChanges();
 			return 1;

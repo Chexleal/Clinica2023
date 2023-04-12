@@ -42,14 +42,14 @@ namespace clinicaWeb.Controllers
             try
             {
                 _pacienteServices.AddPaciente(paciente);
-                var pacientes = _pacienteServices.GetAll();
-                return View("Index", pacientes);
+                return RedirectToAction("Index");
             }
             catch
             {
-                var pacientes = _pacienteServices.GetAll();
-                return View("Index", pacientes);
+                //LO QUE SEA QUE VAYAMOS A HACER ACA 
+           
             }
+            return RedirectToAction("Index");
         }
 
         // GET: UsuariosController/Editar/fj33-4ra4r
@@ -67,8 +67,7 @@ namespace clinicaWeb.Controllers
             try
             {
                 _pacienteServices.UpdatePaciente(paciente);
-                var pacientes = _pacienteServices.GetAll();
-                return RedirectToAction("Index", pacientes);
+                return RedirectToAction("Index");
             }
             catch
             {
@@ -88,6 +87,13 @@ namespace clinicaWeb.Controllers
             catch { }
             var pacientes = _pacienteServices.GetAll();
             return RedirectToAction("Index", pacientes);
+        }
+
+        [HttpGet]
+        public IActionResult GetPaciente(Guid pacienteId)
+        {
+            var paciente = _pacienteServices.GetPacienteById(pacienteId);
+            return PartialView("Editar", paciente);
         }
     }
 }

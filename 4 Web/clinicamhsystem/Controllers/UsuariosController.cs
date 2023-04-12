@@ -60,13 +60,12 @@ namespace clinicaWeb.Controllers
             try
             {             
                 _userServices.AddUser(usuario);
-                return RedirectToAction("Index");
+
             }
             catch
             {
-                var users = _userServices.GetAll();
-                return View("Index", users);
             }
+            return RedirectToAction("Index");
         }
 
         // GET: UsuariosController/Editar/fj33-4ra4r

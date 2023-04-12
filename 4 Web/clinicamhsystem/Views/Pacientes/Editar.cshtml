@@ -4,14 +4,11 @@
     ViewData["Title"] = "Editar";
 }
 
-<h1>Editar</h1>
-
-<h4>Paciente</h4>
-<hr />
 <div class="row">
     <div class="">
         <form asp-action="Editar">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input hidden name="IdPaciente" value="@Model.IdPaciente" />
             <div class="form-group">
                 <label asp-for="Dpi" class="control-label"></label>
                 <input asp-for="Dpi" class="form-control" />

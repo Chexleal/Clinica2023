@@ -71,3 +71,18 @@ function CreateTable() {
             }]
     });
 }
+
+function ShowEditModal(id) {
+    $('#modalEdit').modal('show');
+
+    $.ajax({
+        url: urls.getPaciente,
+        data: { pacienteId: id },
+        async: true,
+        type: "GET",
+        atType: 'html',
+        success: function (res) {
+            $('#modalEditBody').html(res);
+        }
+    });
+}

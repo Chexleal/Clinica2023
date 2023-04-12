@@ -4,6 +4,7 @@ using System.Net.Mail;
 using System.Net;
 using PaaS.Framework.Utils.Extensions;
 using ServiceStack;
+using ServiceStack.Html;
 
 namespace ClinicaServices;
 
@@ -17,9 +18,13 @@ public interface IUserServices
     List<Usuario> GetAll();
     void AddUser(Usuario user);
     List<Usuario> SearchUser(string input);
-    Usuario GetUser(Guid id);
+    Usuario? GetUser(Guid id);
+    Usuario? GetUserByName(string userName);
+    bool CheckEmails(string email, string emailConfirmed);
+    bool UpdatePassword(string newPassword, string newPasswordConfirmed, string userName);
     void DeleteUser(Guid id);
     void UpdateUser(Usuario user);
+    void SetActive(Guid id, bool state);
 }
 public class UserServices : IUserServices
 {
@@ -47,36 +52,36 @@ public class UserServices : IUserServices
 
     public List<Usuario> GetAll()
     {
-        return _dbContext.Usuarios.ToList();
+        List<Usuario> result = _dbContext.Usuarios.Where(x =>
+        x.EstadoEliminado.Equals(false)).ToList();
+
+        return result;
+        //return _dbContext.Usuarios.ToList();
     }
 
-    public bool RecoverAccount(string email)
+    public bool RecoverAccount(string email, string userName)
     {
-        // Check if the email is registered in the database
-        if (!CheckUserExist(email)) return false;
-
-        // Generate a new password and update the user's account with it
-        string newPassword = GeneratePassword();
-        UpdatePassword(email, newPassword);
 
         // Send an email to the user with instructions to reset their password
         string fromAddress = "emrivera2001@gmail.com";
-        string fromPassword = "fjgfbuvketepyacx";
+        string fromPassword = "vmdmrvksvawwkkzp";
         string toAddress = email;
         string subject = "Password reset for your account";
-        string body = "Hello,\n\n" +
-                      "We have received a request to reset the password for your account. " +
-                      "Your new password is: " + newPassword + "\n\n" +
-                      "Please use this password to login to your account, and then reset your password to a new value.\n\n" +
-                      "Thank you,\n" +
-                      "Your Website Team";
+        string body = "<html>" +
+                         "<body>" +
+                         "<h1>Hello world!</h1>" +
+                         "<p>This is an HTML email.</p>" +
+                         $"<a href=\"https://localhost:7070/Home/NuevaClave/?userName={userName}\">link text</a>" +
+                         "</body>" +
+                       "</html>";
+
 
         try
         {
-            using (MailMessage mail = new(fromAddress, toAddress, subject, body))
+            using (MailMessage mail = new MailMessage(fromAddress, toAddress, subject, body))
             {
-                mail.IsBodyHtml = false;
-                using (SmtpClient smtp = new("smtp.gmail.com", 587))
+                mail.IsBodyHtml = true;
+                using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
                 {
                     smtp.EnableSsl = true;
                     smtp.UseDefaultCredentials = false;
@@ -100,15 +105,18 @@ public class UserServices : IUserServices
         // Check if the email is registered in the database
         // Return true if it exists, false otherwise
         var userItem = _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == userName);
-        if (userItem is null) return false;
+        if (userItem == null) return false;
         return true;
     }
 
     public string? SecurityQuestion(string userName)
     {
         var userItem = _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario.ToLower().Trim() == userName.ToLower().Trim());
-        if (userItem is null)
+        if (userItem == null)
+        {
+
             return null;
+        }
         else
         {
             var preguntaSegura = userItem.PreguntaSeg.ToString();
@@ -119,27 +127,60 @@ public class UserServices : IUserServices
     public string? CheckAnswer(string answer)
     {
         var userItem = _dbContext.Usuarios.FirstOrDefault(x => x.RespuestaSeg.ToLower().Trim() == answer.ToLower().Trim());
-        if (userItem is not null) return userItem.RespuestaSeg.ToString();
+        if (userItem != null) return userItem.RespuestaSeg.ToString();
         return null;
     }
 
-    public string GeneratePassword()
+    public bool CheckEmails(string email, string emailConfirmed)
     {
-        // Generate a new random password and return it as a string
-        return "testing";
+        var emailOnData = _dbContext.Usuarios.FirstOrDefault(x => x.Correo == email);
+        var userName = _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == emailOnData.NombreUsuario);
+
+        if (emailOnData != null)
+        {
+            bool checkedEmail = email.Equals(emailConfirmed);
+            if (checkedEmail)
+            {
+                RecoverAccount(email, userName.NombreUsuario.ToString());
+                return true;
+            }
+            else { return false; }
+        }
+        else { return false; }
+
     }
 
-    public bool UpdatePassword(string email, string newPassword)
+    public bool UpdateNewPassword(string newPassword, string userName)
     {
-        // Update the user's account with the new password
-        // Return true if successful, false otherwise
-        return true;
+        var user = _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == userName);
+        if (user != null)
+        {
+            return true;
+        }
+        else { return false; }
+
     }
 
-    public Usuario GetUser(Guid id)
+    public bool UpdatePassword(string newPassword, string newPasswordConfirmed, string userName)
+    {
+        bool checkedPassword = newPassword.Equals(newPasswordConfirmed);
+        var user = _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == userName);
+        if (checkedPassword && user != null)
+        {
+            return true;
+        }
+        else { return false; }
+    }
+
+    public Usuario? GetUser(Guid id)
     {
         //return _dbContext.Usuarios.Find(id);
         return _dbContext.Usuarios.FirstOrDefault(p => p.IdUsuario == id);
+    }
+
+    public Usuario GetUserByName(string userName)
+    {
+        return _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario.ToLower().Trim() == userName.ToLower().Trim());
     }
 
     public void UpdateUser(Usuario user)
@@ -164,6 +205,16 @@ public class UserServices : IUserServices
             userDB.TipoSange = user.TipoSange;
             _dbContext.SaveChanges();
         }
+    }
+
+    public void SetActive(Guid id,bool state)
+    {
+        var userDB = GetUser(id);
+        if (userDB is not null)
+        {
+            userDB.UsuarioActivo = state;
+        }
+            _dbContext.SaveChanges();
     }
 
     public void DeleteUser(Guid id)

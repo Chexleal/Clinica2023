@@ -36,6 +36,26 @@
         border: 2px solid #37bb6e;
     }
 
+.form input[type="email"],
+.form input[type="emailConfirmed"] {
+    border-radius: 12px;
+    text-align: center;
+    display: block;
+    width: 250px;
+    border: 2px solid #66ADEA;
+    padding: 7px 7px;
+    margin: auto;
+    color: #3f4a55;
+    outline: none;
+    transition: 0.25s
+}
+
+    .form input[type="email"]:focus,
+    .form input[type="emailConfirmed"]:focus {
+        width: 270px;
+        border: 2px solid #37bb6e;
+    }
+
 .form button[type="submit"] {
     border-radius: 12px;
     background-color: #66ADEA;

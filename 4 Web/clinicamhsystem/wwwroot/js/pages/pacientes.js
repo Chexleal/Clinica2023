@@ -8,14 +8,14 @@ $(document).ready(function () {
 });
 
 function CreateTable() {
-    $('#tableUser').DataTable({
+    $('#tablePaciente').DataTable({
         "autoWidth": true,
         "ordering": true,
         "lengthChange": true,
         dom: 'Bfrtip',
         "pageLength": 20,
         "language": {
-            searchPlaceholder:'Buscar Consulta',
+            searchPlaceholder: 'Buscar paciente',
             sSearch: '',
             lengthMenu: 'MENU items/page',
             paginate: {
@@ -43,10 +43,10 @@ function CreateTable() {
                 text: '<i class="fas fa-clone"></i><strong>Copiar</strong>',
                 messageTop: '',
                 className: "text-dark btn-light",
-                title: "Usuarios",
-                filename: "Usuarios",
+                title: "Pacientes",
+                filename: "Pacientes",
                 exportOptions: {
-                    columns: [0,1,2,3,4,5,6,7],
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7],
                     page: 'all'
                 },
                 orientation: "landscape",
@@ -57,8 +57,8 @@ function CreateTable() {
                 text: '<i class="fas fa-file-excel"></i><strong>Excel </strong>',
                 messageTop: '',
                 className: "text-dark btn-light",
-                title: "Usuarios",
-                filename: "Usuarios",
+                title: "Pacientes",
+                filename: "Pacientes",
                 exportOptions: {
                     columns: [0, 1, 2, 3, 4, 5, 6, 7],
                     modifier: {

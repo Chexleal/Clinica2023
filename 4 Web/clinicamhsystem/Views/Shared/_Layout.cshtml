@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/clinicamhsystem.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.css" />
+    @await RenderSectionAsync("Links", required: false)
 
 </head>
 <body>
@@ -20,14 +21,14 @@
             <b>Bienvenido Edgar Hernandez</b>
             <hr>
             <div class="botones btn-group-vertical  mt-2">
-                <a class="menu_bt" href="/Pacientes/Pacientes"><img class="menu_icon" src="~/img/paciente.png"> Pacientes</a>
-                <a class="menu_bt" href="#"><img class="menu_icon" src="~/img/logout.png">Consultas</a>
-                <a class="menu_bt" href="#"><img class="menu_icon" src="~/img/logout.png">pagar Consultas</a>
-                <a class="menu_bt " href="#"><img class="menu_icon" src="~/img/logout.png">Citas</a>
-                <a class="menu_bt " href="#"><img class="menu_icon" src="~/img/logout.png">Reportes</a>
-                <a class="menu_bt " href="#"><img class="menu_icon" src="~/img/logout.png">Servicios</a>
+                <a class="menu_bt" href="/Pacientes"><img class="menu_icon" src="~/img/paciente.png"> Pacientes</a>
+                <a class="menu_bt" href="/Consultas"><img class="menu_icon" src="~/img/logout.png">Consultas</a>
+                <a class="menu_bt" href="/Pagos"><img class="menu_icon" src="~/img/logout.png">pagar Consultas</a>
+                <a class="menu_bt " href="/Citas"><img class="menu_icon" src="~/img/logout.png">Citas</a>
+                <a class="menu_bt " href="/Reportes"><img class="menu_icon" src="~/img/logout.png">Reportes</a>
+                <a class="menu_bt " href="/Servicios"><img class="menu_icon" src="~/img/logout.png">Servicios</a>
                 <a class="menu_bt " href="/Usuarios"><img class="menu_icon" src="~/img/logout.png">Usuarios</a>
-                <a class="menu_bt " href="#"><img class="menu_icon" src="~/img/logout.png">Configuración</a>
+                <a class="menu_bt " href="/Config"><img class="menu_icon" src="~/img/logout.png">Configuración</a>
                 <a class="menu_bt logout " href="/"><img class="menu_icon" src="~/img/logout.png"> Cerrar Sesión</a>
             </div>
         </nav>

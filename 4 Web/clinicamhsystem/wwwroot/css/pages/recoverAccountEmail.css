@@ -1,0 +1,74 @@
+﻿body {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    background-image: url(/img/fondo.png);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+}
+
+.logo {
+    width: 350px;
+}
+
+::placeholder {
+    opacity: 0.6;
+}
+
+.form input[type="text"], .form input[type="text"] {
+    border-radius: 12px;
+    text-align: center;
+    display: block;
+    width: 250px;
+    border: 2px solid #66ADEA;
+    padding: 6px 6px;
+    margin: auto;
+    color: #3f4a55;
+    outline: none;
+    transition: 0.25s
+}
+
+    .form input[type="text"]:focus, .form input[type="text"]:focus {
+        width: 270px;
+        border: 2px solid #37bb6e;
+    }
+
+        .form input[type="text"]:focus::placeholder, .form input[type="text"]:focus::placeholder {
+            color: transparent;
+        }
+
+.form button[type="submit"] {
+    border-radius: 12px;
+    background-color: #66ADEA;
+    border: 0;
+    width: 100px;
+    height: 40px;
+    color: #3f4a55;
+}
+
+    .form button[type="submit"]:hover {
+        background: #37bb6e;
+        color: white
+    }
+
+.forgot {
+    display: block;
+    padding-bottom: 30px;
+    color: #6CB1FF;
+    text-decoration: none;
+}
+
+h1 {
+    font-size: 15px;
+    color: #072e5b;
+}
+
+a {
+    font-size: 12px;
+}
+
+#tittle {
+    font-size: 30px;
+    color: #072e5b;
+}

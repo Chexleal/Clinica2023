@@ -20,7 +20,8 @@ public static class WebIocExtensions
         //services.AddSingleton<IExampleServices, ExampleServices>();         
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         services.AddSingleton<IUserServices, UserServices>();
-
+        services.AddSingleton<IConsultaServices, ConsultaServices>();
+        services.AddSingleton<IPacienteServices, PacienteServices>();
         #endregion
 
 

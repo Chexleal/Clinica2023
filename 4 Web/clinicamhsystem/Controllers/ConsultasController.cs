@@ -54,20 +54,16 @@ namespace clinicaWeb.Controllers
 
         // POST: ConsultasController/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public ActionResult Create(Consulta consulta)
         {
             try
             {
                 _consultaServices.AddConsulta(consulta);
-                var consultas = _consultaServices.GetAll();
-                return View("Index", consultas);
             }
             catch
-            {
-                var consultas = _consultaServices.GetAll();
-                return View("Index", consultas);
+            {           
             }
+            return RedirectToAction("Index");
         }
 
         // GET: ConsultasController/Edit/5

@@ -38,7 +38,6 @@
         @foreach (var item in Model)
         {
             <tr>
-                <td> @Html.DisplayFor(modelItem => item.NoRegistro)</td>
                 <td>@Html.DisplayFor(modelItem => item.NombreUsuario)</td>
                 <td>@Html.DisplayFor(modelItem => item.Nombre)</td>
                 <td>@Html.DisplayFor(modelItem => item.Apellido)</td>
@@ -46,7 +45,6 @@
                 <td>@Html.DisplayFor(modelItem => item.Correo)</td>
                 <td>@Html.DisplayFor(modelItem => item.Dpi)</td>
                 <td>@Html.DisplayFor(modelItem => item.Profesion)</td>
-                <td>@Html.DisplayFor(modelItem => item.Remitido)</td>
                 <td>
                     @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
                     @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |

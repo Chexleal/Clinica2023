@@ -1,4 +1,4 @@
-﻿@model IEnumerable<ClinicaDomain.Consulta>
+﻿@model ConsultaViewModel
 
 
 @{
@@ -39,7 +39,6 @@
                 <th>Radiografias</th>
                 <th>Presion Arterial</th>
                 <th>Temperatura</th>
-                <th>No. de registro</th>
                 <th>Motivo de consulta</th>
                 <th>Diagnostico</th>
                 <th>Observaciones</th>
@@ -50,7 +49,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model)
+            @foreach (var item in Model.Consultas)
             {
                 <tr>
                     <td>@item.Fecha</td>
@@ -59,7 +58,6 @@
                     <td>@item.Radiografias</td>
                     <td>@item.PresionArterial</td>
                     <td>@item.Temperatura</td>
-                    <td>@item.NoRegistro</td>
                     <td>@item.MotivoConsulta</td>
                     <td>@item.Diagnostico</td>
                     <td>@item.Observaciones</td>
@@ -128,7 +126,7 @@
                             <div class="form-group">
                                 <label class="control-label">Paciente</label>
                                 <select name="Paciente" class="form-control">
-                                    @foreach (var paciente in ClinicaDomain.Consulta.getPaciente)
+                                    @foreach (var paciente in Model.Pacientes)
                                     {
                                         <option value="@paciente.Correo">@paciente.Direccion</option>
                                     }

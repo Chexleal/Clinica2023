@@ -30,6 +30,7 @@ namespace ClinicaServices
         {
             consulta.IdConsulta = Guid.NewGuid();
             consulta.Terminada = false;
+            consulta.BeforeSaveChanges();
             _dbContext.Consulta.Add(consulta);
             _dbContext.SaveChanges();
         }
@@ -67,7 +68,6 @@ namespace ClinicaServices
                 x.Diagnostico.Contains(input) ||
                 x.Fecha.ToString().Contains(input) ||
                 x.MotivoConsulta.Contains(input) ||
-                x.NoRegistro.Contains(input) ||
                 x.Observaciones.Contains(input) ||
                 x.Peso.Contains(input) ||
                 x.Pagada.ToString().Contains(input) ||
@@ -91,7 +91,6 @@ namespace ClinicaServices
                 consultaDb.Diagnostico = consulta.Diagnostico;
                 consultaDb.Fecha = consulta.Fecha;
                 consultaDb.MotivoConsulta = consulta.MotivoConsulta;
-                consultaDb.NoRegistro = consulta.NoRegistro;
                 consultaDb.Observaciones = consulta.Observaciones;
                 consultaDb.Pagada = consulta.Pagada;
                 consultaDb.Peso = consulta.Peso;

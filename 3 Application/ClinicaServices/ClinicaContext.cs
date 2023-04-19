@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using ClinicaDomain;
+﻿using ClinicaDomain;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace ClinicaServices;
 
@@ -35,11 +32,12 @@ public partial class ClinicaContext : DbContext
 
     public virtual DbSet<Usuario> Usuarios { get; set; }
 
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Cita>(entity =>
         {
-            entity.HasKey(e => e.IdCita).HasName("PK__Cita__6AEC3C09EE58D710");
+            entity.HasKey(e => e.IdCita).HasName("PK__Cita__6AEC3C097CEA9947");
 
             entity.Property(e => e.IdCita)
                 .ValueGeneratedNever()
@@ -52,16 +50,16 @@ public partial class ClinicaContext : DbContext
 
             entity.HasOne(d => d.IdPacienteNavigation).WithMany(p => p.Cita)
                 .HasForeignKey(d => d.IdPaciente)
-                .HasConstraintName("FK__Cita__id_pacient__2B3F6F97");
+                .HasConstraintName("FK__Cita__id_pacient__2C3393D0");
 
             entity.HasOne(d => d.IdUsuarioNavigation).WithMany(p => p.Cita)
                 .HasForeignKey(d => d.IdUsuario)
-                .HasConstraintName("FK__Cita__id_usuario__2C3393D0");
+                .HasConstraintName("FK__Cita__id_usuario__2D27B809");
         });
 
         modelBuilder.Entity<Consulta>(entity =>
         {
-            entity.HasKey(e => e.IdConsulta).HasName("PK__Consulta__6F53588B45F139E7");
+            entity.HasKey(e => e.IdConsulta).HasName("PK__Consulta__6F53588B6FB55DAE");
 
             entity.Property(e => e.IdConsulta)
                 .ValueGeneratedNever()
@@ -78,10 +76,6 @@ public partial class ClinicaContext : DbContext
                 .HasMaxLength(200)
                 .IsUnicode(false)
                 .HasColumnName("motivo_consulta");
-            entity.Property(e => e.NoRegistro)
-                .HasMaxLength(25)
-                .IsUnicode(false)
-                .HasColumnName("no_registro");
             entity.Property(e => e.Observaciones)
                 .HasMaxLength(200)
                 .IsUnicode(false)
@@ -108,12 +102,12 @@ public partial class ClinicaContext : DbContext
 
             entity.HasOne(d => d.IdPacienteNavigation).WithMany(p => p.Consulta)
                 .HasForeignKey(d => d.IdPaciente)
-                .HasConstraintName("FK__Consulta__id_pac__2F10007B");
+                .HasConstraintName("FK__Consulta__id_pac__300424B4");
         });
 
         modelBuilder.Entity<DetalleCobro>(entity =>
         {
-            entity.HasKey(e => e.IdDetalleCobro).HasName("PK__Detalle___2764DD4776474F68");
+            entity.HasKey(e => e.IdDetalleCobro).HasName("PK__Detalle___2764DD4706948581");
 
             entity.ToTable("Detalle_cobro");
 
@@ -135,16 +129,16 @@ public partial class ClinicaContext : DbContext
 
             entity.HasOne(d => d.IdConsultaNavigation).WithMany(p => p.DetalleCobros)
                 .HasForeignKey(d => d.IdConsulta)
-                .HasConstraintName("FK__Detalle_c__id_co__33D4B598");
+                .HasConstraintName("FK__Detalle_c__id_co__34C8D9D1");
 
             entity.HasOne(d => d.IdMotivoCobroNavigation).WithMany(p => p.DetalleCobros)
                 .HasForeignKey(d => d.IdMotivoCobro)
-                .HasConstraintName("FK__Detalle_c__id_mo__34C8D9D1");
+                .HasConstraintName("FK__Detalle_c__id_mo__35BCFE0A");
         });
 
         modelBuilder.Entity<DetalleReceta>(entity =>
         {
-            entity.HasKey(e => e.IdDetalleReceta).HasName("PK__Detalle___2C99ACD31E77479F");
+            entity.HasKey(e => e.IdDetalleReceta).HasName("PK__Detalle___2C99ACD3657294D0");
 
             entity.ToTable("Detalle_receta");
 
@@ -159,12 +153,12 @@ public partial class ClinicaContext : DbContext
 
             entity.HasOne(d => d.IdRecetaNavigation).WithMany(p => p.DetalleReceta)
                 .HasForeignKey(d => d.IdReceta)
-                .HasConstraintName("FK__Detalle_r__id_re__3A81B327");
+                .HasConstraintName("FK__Detalle_r__id_re__3B75D760");
         });
 
         modelBuilder.Entity<MotivoCobro>(entity =>
         {
-            entity.HasKey(e => e.IdMotivoCobro).HasName("PK__Motivo_c__A9C6114A424FA6F8");
+            entity.HasKey(e => e.IdMotivoCobro).HasName("PK__Motivo_c__A9C6114AD5B37C04");
 
             entity.ToTable("Motivo_cobro");
 
@@ -179,7 +173,7 @@ public partial class ClinicaContext : DbContext
 
         modelBuilder.Entity<Paciente>(entity =>
         {
-            entity.HasKey(e => e.IdPaciente).HasName("PK__Paciente__2C2C72BB2202E7AE");
+            entity.HasKey(e => e.IdPaciente).HasName("PK__Paciente__2C2C72BB3843A1F5");
 
             entity.ToTable("Paciente");
 
@@ -251,7 +245,7 @@ public partial class ClinicaContext : DbContext
 
         modelBuilder.Entity<Receta>(entity =>
         {
-            entity.HasKey(e => e.IdReceta).HasName("PK__Receta__11DB53AB808821FD");
+            entity.HasKey(e => e.IdReceta).HasName("PK__Receta__11DB53AB1367EF10");
 
             entity.Property(e => e.IdReceta)
                 .ValueGeneratedNever()
@@ -263,12 +257,12 @@ public partial class ClinicaContext : DbContext
 
             entity.HasOne(d => d.IdConsultaNavigation).WithMany(p => p.Receta)
                 .HasForeignKey(d => d.IdConsulta)
-                .HasConstraintName("FK__Receta__id_consu__37A5467C");
+                .HasConstraintName("FK__Receta__id_consu__38996AB5");
         });
 
         modelBuilder.Entity<RolDetalle>(entity =>
         {
-            entity.HasKey(e => e.IdRolDetalle).HasName("PK__Rol_deta__2B721F85493144C8");
+            entity.HasKey(e => e.IdRolDetalle).HasName("PK__Rol_deta__2B721F85E6A17CE6");
 
             entity.ToTable("Rol_detalle");
 
@@ -287,14 +281,16 @@ public partial class ClinicaContext : DbContext
 
             entity.HasOne(d => d.IdUsuarioNavigation).WithMany(p => p.RolDetalles)
                 .HasForeignKey(d => d.IdUsuario)
-                .HasConstraintName("FK__Rol_detal__id_us__267ABA7A");
+                .HasConstraintName("FK__Rol_detal__id_us__276EDEB3");
         });
 
         modelBuilder.Entity<Usuario>(entity =>
         {
-            entity.HasKey(e => e.IdUsuario).HasName("PK__Usuario__4E3E04AD9F1CC19E");
+            entity.HasKey(e => e.IdUsuario).HasName("PK__Usuario__4E3E04ADDFC08DEF");
 
             entity.ToTable("Usuario");
+
+            entity.HasIndex(e => e.NombreUsuario, "UQ__Usuario__D4D22D7402387FED").IsUnique();
 
             entity.Property(e => e.IdUsuario)
                 .ValueGeneratedNever()
@@ -327,11 +323,6 @@ public partial class ClinicaContext : DbContext
                 .HasMaxLength(25)
                 .IsUnicode(false)
                 .HasColumnName("nacionalidad");
-            entity.Property(e => e.NoRegistro)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("no_registro")
-                .UseIdentityColumn();
             entity.Property(e => e.Nombre)
                 .HasMaxLength(50)
                 .IsUnicode(false)
@@ -351,10 +342,6 @@ public partial class ClinicaContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("profesion");
-            entity.Property(e => e.Remitido)
-                .HasMaxLength(25)
-                .IsUnicode(false)
-                .HasColumnName("remitido");
             entity.Property(e => e.RespuestaSeg)
                 .HasMaxLength(50)
                 .IsUnicode(false)

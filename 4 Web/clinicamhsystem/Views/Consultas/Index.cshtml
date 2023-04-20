@@ -1,4 +1,4 @@
-﻿@model IEnumerable<ClinicaDomain.Consulta>
+﻿@model ConsultaViewModel
 
 
 @{
@@ -39,18 +39,17 @@
                 <th>Radiografias</th>
                 <th>Presion Arterial</th>
                 <th>Temperatura</th>
-                <th>No. de registro</th>
                 <th>Motivo de consulta</th>
                 <th>Diagnostico</th>
                 <th>Observaciones</th>
                 <th>Pagada</th>
                 <th>Total</th>
                 <th>Terminada</th>
-                @*<th>Acciones</th>*@
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model)
+            @foreach (var item in Model.Consultas)
             {
                 <tr>
                     <td>@item.Fecha</td>
@@ -59,7 +58,6 @@
                     <td>@item.Radiografias</td>
                     <td>@item.PresionArterial</td>
                     <td>@item.Temperatura</td>
-                    <td>@item.NoRegistro</td>
                     <td>@item.MotivoConsulta</td>
                     <td>@item.Diagnostico</td>
                     <td>@item.Observaciones</td>
@@ -68,7 +66,9 @@
                     <td>@item.Terminada</td>
                     <td>
                         <div class="options d-flex ">
+                            <a class="option" href="@Url.Action("Index","ContinuarConsulta",new{consultaId=item.IdConsulta})">Continuar</a>
                             <a class="option" href="/Usuarios/Detalles/@item.IdConsulta">Ver</a>
+
                             @*<a class="option" href="/Usuarios/Editar/@item.IdUsuario">Editar</a>*@
                             <a class="option" href="@Url.Action("Editar","Consultas",new{id = @item.IdConsulta}) ">Editar</a>
                             <form asp-action="Eliminar" asp-route-id="@item.IdConsulta">
@@ -128,7 +128,7 @@
                             <div class="form-group">
                                 <label class="control-label">Paciente</label>
                                 <select name="Paciente" class="form-control">
-                                    @foreach (var paciente in ClinicaDomain.Consulta.getPaciente)
+                                    @foreach (var paciente in Model.Pacientes)
                                     {
                                         <option value="@paciente.Correo">@paciente.Direccion</option>
                                     }

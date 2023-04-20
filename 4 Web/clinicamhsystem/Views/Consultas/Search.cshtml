@@ -22,7 +22,6 @@
 <table class="table">
     <thead>
         <tr>
-            <th>No. Registro</th>
             <th>Motivo Consulta</th>
             <th>Paciente</th>
             <th>Diagnostico</th>
@@ -36,7 +35,6 @@
         @foreach (var item in Model)
         {
             <tr>
-                <td> @Html.DisplayFor(modelItem => item.NoRegistro)</td>
                 <td>@Html.DisplayFor(modelItem => item.MotivoConsulta)</td>
                 <td>@Html.DisplayFor(modelItem => item.IdPaciente)</td>
                 <td>@Html.DisplayFor(modelItem => item.Diagnostico)</td>

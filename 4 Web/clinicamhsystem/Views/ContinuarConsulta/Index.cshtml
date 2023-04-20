@@ -1,0 +1,93 @@
+﻿@model ConsultaContinuarViewModel
+
+
+@{
+    ViewData["Title"] = "Continuar Consultas";
+}
+@section Links{
+    <link rel="stylesheet" href="~/css/pages/Consultas.css" asp-append-version="true" />
+}
+
+   
+<form action="@Url.Action("Guardar")">
+    <div class="card shadow-lg p-3 mb-5">
+        <div class="card-header bg-white">
+             <h3>@Model.Paciente.Nombre @Model.Paciente.Apellido</h3>
+        </div>
+        <div class="card-body align-content-center">
+
+     
+        <div class="row mt-4 ">
+            <div class="col col-sm col-md col-lg col-xl col-xxl">
+                    <label class="fw-bold">Genero: </label> <label>@Model.Paciente.Genero</label>
+            </div>
+            <div class="col col-sm col-md col-lg col-xl col-xxl">
+                <label class="fw-bold">Edad: </label> <label>@Model.Paciente.FechaNacimiento</label>
+            </div>
+            <div class="col col-sm col-md col-lg col-xl col-xxl">
+                    <label class="fw-bold">Alergias: </label> <label>@Model.Paciente.Alergias</label>
+            </div>
+
+        </div>
+        <div class="row mt-4">
+          
+            <div class="col col-sm col-md col-lg col-xl col-xxl">
+                    <label class="fw-bold d-inline">Peso: </label> <input class="form-control d-inline" value="@Model.Consulta.Peso" />
+            </div>
+            <div class="col col-sm col-md col-lg col-xl col-xxl">
+                <label class="fw-bold">Presión Arterial: </label> <input class="form-control"  value="@Model.Consulta.PresionArterial">
+            </div>
+            <div class="col col-sm col-md col-lg col-xl col-xxl">
+                    <label class="fw-bold">Temperatura: </label> <input class="form-control"  value="@Model.Consulta.Temperatura">
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col col-sm col-md col-lg col-xl col-xxl">
+                    <label class="fw-bold">Antecedentes: </label> <label>@Model.Paciente.Antecedentes</label>
+            </div>
+            <div class="col col-sm col-md col-lg col-xl col-xxl">
+                    <label class="fw-bold">Motivo Consulta: </label> <input class="form-control" value="@Model.Consulta.MotivoConsulta">
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="card shadow-lg p-3 mb-5 mt-5">
+        <div class="card-header bg-white">
+            <button id="btnHistorialPaciente" onclick="ShowHistorialModal('@Model.Paciente.IdPaciente')" class="btn btn-mini" title="Historial Paciente">
+            <i class="fa-solid fa-clock-rotate-left fa-bounce fa-xl" style="color: #2d8f77;"></i>
+            <p style="color: #2d8f77; font-weight: bold;">Historial</p>
+            </button>
+            <button id="btnReceta" onclick="ShowHistorialModal('@Model.Paciente.IdPaciente')" class="btn btn-mini" title="Receta">
+            <i class="fa-solid fa-file-signature fa-bounce fa-xl" style="color: #2d8f77;"></i>
+            <p style="color: #2d8f77; font-weight: bold;">Receta</p>
+        </button>
+        </div>
+        <div class="card-body">
+            <div class="row mt-2">
+                <div class="col col-sm col-md col-lg col-xl col-xxl">
+                    <label class="fw-bold" for="diagnostico">Diagnóstico: </label>
+                    <textarea class="form-control" id="diagnostico" name="Diagnostico"></textarea>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col col-sm col-md col-lg col-xl col-xxl">
+                    <label class="fw-bold" for="observaciones">Observaciones: </label>
+                    <textarea class="form-control" id="observaciones" name="Observaciones"></textarea>
+                </div>
+            </div>
+
+            <div class="row mt-5">
+                <div class="col col-sm col-md col-lg col-xl col-xxl">
+                    <button type="submit" class="btn btn-outline-dark mb-3">Guardar Cambios</button>
+                    <button type="submit" class="btn btn-dark mb-3">Terminar Consulta</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    </form>
+
+    @section Scripts{
+    <script src="~/js/pages/consultas.js" asp-append-version="true"></script>
+}

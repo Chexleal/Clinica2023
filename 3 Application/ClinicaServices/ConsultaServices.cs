@@ -11,9 +11,9 @@ namespace ClinicaServices
 {
     public interface IConsultaServices
     {
+        Consulta GetConsulta(Guid id);
         List<Consulta> GetAll();
         List<Consulta> SearchConsulta(string input);
-        Consulta? GetConsulta(Guid id);
         void AddConsulta(Consulta consulta);
         void UpdateConsulta(Consulta consulta);
         void DeleteConsulta(Guid id);
@@ -26,15 +26,7 @@ namespace ClinicaServices
             _dbContext = dbContext;
         }    
 
-        public void AddConsulta(Consulta consulta)
-        {
-            consulta.IdConsulta = Guid.NewGuid();
-            consulta.Terminada = false;
-            _dbContext.Consulta.Add(consulta);
-            _dbContext.SaveChanges();
-        }
-
-        public Consulta? GetConsulta(Guid id)
+        public Consulta GetConsulta(Guid id)
         {
             //return _dbContext.Usuarios.Find(id);
             return _dbContext.Consulta.FirstOrDefault(p => p.IdConsulta == id);
@@ -67,7 +59,6 @@ namespace ClinicaServices
                 x.Diagnostico.Contains(input) ||
                 x.Fecha.ToString().Contains(input) ||
                 x.MotivoConsulta.Contains(input) ||
-                x.NoRegistro.Contains(input) ||
                 x.Observaciones.Contains(input) ||
                 x.Peso.Contains(input) ||
                 x.Pagada.ToString().Contains(input) ||
@@ -91,7 +82,6 @@ namespace ClinicaServices
                 consultaDb.Diagnostico = consulta.Diagnostico;
                 consultaDb.Fecha = consulta.Fecha;
                 consultaDb.MotivoConsulta = consulta.MotivoConsulta;
-                consultaDb.NoRegistro = consulta.NoRegistro;
                 consultaDb.Observaciones = consulta.Observaciones;
                 consultaDb.Pagada = consulta.Pagada;
                 consultaDb.Peso = consulta.Peso;
@@ -103,6 +93,15 @@ namespace ClinicaServices
                 consultaDb.Total = consulta.Total;
                 _dbContext.SaveChanges();
             }
+        }
+
+        public void AddConsulta(Consulta consulta)
+        {
+            consulta.IdConsulta = Guid.NewGuid();
+            consulta.Terminada = false;
+            consulta.BeforeSaveChanges();
+            _dbContext.Consulta.Add(consulta);
+            _dbContext.SaveChanges();
         }
     }
 }

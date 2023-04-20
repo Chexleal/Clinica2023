@@ -7,11 +7,11 @@ public partial class Receta
 {
     public Guid IdReceta { get; set; }
 
-    public Guid? IdConsulta { get; set; }
+    public Guid IdConsulta { get; set; }
 
     public DateTime Fecha { get; set; }
 
     public virtual ICollection<DetalleReceta> DetalleReceta { get; } = new List<DetalleReceta>();
 
-    public virtual Consulta? IdConsultaNavigation { get; set; }
+    public virtual Consulta IdConsultaNavigation { get; set; }
 }

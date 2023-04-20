@@ -39,6 +39,7 @@ public class UserServices : IUserServices
         user.IdUsuario = $"{user.NombreUsuario.Trim().ToLower()}".ToGuid();
         user.EstadoEliminado = false;
         user.UsuarioActivo = true;
+        user.BeforeChanges();
         _dbContext.Usuarios.Add(user);
         _dbContext.SaveChanges();
     }
@@ -200,7 +201,6 @@ public class UserServices : IUserServices
             userDB.EstadoCivil = user.EstadoCivil;
             userDB.Profesion = user.Profesion;
             userDB.Nacionalidad = user.Nacionalidad;
-            userDB.Remitido = user.Remitido;
             userDB.Antecedentes = user.Antecedentes;
             userDB.TipoSange = user.TipoSange;
             _dbContext.SaveChanges();
@@ -246,10 +246,8 @@ public class UserServices : IUserServices
         x.EstadoCivil.Contains(input) ||
         x.Profesion.Contains(input) ||
         x.Nacionalidad.Contains(input) ||
-        x.Remitido.Contains(input) ||
         x.Antecedentes.Contains(input) ||
         x.TipoSange.Contains(input) ||
-        x.NoRegistro.ToString().Contains(input) ||
         x.Password.Contains(input)).ToList();
 
         //      foreach (var user in _dbContext.Usuarios.ToList())

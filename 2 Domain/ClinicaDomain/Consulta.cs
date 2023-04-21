@@ -35,7 +35,7 @@ public partial class Consulta
 
     public virtual ICollection<DetalleCobro> DetalleCobros { get; } = new List<DetalleCobro>();
 
-    public virtual Paciente IdPacienteNavigation { get; set; }
+    public Paciente PacienteInformacion { get; set; }
 
     public virtual ICollection<Receta> Receta { get; } = new List<Receta>();
 

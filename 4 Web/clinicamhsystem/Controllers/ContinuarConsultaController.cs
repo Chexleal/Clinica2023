@@ -22,24 +22,30 @@ namespace clinicaWeb.Controllers
         public ActionResult Index(Guid consultaId)
         {
             var consulta = _consultaServices.GetConsulta(consultaId);
-            var paciente = _pacienteServices.GetPacienteById(consulta.IdPaciente);
-            return View(new ConsultaContinuarViewModel { Consulta = consulta, Paciente=paciente });
+            //var paciente = _pacienteServices.GetPacienteById(consulta.IdPaciente);
+            return View(new ConsultaContinuarViewModel { Consulta = consulta/*, Paciente = paciente */});
         }
 
 
 
         // POST: ConsultasController/Create
         [HttpPost]
-        public ActionResult Create(Consulta consulta)
+        public ActionResult Guardar(Consulta consulta)
         {
-            try
-            {
-                _consultaServices.AddConsulta(consulta);
-            }
-            catch
-            {           
-            }
-            return RedirectToAction("Index");
+            var consultaDb = _consultaServices.GetConsulta(consulta.IdConsulta);
+
+            consultaDb.Diagnostico = consulta.Diagnostico;
+            consultaDb.MotivoConsulta = consulta.MotivoConsulta;
+            consultaDb.Observaciones = consulta.Observaciones;
+            consultaDb.Peso = consulta.Peso;
+            consultaDb.PresionArterial = consulta.PresionArterial;
+            consultaDb.Radiografias = consulta.Radiografias;
+            consultaDb.Temperatura = consulta.Temperatura;
+            consultaDb.Terminada = consulta.Terminada;
+
+            _consultaServices.UpdateConsulta(consulta);
+            if (consulta.Terminada) return RedirectToAction("Index", "Consultas");
+            return RedirectToAction("Index", new { consultaId =consulta.IdConsulta});
         }
 
         // GET: ConsultasController/Edit/5

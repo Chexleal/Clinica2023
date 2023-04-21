@@ -76,28 +76,14 @@ namespace ClinicaServices
 
         public void UpdateConsulta(Consulta consulta)
         {
-            var consultaDb = GetConsulta(consulta.IdConsulta);
-            if (consultaDb is not null)
-            {
-                consultaDb.Diagnostico = consulta.Diagnostico;
-                consultaDb.Fecha = consulta.Fecha;
-                consultaDb.MotivoConsulta = consulta.MotivoConsulta;
-                consultaDb.Observaciones = consulta.Observaciones;
-                consultaDb.Pagada = consulta.Pagada;
-                consultaDb.Peso = consulta.Peso;
-                consultaDb.PresionArterial = consulta.PresionArterial;
-                consultaDb.Radiografias = consulta.Radiografias;
-                consultaDb.Temperatura = consulta.Temperatura;
-                consultaDb.Terminada = consulta.Terminada;
-                consultaDb.TiempoDuracion = consulta.TiempoDuracion;
-                consultaDb.Total = consulta.Total;
-                _dbContext.SaveChanges();
-            }
+          consulta.BeforeSaveChanges();
+         _dbContext.SaveChanges();
         }
 
         public void AddConsulta(Consulta consulta)
         {
             consulta.IdConsulta = Guid.NewGuid();
+            consulta.Fecha = DateTime.Now;
             consulta.Terminada = false;
             consulta.BeforeSaveChanges();
             _dbContext.Consulta.Add(consulta);

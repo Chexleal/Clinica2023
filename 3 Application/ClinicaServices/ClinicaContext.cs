@@ -100,7 +100,7 @@ public partial class ClinicaContext : DbContext
                 .HasColumnType("decimal(15, 2)")
                 .HasColumnName("total");
 
-            entity.HasOne(d => d.IdPacienteNavigation).WithMany(p => p.Consulta)
+            entity.HasOne(d => d.PacienteInformacion).WithMany(p => p.Consulta)
                 .HasForeignKey(d => d.IdPaciente)
                 .HasConstraintName("FK__Consulta__id_pac__300424B4");
         });

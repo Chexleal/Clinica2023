@@ -203,6 +203,8 @@ public class UserServices : IUserServices
             userDB.Nacionalidad = user.Nacionalidad;
             userDB.Antecedentes = user.Antecedentes;
             userDB.TipoSange = user.TipoSange;
+
+            userDB.BeforeChanges();
             _dbContext.SaveChanges();
         }
     }

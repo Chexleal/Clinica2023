@@ -6,7 +6,6 @@
     <title>@ViewData["Title"] - Traumha</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/clinicamhsystem.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.css" />
     @await RenderSectionAsync("Links", required: false)
 
@@ -32,7 +31,7 @@
                 <a class="menu_bt logout " href="/"><img class="menu_icon" src="~/img/logout.png"> Cerrar Sesión</a>
             </div>
         </nav>
-        <div class="container mt-5" >
+        <div class="container mx-auto px-0 mt-5" >
             <main role="main" class="pb-3">
                 @RenderBody()
             </main>

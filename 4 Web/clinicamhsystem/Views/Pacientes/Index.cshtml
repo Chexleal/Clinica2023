@@ -14,59 +14,64 @@
 
     <h1>Pacientes</h1>
 
-    <div class="card card-body ">
-        <p>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
-                Agregar Paciente
-            </button>
-        </p>
-        <table id="tablePaciente" class="table table-responsive table-striped ">
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th>NoRegistro</th>
-                        <th>Nombre</th>
-                        <th>Apellido</th>
-                        <th>Dpi</th>
-                        <th>Edad</th>
-                        <th>Telefono</th>
-                        <th>Correo</th>
-                        <th>Direccion</th>
-                        <th>Tipo de Sange </th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                @foreach (var item in Model)
-                {
-                    <tr>
-                    <td><button class="option" onclick="ShowConsultaModal('@item.IdPaciente')">Generar consulta</button></td>
-                        <td>@item.NoRegistro</td>
-                        <td>@item.Nombre</td>
-                        <td>@item.Apellido</td>
-                        <td>@item.Dpi</td>
-                    @*    <td>@(DateTime.Now.Year - item.FechaNacimiento.Year)</td>*@
-                    <td>@(DateTime.Now.Year - item.FechaNacimiento.Year - ((DateTime.Now.Month < item.FechaNacimiento.Month || (DateTime.Now.Month == item.FechaNacimiento.Month && DateTime.Now.Day < item.FechaNacimiento.Day)) ? 1 : 0))</td>
-                        <td>@item.Telefono</td>
-                        <td>@item.Correo</td>
-                        <td>@item.Direccion</td>
-                        <td>@item.TipoSange</td>
-                        <td>
-                            <div class="options d-flex ">
-                                <a class="option" href="@Url.Action("Historial","Pacientes",new{id = item.IdPaciente}) ">Historial</a>
-                                <a class="option" href="/Pacientes/Detalles/@item.IdPaciente">Ver</a>
-                                @*<button class="option modal-editar" data-bs-toggle="modal" data-bs-target="#editModal" data-paciente="@JsonConvert.SerializeObject(item)">Editar</button>*@
-                                <button class="option" onclick="ShowEditModal('@item.IdPaciente')">Editar</button>
 
-                                <form asp-action="Eliminar" asp-route-id="@item.IdPaciente">
-                                    <button class="option" type="submit">Eliminar</button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+    <div class="card shadow-lg mt-5">
+        <div class="card-body">
+            <p>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+                    Agregar Paciente
+                </button>
+            </p>
+            <div class="table-responsive">
+                <table id="tablePaciente" class="table table-striped ">
+                    <thead class="table-dark">
+                        <tr>
+                            <th></th>
+                            <th class="">No Registro</th>
+                            <th class="">Nombre</th>
+                            <th class="">Apellido</th>
+                            <th class="">Dpi</th>
+                            <th class="">Edad</th>
+                            <th class="">Telefono</th>
+                            <th class="">Correo</th>
+                            <th class="">Direccion</th>
+                            <th>Tipo de Sangre</th>
+                            <th class="">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><button class="option" onclick="ShowConsultaModal('@item.IdPaciente')">Generar consulta</button></td>
+                            <td>@item.NoRegistro</td>
+                            <td>@item.Nombre</td>
+                            <td>@item.Apellido</td>
+                            <td>@item.Dpi</td>
+                            @*    <td>@(DateTime.Now.Year - item.FechaNacimiento.Year)</td>*@
+                            <td>@(DateTime.Now.Year - item.FechaNacimiento.Year - ((DateTime.Now.Month < item.FechaNacimiento.Month || (DateTime.Now.Month == item.FechaNacimiento.Month && DateTime.Now.Day < item.FechaNacimiento.Day)) ? 1 : 0))</td>
+                            <td>@item.Telefono</td>
+                            <td>@item.Correo</td>
+                            <td class="nowrap">@item.Direccion</td>
+                            <td>@item.TipoSange</td>
+                            <td>
+                                <div class="options d-flex ">
+                                    <a class="option" href="@Url.Action("Historial","Pacientes",new{id = item.IdPaciente}) ">Historial</a>
+                                    <a class="option" href="/Pacientes/Detalles/@item.IdPaciente">Ver</a>
+                                    @*<button class="option modal-editar" data-bs-toggle="modal" data-bs-target="#editModal" data-paciente="@JsonConvert.SerializeObject(item)">Editar</button>*@
+                                    <button class="option" onclick="ShowEditModal('@item.IdPaciente')">Editar</button>
+
+                                    <form asp-action="Eliminar" asp-route-id="@item.IdPaciente">
+                                        <button class="option" type="submit">Eliminar</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 

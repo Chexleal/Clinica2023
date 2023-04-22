@@ -1,5 +1,6 @@
-﻿@model IEnumerable<ClinicaDomain.Consulta>
-
+﻿@*@model IEnumerable<ClinicaDomain.Consulta>
+*@
+@model clinicaWeb.Models.ConsultasModel;
 
 @{
     ViewData["Title"] = "Consultas";
@@ -22,9 +23,9 @@
 </div>*@
 
 <div class="card card-body ">
-    <p>
+    @*<p>
         <a asp-action="Create" method="get">Crear Consulta</a>
-    </p>
+    </p>*@
     <p>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
             Agregar Consulta
@@ -50,7 +51,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model)
+            @foreach (var item in Model.Consulta)
             {
                 <tr>
                     <td>@item.Fecha</td>
@@ -128,9 +129,9 @@
                             <div class="form-group">
                                 <label class="control-label">Paciente</label>
                                 <select name="Paciente" class="form-control">
-                                    @foreach (var paciente in ClinicaDomain.Consulta.getPaciente)
+                                    @foreach (var paciente in Model.Paciente)
                                     {
-                                        <option value="@paciente.Correo">@paciente.Direccion</option>
+                                        <option value="@paciente.IdPaciente">@paciente.Nombre @paciente.Apellido - @paciente.Dpi</option>
                                     }
                                 </select>
                             </div>

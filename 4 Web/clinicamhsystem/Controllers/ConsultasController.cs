@@ -1,5 +1,6 @@
 ﻿using ClinicaDomain;
 using ClinicaServices;
+using clinicaWeb.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,21 +8,27 @@ namespace clinicaWeb.Controllers
 {
     public class ConsultasController : Controller
     {
-
-        private readonly IConsultaServices _consultaServices;
         private readonly IPacienteServices _pacienteServices;
+        private readonly IConsultaServices _consultaServices;
+        
 
-        public ConsultasController(IConsultaServices consultaServices)
+        public ConsultasController(IConsultaServices consultaServices, IPacienteServices pacienteServices)
         {
             _consultaServices = consultaServices;
+            _pacienteServices = pacienteServices;
         }
 
         // GET: UsuariosController
         public ActionResult Index()
         {
+            var pacientes = _pacienteServices.GetAll();
             var consultas = _consultaServices.GetAll();
-            //var pacientes = _pacienteServices.GetAll();
-            return View(consultas);
+            
+            ConsultasModel modelo = new ConsultasModel();
+
+            modelo.Paciente = pacientes;
+            modelo.Consulta = consultas;    
+            return View(modelo);
         }
 
         //GET: Usuarios/Search? input = t

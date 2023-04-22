@@ -8,8 +8,6 @@
     <link rel="stylesheet" href="~/css/pages/Usuarios.css" asp-append-version="true" />
 }
 
-<h1>Usuarios</h1>
-
 @*<div class="row">
     <form asp-action="Search" method="get">
         <div class="input-group">
@@ -22,10 +20,6 @@
 </div>*@
 
 <div class="card card-body ">
-    @*<p>
-        <a asp-action="Create" method="get">Crear usuario</a>
-    </p>
-    *@
     <p>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
            Agregar Usuario
@@ -36,7 +30,6 @@
             <tr>
                 <th>Usuario</th>
                 <th>Nombre</th>
-                <th>Apellido</th>
                 <th>Teléfono</th>
                 <th>Correo</th>
                 <th>Dpi</th>
@@ -49,8 +42,7 @@
             {
                 <tr>
                     <td>@item.NombreUsuario</td>
-                    <td>@item.Nombre</td>
-                    <td>@item.Apellido</td>
+                    <td>@item.Nombre @item.Apellido</td>
                     <td>@item.Telefono</td>
                     <td>@item.Correo</td>
                     <td>@item.Dpi</td>

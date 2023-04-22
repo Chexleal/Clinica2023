@@ -1,121 +1,54 @@
 ﻿@model IEnumerable<ClinicaDomain.Consulta>
 
+
 @{
     ViewData["Title"] = "Pagos";
 }
-
-<h1>Pagar consultas...</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-@*
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.IdConsulta)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IdPaciente)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Fecha)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Peso)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.TiempoDuracion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Radiografias)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PresionArterial)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Temperatura)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.NoRegistro)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.MotivoConsulta)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Diagnostico)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Observaciones)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Pagada)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Total)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Terminada)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.IdConsulta)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IdPaciente)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Fecha)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Peso)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TiempoDuracion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Radiografias)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PresionArterial)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Temperatura)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.NoRegistro)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.MotivoConsulta)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Diagnostico)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Observaciones)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Pagada)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Total)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Terminada)
-            </td>
-            <td>
-                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
-            </td>
-        </tr>
+@section Links{
+    <link rel="stylesheet" href="~/css/pages/Consultas.css" asp-append-version="true" />
 }
-    </tbody>
-</table>
-*@
+
+<div class="card card-body ">
+    <table id="tableUser" class="table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Peso</th>
+                <th>Radiografias</th>
+                <th>Presion Arterial</th>
+                <th>Temperatura</th>
+                <th>Motivo de consulta</th>
+                <th>Total</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Fecha</td>
+                    <td>@item.Peso</td>
+                    <td>@item.Radiografias</td>
+                    <td>@item.PresionArterial</td>
+                    <td>@item.Temperatura</td>
+                    <td>@item.MotivoConsulta</td>
+                    <td>@item.Total</td>
+                    <td>
+                        <div class="options d-flex ">
+                            <a class="option" href="@Url.Action("Index","Pagar",new{consultaId=item.IdConsulta})">Pagar</a>
+                            <a class="option" href="@Url.Action("Editar","Consultas",new{id = @item.IdConsulta}) ">Editar</a>
+                            <form asp-action="Eliminar" asp-route-id="@item.IdConsulta">
+                                <button class="option" type="submit">Eliminar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</div>
+
+@section Scripts{
+    <script src="~/js/pages/consultas.js" asp-append-version="true"></script>
+}

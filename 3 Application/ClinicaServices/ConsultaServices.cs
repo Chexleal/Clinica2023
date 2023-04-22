@@ -85,6 +85,7 @@ namespace ClinicaServices
             consulta.IdConsulta = Guid.NewGuid();
             consulta.Fecha = DateTime.Now;
             consulta.Terminada = false;
+            consulta.Pagada = false;
             consulta.BeforeSaveChanges();
             _dbContext.Consulta.Add(consulta);
             _dbContext.SaveChanges();

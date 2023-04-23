@@ -1,6 +1,4 @@
-﻿
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace ClinicaDomain;
@@ -9,27 +7,25 @@ public partial class Consulta
 {
     public Guid IdConsulta { get; set; }
 
-    public Guid? IdPaciente { get; set; }
+    public Guid IdPaciente { get; set; }
 
     public DateTime Fecha { get; set; }
 
-    public string Peso { get; set; } = null!;
+    public string Peso { get; set; }
 
     public DateTime TiempoDuracion { get; set; }
 
     public bool Radiografias { get; set; }
 
-    public string PresionArterial { get; set; } = null!;
+    public string PresionArterial { get; set; }
 
-    public string Temperatura { get; set; } = null!;
+    public string Temperatura { get; set; }
 
-    public string NoRegistro { get; set; } = null!;
+    public string MotivoConsulta { get; set; }
 
-    public string MotivoConsulta { get; set; } = null!;
+    public string Diagnostico { get; set; }
 
-    public string Diagnostico { get; set; } = null!;
-
-    public string Observaciones { get; set; } = null!;
+    public string Observaciones { get; set; }
 
     public bool Pagada { get; set; }
 
@@ -39,10 +35,17 @@ public partial class Consulta
 
     public virtual ICollection<DetalleCobro> DetalleCobros { get; } = new List<DetalleCobro>();
 
-    public virtual Paciente? IdPacienteNavigation { get; set; }
+    public Paciente PacienteInformacion { get; set; }
 
     public virtual ICollection<Receta> Receta { get; } = new List<Receta>();
 
-    public static ICollection<Paciente> getPaciente{ get; } = new List<Paciente>();
-    
+    public void BeforeSaveChanges()
+    {
+        Peso ??= string.Empty;
+        PresionArterial ??= string.Empty;
+        Temperatura ??= string.Empty;
+        MotivoConsulta ??= string.Empty;
+        Diagnostico ??= string.Empty;
+        Observaciones ??= string.Empty;
+    }
 }

@@ -11,9 +11,9 @@ namespace ClinicaServices
 {
     public interface IConsultaServices
     {
+        Consulta GetConsulta(Guid id);
         List<Consulta> GetAll();
         List<Consulta> SearchConsulta(string input);
-        Consulta? GetConsulta(Guid id);
         void AddConsulta(Consulta consulta);
         void UpdateConsulta(Consulta consulta);
         void DeleteConsulta(Guid id);
@@ -26,15 +26,7 @@ namespace ClinicaServices
             _dbContext = dbContext;
         }    
 
-        public void AddConsulta(Consulta consulta)
-        {
-            consulta.IdConsulta = $"{consulta.IdConsulta.ToString().Trim().ToLower()}".ToGuid();
-            consulta.Terminada = false;
-            _dbContext.Consulta.Add(consulta);
-            _dbContext.SaveChanges();
-        }
-
-        public Consulta? GetConsulta(Guid id)
+        public Consulta GetConsulta(Guid id)
         {
             //return _dbContext.Usuarios.Find(id);
             return _dbContext.Consulta.FirstOrDefault(p => p.IdConsulta == id);
@@ -67,7 +59,6 @@ namespace ClinicaServices
                 x.Diagnostico.Contains(input) ||
                 x.Fecha.ToString().Contains(input) ||
                 x.MotivoConsulta.Contains(input) ||
-                x.NoRegistro.Contains(input) ||
                 x.Observaciones.Contains(input) ||
                 x.Peso.Contains(input) ||
                 x.Pagada.ToString().Contains(input) ||
@@ -85,24 +76,18 @@ namespace ClinicaServices
 
         public void UpdateConsulta(Consulta consulta)
         {
-            var consultaDb = GetConsulta(consulta.IdConsulta);
-            if (consultaDb is not null)
-            {
-                consultaDb.Diagnostico = consulta.Diagnostico;
-                consultaDb.Fecha = consulta.Fecha;
-                consultaDb.MotivoConsulta = consulta.MotivoConsulta;
-                consultaDb.NoRegistro = consulta.NoRegistro;
-                consultaDb.Observaciones = consulta.Observaciones;
-                consultaDb.Pagada = consulta.Pagada;
-                consultaDb.Peso = consulta.Peso;
-                consultaDb.PresionArterial = consulta.PresionArterial;
-                consultaDb.Radiografias = consulta.Radiografias;
-                consultaDb.Temperatura = consulta.Temperatura;
-                consultaDb.Terminada = consulta.Terminada;
-                consultaDb.TiempoDuracion = consulta.TiempoDuracion;
-                consultaDb.Total = consulta.Total;
-                _dbContext.SaveChanges();
-            }
+          consulta.BeforeSaveChanges();
+         _dbContext.SaveChanges();
+        }
+
+        public void AddConsulta(Consulta consulta)
+        {
+            consulta.IdConsulta = Guid.NewGuid();
+            consulta.Fecha = DateTime.Now;
+            consulta.Terminada = false;
+            consulta.BeforeSaveChanges();
+            _dbContext.Consulta.Add(consulta);
+            _dbContext.SaveChanges();
         }
     }
 }

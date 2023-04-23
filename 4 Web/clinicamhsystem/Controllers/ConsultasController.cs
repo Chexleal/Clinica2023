@@ -1,4 +1,5 @@
 ﻿using ClinicaDomain;
+using clinicamhsystem.Models;
 using ClinicaServices;
 using clinicaWeb.Models;
 using Microsoft.AspNetCore.Http;
@@ -23,12 +24,6 @@ namespace clinicaWeb.Controllers
         {
             var pacientes = _pacienteServices.GetAll();
             var consultas = _consultaServices.GetAll();
-            
-            ConsultasModel modelo = new ConsultasModel();
-
-            modelo.Paciente = pacientes;
-            modelo.Consulta = consultas;    
-            return View(modelo);
         }
 
         //GET: Usuarios/Search? input = t
@@ -61,20 +56,16 @@ namespace clinicaWeb.Controllers
 
         // POST: ConsultasController/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public ActionResult Create(Consulta consulta)
         {
             try
             {
                 _consultaServices.AddConsulta(consulta);
-                var consultas = _consultaServices.GetAll();
-                return View("Index", consultas);
             }
             catch
-            {
-                var consultas = _consultaServices.GetAll();
-                return View("Index", consultas);
+            {           
             }
+            return RedirectToAction("Index");
         }
 
         // GET: ConsultasController/Edit/5

@@ -29,9 +29,9 @@ public class PacienteServices : IPacienteServices
 
 			var pacienteExsitente = _dbContext.Pacientes.FirstOrDefault(x => x.IdPaciente == paciente.IdPaciente && !x.EstadoEliminado);
 			if (pacienteExsitente is not null) return 2;
-            paciente.IdPaciente = $"{paciente.Nombre.Trim().ToLower()}".ToGuid();
+            paciente.IdPaciente = $"{paciente.Nombre.Trim().ToLower()}|{paciente.Apellido.Trim().ToLower()}".ToGuid();
             paciente.EstadoEliminado = false;
-			paciente.NoRegistro = "1";
+            paciente.BeforeSaveChanges();
             _dbContext.Pacientes.Add(paciente);
             _dbContext.SaveChanges();
 			return 1;
@@ -47,7 +47,7 @@ public class PacienteServices : IPacienteServices
         return _dbContext.Pacientes.FirstOrDefault(p => p.IdPaciente == id);
     }
 
-    public List<Paciente>? GetAll()
+    public List<Paciente> GetAll()
 	{
         return _dbContext.Pacientes.Where(x => !x.EstadoEliminado).ToList();
 	}
@@ -72,6 +72,7 @@ public class PacienteServices : IPacienteServices
             pacienteDB.Remitido = paciente.Remitido;
             pacienteDB.Antecedentes = paciente.Antecedentes;
             pacienteDB.TipoSange = paciente.TipoSange;
+            pacienteDB.BeforeSaveChanges();
             _dbContext.SaveChanges();
         }
     }

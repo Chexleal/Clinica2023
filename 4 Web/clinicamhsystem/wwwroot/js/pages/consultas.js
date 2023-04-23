@@ -8,7 +8,7 @@ $(document).ready(function () {
 });
 
 function CreateTable() {
-    $('#tableUser').DataTable({
+    $('#table').DataTable({
         "autoWidth": true,
         "ordering": true,
         "lengthChange": true,

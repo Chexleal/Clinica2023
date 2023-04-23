@@ -7,9 +7,9 @@ public partial class DetalleReceta
 {
     public Guid IdDetalleReceta { get; set; }
 
-    public Guid? IdReceta { get; set; }
+    public Guid IdReceta { get; set; }
 
-    public string Descripcion { get; set; } = null!;
+    public string Descripcion { get; set; }
 
-    public virtual Receta? IdRecetaNavigation { get; set; }
+    public virtual Receta IdRecetaNavigation { get; set; }
 }

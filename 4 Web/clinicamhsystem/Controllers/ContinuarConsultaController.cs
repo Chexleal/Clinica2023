@@ -10,12 +10,14 @@ namespace clinicaWeb.Controllers
     {
 
         private readonly IConsultaServices _consultaServices;
+        private readonly IRecetaServices _recetaServices;
         private readonly IPacienteServices _pacienteServices;
 
-        public ContinuarConsulta(IConsultaServices consultaServices, IPacienteServices pacienteServices)
+        public ContinuarConsulta(IConsultaServices consultaServices, IPacienteServices pacienteServices, IRecetaServices recetaServices)
         {
             _consultaServices = consultaServices;
             _pacienteServices = pacienteServices;
+            _recetaServices = recetaServices;
         }
 
 
@@ -47,6 +49,40 @@ namespace clinicaWeb.Controllers
             if (consulta.Terminada) return RedirectToAction("Index", "Consultas");
             return RedirectToAction("Index", new { consultaId =consulta.IdConsulta});
         }
+
+        [HttpPost]
+        public ActionResult GuardarReceta(Receta receta)
+        {
+            var updReceta = _recetaServices.GetByConsulta(receta.IdConsulta);
+            if (updReceta is null)
+            {
+                var recetaCreate = new Receta()
+                {
+                    Descripcion = receta.Descripcion,
+                    IdConsulta = receta.IdConsulta
+                };
+                _recetaServices.Create(recetaCreate);
+            }
+            else
+            {
+                updReceta.Descripcion = receta.Descripcion;
+                _recetaServices.Update(receta);
+            }
+
+            return RedirectToAction("Index", new { consultaId = receta.IdConsulta });
+        }
+
+        [HttpGet]
+        public void Descargar(Guid consultaId)
+        {
+            var receta = _recetaServices.GetByConsulta(consultaId);
+            if (receta is null)
+            {
+              // LOGICA PARA DESCARGAR
+            }
+        }
+
+
 
         // GET: ConsultasController/Edit/5
         public ActionResult Editar(Guid id)

@@ -1,4 +1,5 @@
 ﻿using ClinicaDomain;
+using Microsoft.EntityFrameworkCore;
 using PaaS.Framework.Utils.Extensions;
 using ServiceStack;
 using System;
@@ -21,9 +22,11 @@ namespace ClinicaServices
     public class ConsultaServices : IConsultaServices
     {
         private readonly ClinicaContext _dbContext;
-        public ConsultaServices(ClinicaContext dbContext)
+        private readonly IRecetaServices _recetaServices;
+        public ConsultaServices(ClinicaContext dbContext, IRecetaServices recetaServices)
         {
             _dbContext = dbContext;
+            _recetaServices = recetaServices;
         }    
 
         public Consulta GetConsulta(Guid id)
@@ -88,6 +91,8 @@ namespace ClinicaServices
             consulta.BeforeSaveChanges();
             _dbContext.Consulta.Add(consulta);
             _dbContext.SaveChanges();
+
+            _recetaServices.Create(new Receta { IdConsulta = consulta.IdConsulta });
         }
     }
 }

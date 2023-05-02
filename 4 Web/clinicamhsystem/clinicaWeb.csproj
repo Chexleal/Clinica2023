@@ -23,4 +23,11 @@
     <ProjectReference Include="..\..\3 Application\ClinicaServices\ClinicaServices.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="Views\Consultas\_Editar.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

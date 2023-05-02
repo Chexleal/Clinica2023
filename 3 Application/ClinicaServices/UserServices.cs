@@ -21,7 +21,7 @@ public interface IUserServices
     Usuario? GetUser(Guid id);
     Usuario? GetUserByName(string userName);
     bool CheckEmails(string email, string emailConfirmed);
-    bool UpdatePassword(string newPassword, string newPasswordConfirmed, string userName);
+    bool CheckNewPassword(string newPassword, string newPasswordConfirmed, string userName);
     void DeleteUser(Guid id);
     void UpdateUser(Usuario user);
     void SetActive(Guid id, bool state);
@@ -65,7 +65,7 @@ public class UserServices : IUserServices
 
         // Send an email to the user with instructions to reset their password
         string fromAddress = "emrivera2001@gmail.com";
-        string fromPassword = "vmdmrvksvawwkkzp";
+        string fromPassword = "nopass";
         string toAddress = email;
         string subject = "Password reset for your account";
         string body = "<html>" +
@@ -162,7 +162,7 @@ public class UserServices : IUserServices
 
     }
 
-    public bool UpdatePassword(string newPassword, string newPasswordConfirmed, string userName)
+    public bool CheckNewPassword(string newPassword, string newPasswordConfirmed, string userName)
     {
         bool checkedPassword = newPassword.Equals(newPasswordConfirmed);
         var user = _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == userName);

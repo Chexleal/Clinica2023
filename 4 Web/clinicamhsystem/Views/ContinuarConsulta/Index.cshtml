@@ -1,6 +1,7 @@
 ﻿@model ConsultaContinuarViewModel
 @using ClinicaDomain
 @using Newtonsoft.Json
+@using ClinicaInfrastructure
 @{
     ViewData["Title"] = "Continuar Consultas";
 }
@@ -22,7 +23,7 @@
                     <label class="fw-bold">Genero: </label> <label>@Model.Consulta.PacienteInformacion.Genero</label>
                 </div>
                 <div class="col col-sm col-md col-lg col-xl col-xxl">
-                    <label class="fw-bold">Edad: </label> <label>@Model.Consulta.PacienteInformacion.FechaNacimiento</label>
+                    <label class="fw-bold">Edad: </label> <label>@DateManager.GetAge(Model.Consulta.PacienteInformacion.FechaNacimiento) </label>
                 </div>
                 <div class="col col-sm col-md col-lg col-xl col-xxl">
                     <label class="fw-bold">Alergias: </label> <label>@Model.Consulta.PacienteInformacion.Alergias</label>

@@ -70,7 +70,6 @@ public partial class ClinicaContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("diagnostico");
             entity.Property(e => e.Fecha)
-                .HasColumnType("date")
                 .HasColumnName("fecha");
             entity.Property(e => e.IdPaciente).HasColumnName("id_paciente");
             entity.Property(e => e.MotivoConsulta)

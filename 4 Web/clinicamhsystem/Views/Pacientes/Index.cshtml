@@ -9,34 +9,37 @@
     <link rel="stylesheet" href="~/css/pages/Usuarios.css" asp-append-version="true" />
 }
 
-    <partial name="~/Views/Shared/_modalEdit.cshtml" />
-    <partial name="Partials/_modalCrear.cshtml" />
-    <partial name="Partials/_modalCrearConsulta.cshtml" />
-    <div class="card shadow-lg mt-5">
-        <div class="card-body">
-            <p>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
-                    Agregar Paciente
-                </button>
-            </p>
-            <div class="table-responsive">
-                <table id="tablePaciente" class="table table-striped ">
-                    <thead class="table-dark">
-                        <tr>
-                            <th></th>
-                            <th class="">No Registro</th>
-                            <th class="">Nombre</th>
-                            <th class="">Apellido</th>
-                            <th class="">Dpi</th>
-                            <th class="">Edad</th>
-                            <th class="">Telefono</th>
-                            <th class="">Correo</th>
-                            <th class="">Direccion</th>
-                            <th>Tipo de Sangre</th>
-                            <th class="">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+<partial name="~/Views/Shared/_modalEdit.cshtml" />
+<partial name="Partials/_modalCrear.cshtml" />
+<partial name="Partials/_modalCrearConsulta.cshtml" />
+
+
+
+<div class="card shadow-lg mt-5">
+    <div class="card-body">
+        <p>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+                Agregar Paciente
+            </button>
+        </p>
+        <div class="table-responsive">
+            <table id="tablePaciente" class="table table-striped ">
+                <thead class="table-dark">
+                    <tr>
+                        <th></th>
+                        <th>No Registro</th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Dpi</th>
+                        <th>Edad</th>
+                        <th>Telefono</th>
+                        <th>Correo</th>
+                        <th>Direccion</th>
+                        <th>Tipo de Sange</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
                     @foreach (var item in Model)
                     {
                         <tr>
@@ -45,7 +48,9 @@
                             <td>@item.Nombre</td>
                             <td>@item.Apellido</td>
                             <td>@item.Dpi</td>
-                            @*    <td>@(DateTime.Now.Year - item.FechaNacimiento.Year)</td>*@
+
+                            @*<td>@(DateTime.Now.Year - item.FechaNacimiento.Year - ((DateTime.Now.Month < item.FechaNacimiento.Month || (DateTime.Now.Month == item.FechaNacimiento.Month && DateTime.Now.Day < item.FechaNacimiento.Day)) ? 1 : 0))</td>
+<td>@(DateTime.Now.Year - item.FechaNacimiento.Year)</td>*@
                             <td>@DateManager.GetAge(item.FechaNacimiento)</td>
                             <td>@item.Telefono</td>
                             <td>@item.Correo</td>
@@ -55,7 +60,6 @@
                                 <div class="options d-flex ">
                                     <a class="option" href="@Url.Action("Historial","Pacientes",new{id = item.IdPaciente}) ">Historial</a>
                                     <a class="option" href="/Pacientes/Detalles/@item.IdPaciente">Ver</a>
-                                    @*<button class="option modal-editar" data-bs-toggle="modal" data-bs-target="#editModal" data-paciente="@JsonConvert.SerializeObject(item)">Editar</button>*@
                                     <button class="option" onclick="ShowEditModal('@item.IdPaciente')">Editar</button>
 
                                     <form asp-action="Eliminar" asp-route-id="@item.IdPaciente">
@@ -68,121 +72,20 @@
                 </tbody>
             </table>
         </div>
-    </div>
-</div>
 
 
-<!-- Modal Editar Paciente-->
-<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Editar Paciente</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                @*await Html.PartialAsync("_Editar")*@
-                <form id="editar" asp-action="Editar" method="POST">
-                    <div class="form-group">
-                        <label class="control-label">Nombre</label>
-                        <input name="Nombre" id="Nombre" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Apellido</label>
-                        <input name="Apellido" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Dpi</label>
-                        <input name="Dpi" id="Dpi" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Fecha de nacimiento</label>
-                        <input name="item.FechaNacimiento" type="date" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Genero</label>
-                        <input name="Genero" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Teléfono</label>
-                        <input name="Telefono" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Correo</label>
-                        <input name="Correo" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Direccion</label>
-                        <input name="Direccion" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Alergias</label>
-                        <input name="Alergias" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Estado civil</label>
-                        <input name="EstadoCivil" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Profesion</label>
-                        <input name="Profesion" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Nacionalidad</label>
-                        <input name="Nacionalidad" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Remitido por</label>
-                        <input name="Remitido" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Antecedentes</label>
-                        <input name="Antecedentes" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Tipo de sangre</label>
-                        <input name="TipoSange" class="form-control" />
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="submit" class="btn btn-primary" form="editar">Guardar</button>
-            </div>
-        </div>
-    </div>
-</div>
 
-@section Scripts{
-    <script src="~/js/pages/pacientes.js" asp-append-version="true"></script>
-    <script>
-        let urls = {
-            getPaciente: "@Url.Action("GetPaciente", "Pacientes")",
+        @section Scripts{
+            <script src="~/js/pages/pacientes.js" asp-append-version="true"></script>
+            <script>
+                let urls = {
+                    getPaciente: "@Url.Action("GetPaciente", "Pacientes")",
+                }
+
+                $(document).ready(function () {
+                    $(".modal-editar").click(function () {
+                        var paciente = JSON.parse($(this).data("paciente"));
+                    });
+                });
+            </script>
         }
-
-        $(document).ready(function () {
-            $(".modal-editar").click(function () {
-                var paciente = JSON.parse($(this).data("paciente"));
-
-                $('#editModal #Nombre').val(paciente.Nombre);
-                $('#editModal #Apellido').text(paciente.Nombre);
-                $('#editModal #Dpi').text(paciente.Nombre);
-                $('#editModal #item.FechaNacimiento').text(paciente.Nombre);
-                $('#editModal #Genero').text(paciente.Nombre);
-                $('#editModal #Telefono').text(paciente.Nombre);
-                $('#editModal #Correo').text(paciente.Nombre);
-                $('#editModal #Direccion').text(paciente.Nombre);
-                $('#editModal #Alergias').text(paciente.Nombre);
-                $('#editModal #EstadoCivil').text(paciente.Nombre);
-                $('#editModal #Profesion').text(paciente.Nombre);
-                $('#editModal #Nacionalidad').text(paciente.Nombre);
-                $('#editModal #Remitido').text(paciente.Nombre);
-                $('#editModal #Antecedentes').text(paciente.Nombre);
-                $('#editModal #TipoSangre').text(paciente.Nombre);
-
-                // Abrir el modal
-                $("#editModal").modal("show");
-            });
-        });
-    </script>
-}

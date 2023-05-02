@@ -17,6 +17,8 @@ public partial class DetalleCobro
 
     public string Producto { get; set; }
 
+    public int Cantidad { get; set; }
+
     public virtual Consulta IdConsultaNavigation { get; set; }
 
     public virtual MotivoCobro IdMotivoCobroNavigation { get; set; }

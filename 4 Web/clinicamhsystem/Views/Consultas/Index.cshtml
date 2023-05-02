@@ -10,6 +10,46 @@
     <link rel="stylesheet" href="~/css/pages/Consultas.css" asp-append-version="true" />
 }
 
+@*
+    <div class="card w-100 shadow-lg mt-5">
+        <p>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+                Agregar Consulta
+            </button>
+        </p>
+        <div class="card-body">
+            <div class=" table-responsive ">
+                <table id="table" class="table table-striped ">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>Motivo de consulta</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var item in Model.Consultas.Where(x => !x.Terminada))
+                    {
+                        <tr>
+                            <td>@item.Fecha.ToString("d")</td>
+                            <td>@item.PacienteInformacion.Nombre</td>
+                            <td>@item.PacienteInformacion.Apellido</td>
+                            <td>@item.MotivoConsulta</td>
+                            <td>
+                                <div class="options d-flex ">
+                                    <a class="option" href="@Url.Action("Index","ContinuarConsulta",new{consultaId=item.IdConsulta})">Continuar</a>
+                                    <a class="option" href="/Consultas/Detalles/@item.IdConsulta">Ver</a>
+
+                            @*<a class="option" href="/Usuarios/Editar/@item.IdUsuario">Editar</a>*@
+                            <a class="option" href="@Url.Action("Editar","Consultas",new{id = @item.IdConsulta}) ">Editar</a>
+                            <form asp-action="Eliminar" asp-route-id="@item.IdConsulta">
+                                <button class="option" type="submit">Eliminar</button>
+                            </form>
+                            @*
+                            @if (item.Terminada == false)
+*@
 @*<partial name="~/Views/Shared/_modalEdit.cshtml" />
 <partial name="Partials/_modalCrear.cshtml" />
 <partial name="Partials/_modalCrearConsulta.cshtml" />*@
@@ -90,6 +130,26 @@
                                     <input type="hidden" value="true" name="state" />
                                     <button class="option" type="submit">Activar</button>
                                 </form>
+@*
+                            }
+                        *@
+                        </div>
+                    </td>
+                    @*<td>
+                <button class="btn" type="button" id="rowMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                ...
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="/Usuarios/Detalles/@item.IdUsuario">Ver</a>
+                <a class="dropdown-item" href="/Usuarios/Editar/@item.IdUsuario">Editar</a>
+                <form asp-action="Eliminar" asp-route-id="@item.IdUsuario">
+                <button class="dropdown-item" type="submit">Eliminar</button>
+                </form>
+                <form asp-action="Desactivar" asp-route-id="@item.IdUsuario">
+                <button class="dropdown-item" type="submit">Desactivar</button>
+                </form>
+
+*@
                             }*@
                         </div>
                     </td>

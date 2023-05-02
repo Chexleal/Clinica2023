@@ -11,7 +11,6 @@
 });
 
 function ShowHistorialModal(consultas) {
-    console.log(consultas);
     $('#loading').show();
     $("#table > tbody").empty();
 
@@ -30,4 +29,11 @@ function ShowHistorialModal(consultas) {
     });
     $("#modalConsulta").modal('show');
     $('#loading').hide();
+}
+
+function ShowReceta(/*detail,id*/) {
+
+    $("#modalReceta").modal('show');
+    //$('#descripcionReceta').val(detail);
+    //$('#idConsulta').val(id);
 }

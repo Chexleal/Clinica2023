@@ -1,5 +1,6 @@
 ﻿using ClinicaDomain;
-using iText.Html2pdf;
+//using iText.Html2pdf;
+//using Microsoft.EntityFrameworkCore;
 using PaaS.Framework.Utils.Extensions;
 using ServiceStack;
 using System;
@@ -23,9 +24,11 @@ namespace ClinicaServices
     public class ConsultaServices : IConsultaServices
     {
         private readonly ClinicaContext _dbContext;
-        public ConsultaServices(ClinicaContext dbContext)
+        private readonly IRecetaServices _recetaServices;
+        public ConsultaServices(ClinicaContext dbContext, IRecetaServices recetaServices)
         {
             _dbContext = dbContext;
+            _recetaServices = recetaServices;
         }    
 
         public Consulta GetConsulta(Guid id)
@@ -92,8 +95,7 @@ namespace ClinicaServices
             consulta.Terminada = false;
             consulta.BeforeSaveChanges();
             _dbContext.Consulta.Add(consulta);
-            _dbContext.SaveChanges();
-            
+            _dbContext.SaveChanges();           
         }
 
         public void createPdf(string inHtmlPath, string toPdfPath)
@@ -105,6 +107,10 @@ namespace ClinicaServices
 
                 HtmlConverter.ConvertToPdf(htmlDocument, pdf, properties);
             }
+
+
+            _recetaServices.Create(new Receta { IdConsulta = consulta.IdConsulta });
+
         }
     }
 }

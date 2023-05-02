@@ -1,4 +1,5 @@
 ﻿@using Newtonsoft.Json;
+@using ClinicaInfrastructure;
 @model IEnumerable<ClinicaDomain.Paciente>
 
 @{
@@ -45,7 +46,7 @@
                             <td>@item.Apellido</td>
                             <td>@item.Dpi</td>
                             @*    <td>@(DateTime.Now.Year - item.FechaNacimiento.Year)</td>*@
-                            <td>@(DateTime.Now.Year - item.FechaNacimiento.Year - ((DateTime.Now.Month < item.FechaNacimiento.Month || (DateTime.Now.Month == item.FechaNacimiento.Month && DateTime.Now.Day < item.FechaNacimiento.Day)) ? 1 : 0))</td>
+                            <td>@DateManager.GetAge(item.FechaNacimiento)</td>
                             <td>@item.Telefono</td>
                             <td>@item.Correo</td>
                             <td class="nowrap">@item.Direccion</td>

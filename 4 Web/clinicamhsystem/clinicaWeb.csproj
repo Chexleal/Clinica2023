@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\1 Infrastructure\ClinicaInfrastructure\ClinicaInfrastructure.csproj" />
     <ProjectReference Include="..\..\3 Application\ClinicaServices\ClinicaServices.csproj" />
   </ItemGroup>
 

@@ -43,7 +43,7 @@ namespace clinicamhsystem.Controllers
             var existingUser = _userServices.CheckUserExist(userName);
             if (existingUser)
             {
-                Usuario userInfo = _userServices.GetUserByName(userName);
+                Usuario? userInfo = _userServices.GetUserByName(userName);
                 ViewData["username"] = userInfo.NombreUsuario.ToString();
                 ViewData["securityQuestion"] = userInfo.PreguntaSeg.ToString(); // usa el servicio para recuperar la pregunta de seguridad del usuario, y se la asigna a un ViewData
                 ViewData["userEmail"] = userInfo.Correo.ToString();
@@ -64,12 +64,12 @@ namespace clinicamhsystem.Controllers
 
         }
 
-        public IActionResult CheckAnswer(string answer)
+        public IActionResult CheckAnswer(string userName,string answer)
         {
-
             string? preguntaSegCheck = _userServices.CheckAnswer(answer);
             if (preguntaSegCheck != null)
-                return Content("alert('Respuesta Correcta');", "application/javascript"); // Si la respuesta es correcta
+                // return View("NewPassword"); // Si la respuesta es correcta
+                return Content($"alert('Respuesta correcta');", "application/javascript");
             else
                 return Content("alert('Respuesta Incorrecta');", "application/javascript"); // Si la respuesta es incorrecta
 
@@ -99,12 +99,12 @@ namespace clinicamhsystem.Controllers
         public IActionResult CrearNuevaClave(string newPassword, string newPasswordConfirmed)
         {
             ViewData["userName"] = Request.Query["userName"];
-            string userName = ViewData["userName"].ToString();
-            bool newPAssword = _userServices.UpdatePassword(newPassword, newPasswordConfirmed, userName);
-            if (newPAssword)
+            string? userName = ViewData["userName"].ToString();
+            bool checkPassword = _userServices.CheckNewPassword(newPassword, newPasswordConfirmed, userName);
+            if (checkPassword)
                 return Content("alert('Contrase;a igual y existe usuario');", "application/javascript"); // Si la respuesta es correcta
             else
-                return Content("alert('contrase;a distinta');", "application/javascript"); // Si la respuesta es incorrecta
+                return Content($"alert('contrase;a distinta' usuario: {userName.ToString()});", "application/javascript"); // Si la respuesta es incorrecta
         }
 
         public IActionResult RecuperarCuentaEmail(string userName)

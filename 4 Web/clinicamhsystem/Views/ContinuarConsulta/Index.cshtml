@@ -1,11 +1,13 @@
 ﻿@model ConsultaContinuarViewModel
 @using ClinicaDomain
 @using Newtonsoft.Json
+@using ClinicaInfrastructure
 @{
     ViewData["Title"] = "Continuar Consultas";
 }
 
 <partial name="Partials/_historialTabla.cshtml" />
+<partial name="Partials/_modalReceta.cshtml" />
 
 <form id="formCST" method="post" action="@Url.Action("Guardar")">
     <input hidden name="IdConsulta" value="@Model.Consulta.IdConsulta" />
@@ -21,7 +23,7 @@
                     <label class="fw-bold">Genero: </label> <label>@Model.Consulta.PacienteInformacion.Genero</label>
                 </div>
                 <div class="col col-sm col-md col-lg col-xl col-xxl">
-                    <label class="fw-bold">Edad: </label> <label>@Model.Consulta.PacienteInformacion.FechaNacimiento</label>
+                    <label class="fw-bold">Edad: </label> <label>@DateManager.GetAge(Model.Consulta.PacienteInformacion.FechaNacimiento) </label>
                 </div>
                 <div class="col col-sm col-md col-lg col-xl col-xxl">
                     <label class="fw-bold">Alergias: </label> <label>@Model.Consulta.PacienteInformacion.Alergias</label>
@@ -71,7 +73,8 @@
                 <i class="fa-solid fa-clock-rotate-left fa-bounce fa-xl" style="color: #2d8f77;"></i>
                 <p style="color: #2d8f77; font-weight: bold;">Historial</p>
             </button>
-            <button type="button" id="btnReceta" onclick="ShowHistorialModal('@Model.Consulta.IdPaciente')" class="btn btn-mini" title="Receta">
+
+            <button type="button" id="btnReceta" onclick="ShowReceta()" class="btn btn-mini" title="Receta">
                 <i class="fa-solid fa-file-signature fa-bounce fa-xl" style="color: #2d8f77;"></i>
                 <p style="color: #2d8f77; font-weight: bold;">Receta</p>
             </button>

@@ -24,6 +24,7 @@ public static class WebIocExtensions
         services.AddSingleton<IPacienteServices, PacienteServices>();
         services.AddSingleton<IServiciosServices, ServiciosServices>();
         services.AddSingleton<IDetallesServices, DetalleServices>();
+        services.AddSingleton<IRecetaServices, RecetaServices>();
         #endregion
 
 

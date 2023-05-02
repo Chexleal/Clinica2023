@@ -12,6 +12,7 @@ public partial class ClinicaContext : DbContext
     public ClinicaContext(DbContextOptions<ClinicaContext> options)
         : base(options)
     {
+        //ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
     }
 
     public virtual DbSet<Cita> Cita { get; set; }
@@ -69,7 +70,6 @@ public partial class ClinicaContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("diagnostico");
             entity.Property(e => e.Fecha)
-                .HasColumnType("date")
                 .HasColumnName("fecha");
             entity.Property(e => e.IdPaciente).HasColumnName("id_paciente");
             entity.Property(e => e.MotivoConsulta)
@@ -256,6 +256,10 @@ public partial class ClinicaContext : DbContext
             entity.Property(e => e.Fecha)
                 .HasColumnType("date")
                 .HasColumnName("fecha");
+            entity.Property(e => e.Descripcion)
+              .HasMaxLength(300)
+              .IsUnicode(false)
+              .HasColumnName("descripcion");
             entity.Property(e => e.IdConsulta).HasColumnName("id_consulta");
 
             entity.HasOne(d => d.IdConsultaNavigation).WithMany(p => p.Receta)

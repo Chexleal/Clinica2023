@@ -1,0 +1,33 @@
+﻿@model ConsultaContinuarViewModel
+<!-- Modal Crear Paciente-->
+@{
+    var receta = Model.Consulta.Receta.FirstOrDefault();
+    receta ??= new();
+}
+
+<div class="modal fade" id="modalReceta" tabindex="-1" role="dialog" aria-labelledby="modalReceta" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><a href="@Url.Action("Descargar",new {consultaId=receta.IdReceta})" id="btnGuardar" class="btn btn-outline-dark mb-3">Descargar</a></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div id="modalRecetaBody" class="modal-body">
+                <form method="post" action="@Url.Action("GuardarReceta")">
+                    <div class="row mt-2">
+                        <div class="col col-sm col-md col-lg col-xl col-xxl">
+                            <label class="fw-bold" for="observaciones">Descripción: </label>
+                            <textarea class="form-control" id="descripcionReceta" name="Descripcion">@receta.Descripcion</textarea>
+                        </div>
+                    </div>
+                    <div class="row mt-5">
+                        <div class="col col-sm col-md col-lg col-xl col-xxl">
+                            <input hidden name="IdConsulta" value="@Model.Consulta.IdConsulta" />
+                            <button type="submit" id="btnGuardar" class="btn btn-dark mb-3">Guardar</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

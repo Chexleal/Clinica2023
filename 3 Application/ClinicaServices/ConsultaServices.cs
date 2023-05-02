@@ -1,5 +1,6 @@
 ﻿using ClinicaDomain;
-using Microsoft.EntityFrameworkCore;
+//using iText.Html2pdf;
+//using Microsoft.EntityFrameworkCore;
 using PaaS.Framework.Utils.Extensions;
 using ServiceStack;
 using System;
@@ -18,6 +19,7 @@ namespace ClinicaServices
         void AddConsulta(Consulta consulta);
         void UpdateConsulta(Consulta consulta);
         void DeleteConsulta(Guid id);
+        void createPdf(string inHtmlPath, string toPdfPath);
     }
     public class ConsultaServices : IConsultaServices
     {
@@ -85,14 +87,30 @@ namespace ClinicaServices
 
         public void AddConsulta(Consulta consulta)
         {
+            //var consultaExistente = _dbContext.Consulta.FirstOrDefault(X => X.IdConsulta == consulta.IdConsulta && !X.Terminada);
+            //if consultaExistente.
+
             consulta.IdConsulta = Guid.NewGuid();
             consulta.Fecha = DateTime.Now;
             consulta.Terminada = false;
             consulta.BeforeSaveChanges();
             _dbContext.Consulta.Add(consulta);
-            _dbContext.SaveChanges();
+            _dbContext.SaveChanges();           
+        }
+
+        public void createPdf(string inHtmlPath, string toPdfPath)
+        {
+            string htmlDocument = File.ReadAllText(inHtmlPath);
+            using (FileStream pdf = new FileStream(toPdfPath, FileMode.Create))
+            {
+                ConverterProperties properties = new ConverterProperties();
+
+                HtmlConverter.ConvertToPdf(htmlDocument, pdf, properties);
+            }
+
 
             _recetaServices.Create(new Receta { IdConsulta = consulta.IdConsulta });
+
         }
     }
 }

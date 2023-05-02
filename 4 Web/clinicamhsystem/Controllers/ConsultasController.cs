@@ -11,7 +11,8 @@ namespace clinicaWeb.Controllers
     {
         private readonly IPacienteServices _pacienteServices;
         private readonly IConsultaServices _consultaServices;
-        
+        private string inhtmlPath = "C:\\Users\\futjo\\source\\repos\\ClinicaProject\\4 Web\\clinicamhsystem\\Views\\Consultas\\consultaBase.html";
+        private string toPdfPath = "C:\\Users\\futjo\\OneDrive\\Receta.pdf";
 
         public ConsultasController(IConsultaServices consultaServices, IPacienteServices pacienteServices)
         {
@@ -24,6 +25,14 @@ namespace clinicaWeb.Controllers
         {
             var pacientes = _pacienteServices.GetAll();
             var consultas = _consultaServices.GetAll();
+            
+            ConsultasModel modelo = new ConsultasModel();
+
+            modelo.Paciente = pacientes;
+            modelo.Consulta = consultas;
+            return View(modelo);
+            //return View(consultas);
+            //return View(new ConsultaViewModel { Consultas = consultas, Pacientes = pacientes });
         }
 
         //GET: Usuarios/Search? input = t
@@ -56,11 +65,13 @@ namespace clinicaWeb.Controllers
 
         // POST: ConsultasController/Create
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Create(Consulta consulta)
         {
             try
             {
                 _consultaServices.AddConsulta(consulta);
+                return RedirectToAction("Index");
             }
             catch
             {           
@@ -110,6 +121,13 @@ namespace clinicaWeb.Controllers
             catch {  }
             var consultas = _consultaServices.GetAll();
             return View("Index", consultas);
+        }
+
+        public ActionResult crearPdf()
+        {
+            _consultaServices.createPdf(inhtmlPath, toPdfPath);
+            return View("Index");
+            
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿@model IEnumerable<ClinicaDomain.Consulta>
+﻿@model PagarConsultaViewModel
+
 
 
 @{
@@ -8,47 +9,129 @@
     <link rel="stylesheet" href="~/css/pages/Consultas.css" asp-append-version="true" />
 }
 
-<div class="card card-body ">
-    <table id="tableUser" class="table">
-        <thead>
-            <tr>
-                <th>Fecha</th>
-                <th>Peso</th>
-                <th>Radiografias</th>
-                <th>Presion Arterial</th>
-                <th>Temperatura</th>
-                <th>Motivo de consulta</th>
-                <th>Total</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td>@item.Fecha</td>
-                    <td>@item.Peso</td>
-                    <td>@item.Radiografias</td>
-                    <td>@item.PresionArterial</td>
-                    <td>@item.Temperatura</td>
-                    <td>@item.MotivoConsulta</td>
-                    <td>@item.Total</td>
-                    <td>
-                        <div class="options d-flex ">
-                            <a class="option" href="@Url.Action("Index","Pagar",new{consultaId=item.IdConsulta})">Pagar</a>
-                            <a class="option" href="@Url.Action("Editar","Consultas",new{id = @item.IdConsulta}) ">Editar</a>
-                            <form asp-action="Eliminar" asp-route-id="@item.IdConsulta">
-                                <button class="option" type="submit">Eliminar</button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+<partial name="~/Views/Shared/_modalEdit.cshtml" />
 
+<div class="card w-100 shadow-lg mt-5">
+    <div class="card-body">
+        <div class=" table-responsive ">
+            <table id="table" class="table table-striped ">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Motivo de consulta</th>
+                        <th>Diagnostico</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Consultas.Where(x => x.Terminada))
+                    {
+                        <tr>
+                            <td>@item.Fecha.ToString("d")</td>
+                            <td>@item.PacienteInformacion.Nombre</td>
+                            <td>@item.PacienteInformacion.Apellido</td>
+                            <td>@item.MotivoConsulta</td>
+                            <td>@item.Diagnostico</td>
+                            <td>
+                                <div class="options d-flex ">
+                                    @*<a class="option" href="@Url.Action("Pagos","Consultas",new{consultaId=item.IdConsulta})">Pagar</a>*@
+                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#pagarConsultaModal">Pagar</button>
+                                    <a class="option" href="@Url.Action("Receta","Consultas",new{consultaId=item.IdConsulta})">Receta</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+
+
+<!-- Modal Pagar Consulta-->
+<div class="modal fade" id="pagarConsultaModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Pagar Consulta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @*@{List<DetalleCobro}*@
+                @foreach (var opcion in Model.Servicios)
+                {
+                    <option>@opcion.Descripcion</option>
+                }
+                <br />
+                <form id="pagarConsulta" action="@Url.Action("Pagos","Consultas")" method="POST">
+                    <input hidden id="IdConsulta" name="IdConsulta" />
+                    <div class="row">
+                        <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="Servicio">Servicio:</label>
+                        <select class="form-control" id="servicio">
+                            @foreach (var opcion in Model.Servicios)
+                            {
+                                <option>@opcion.Descripcion</option>
+                            }
+                        </select>
+                    </div>
+                    </div>
+                        <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="Producto" class="control-label">Descripción</label>
+                        <input name="Producto" class="form-control" />
+                    </div>
+                    </div>
+                        <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="Valor" class="control-label">Valor</label>
+                                <input name="Valor" class="form-control" />
+                    </div>
+                    </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label for="Cantidad" class="control-label">Cantidad</label>
+                                <input name="Cantidad" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <br />
+                            <button onclick="@{}">+</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <form asp-action="Pagar" asp-route-id="IdConsulta">
+                    <button class="btn btn-primary" type="submit">Pagar</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 
 @section Scripts{
     <script src="~/js/pages/consultas.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+            $(".modal-pagar").click(function () {
+                var consulta = JSON.parse($(this).data("consulta"));
+            });
+        });
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            $('#btn-modal').click(function () {
+                location.reload();
+            });
+        });
+    </script>
 }

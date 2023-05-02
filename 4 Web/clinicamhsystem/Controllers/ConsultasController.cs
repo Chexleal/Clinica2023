@@ -27,6 +27,7 @@ namespace clinicaWeb.Controllers
             return View(new ConsultaViewModel { Consultas = consultas, Pacientes=pacientes });
         }
 
+        /*
         //GET: Usuarios/Search? input = t
         public ActionResult Search(string input)
         {
@@ -41,6 +42,7 @@ namespace clinicaWeb.Controllers
                 return RedirectToAction("Search", idResult);
             }
         }
+        */
 
         // GET: ConsultasController/Details/5
         public ActionResult Detalles(Guid id)
@@ -49,12 +51,13 @@ namespace clinicaWeb.Controllers
             return View("Detalles", consultas);
         }
 
+        /*
         // GET: ConsultasController/Create
         public ActionResult Create()
         {
             return View("Create");
         }
-
+        */
         // POST: ConsultasController/Create
         [HttpPost]
         public ActionResult Create(Consulta consulta)
@@ -69,12 +72,14 @@ namespace clinicaWeb.Controllers
             return RedirectToAction("Index");
         }
 
+        /*
         // GET: ConsultasController/Edit/5
         public ActionResult Editar(Guid id)
         {
             var consultas = _consultaServices.GetConsulta(id);
             return RedirectToAction("Editar", consultas);
         }
+        */
 
         // POST: ConsultasController/Edit/5
         [HttpPost]
@@ -92,12 +97,6 @@ namespace clinicaWeb.Controllers
                 return View("Error");
             }
         }
-
-        // GET: ConsultasController/Delete/5
-        //public ActionResult Delete(int id)
-        //{
-       //     return View();
-        //
 
         // POST: ConsultasController/Delete/5
         [HttpPost]

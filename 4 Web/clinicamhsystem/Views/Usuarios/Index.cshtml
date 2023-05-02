@@ -8,17 +8,6 @@
     <link rel="stylesheet" href="~/css/pages/Usuarios.css" asp-append-version="true" />
 }
 
-@*<div class="row">
-    <form asp-action="Search" method="get">
-        <div class="input-group">
-            <input type="text" class="form-control" placeholder="Buscar usuario" id="input" name="input">
-            <div class="input-group-append">
-                <input type="submit" class="btn btn-secondary" id="botonBusqueda" value="Buscar" />
-            </div>
-        </div>
-    </form>
-</div>*@
-
 <div class="card card-body ">
     <p>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
@@ -26,7 +15,7 @@
         </button>
     </p>
     <table id="tableUser" class="table">
-        <thead>
+        <thead class="table-dark">
             <tr>
                 <th>Usuario</th>
                 <th>Nombre</th>
@@ -34,7 +23,6 @@
                 <th>Correo</th>
                 <th>Dpi</th>
                 <th>Acciones</th>
-                @*<th>Acciones</th>*@
             </tr>
         </thead>
         <tbody>
@@ -49,7 +37,6 @@
                     <td>
                         <div class="options d-flex ">
                             <a class="option" href="/Usuarios/Detalles/@item.IdUsuario">Ver</a>
-                            @*<a class="option" href="/Usuarios/Editar/@item.IdUsuario">Editar</a>*@
                             <a class="option" href="@Url.Action("Editar","Usuarios",new{id=item.IdUsuario}) ">Editar</a>
                             <form asp-action="Eliminar" asp-route-id="@item.IdUsuario">
                                 <button class="option" type="submit">Eliminar</button>

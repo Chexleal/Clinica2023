@@ -7,21 +7,8 @@
 @section Links{
     <link rel="stylesheet" href="~/css/pages/Consultas.css" asp-append-version="true" />
 }
-@*<div class="row">
-    <form asp-action="Search" method="get">
-        <div class="input-group">
-            <input type="text" class="form-control" placeholder="Buscar usuario" id="input" name="input">
-            <div class="input-group-append">
-                <input type="submit" class="btn btn-secondary" id="botonBusqueda" value="Buscar" />
-            </div>
-        </div>
-    </form>
-</div>*@
 
     <div class="card w-100 shadow-lg mt-5">
-        <p>
-            <a asp-action="Create" method="get">Crear Consulta</a>
-        </p>
         <p>
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
                 Agregar Consulta
@@ -43,7 +30,7 @@
                     @foreach (var item in Model.Consultas.Where(x => !x.Terminada))
                     {
                         <tr>
-                            <td>@item.Fecha</td>
+                            <td>@item.Fecha.ToString("d")</td>
                             <td>@item.PacienteInformacion.Nombre</td>
                             <td>@item.PacienteInformacion.Apellido</td>
                             <td>@item.MotivoConsulta</td>
@@ -100,7 +87,7 @@
 </div>
 
 
-<!-- Modal Crear Usuario-->
+<!-- Modal Crear Consulta-->
 <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">

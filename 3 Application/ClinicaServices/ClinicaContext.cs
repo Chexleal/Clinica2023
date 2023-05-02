@@ -126,6 +126,9 @@ public partial class ClinicaContext : DbContext
             entity.Property(e => e.Valor)
                 .HasColumnType("decimal(15, 2)")
                 .HasColumnName("valor");
+            entity.Property(e => e.Cantidad)
+                .HasColumnType("numeric(18, 0)")
+                .HasColumnName("cantidad");
 
             entity.HasOne(d => d.IdConsultaNavigation).WithMany(p => p.DetalleCobros)
                 .HasForeignKey(d => d.IdConsulta)

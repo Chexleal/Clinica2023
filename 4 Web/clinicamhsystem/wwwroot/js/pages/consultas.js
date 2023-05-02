@@ -15,7 +15,7 @@ function CreateTable() {
         dom: 'Bfrtip',
         "pageLength": 20,
         "language": {
-            searchPlaceholder:'Buscar usuario',
+            searchPlaceholder:'Buscar consulta',
             sSearch: '',
             lengthMenu: 'MENU items/page',
             paginate: {
@@ -43,8 +43,8 @@ function CreateTable() {
                 text: '<i class="fas fa-clone"></i><strong>Copiar</strong>',
                 messageTop: '',
                 className: "text-dark btn-light",
-                title: "Usuarios",
-                filename: "Usuarios",
+                title: "Consultas",
+                filename: "Consultas",
                 exportOptions: {
                     columns: [0,1,2,3,4,5,6,7],
                     page: 'all'
@@ -57,8 +57,8 @@ function CreateTable() {
                 text: '<i class="fas fa-file-excel"></i><strong>Excel </strong>',
                 messageTop: '',
                 className: "text-dark btn-light",
-                title: "Usuarios",
-                filename: "Usuarios",
+                title: "Consultas",
+                filename: "Consultas",
                 exportOptions: {
                     columns: [0, 1, 2, 3, 4, 5, 6, 7],
                     modifier: {

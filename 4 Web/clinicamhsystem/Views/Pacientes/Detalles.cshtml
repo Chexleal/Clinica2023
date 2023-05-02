@@ -4,8 +4,6 @@
     ViewData["Title"] = "Detalles";
 }
 
-<h1>Detalles</h1>
-
 <div>
     <h4>Paciente</h4>
     <hr />
@@ -29,19 +27,19 @@
             @Html.DisplayFor(model => model.Apellido)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FechaNacimiento)
+           Fecha de nacimiento
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.FechaNacimiento)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Genero)
+            Género
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Genero)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Telefono)
+            Teléfono
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Telefono)
@@ -53,7 +51,7 @@
             @Html.DisplayFor(model => model.Correo)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Direccion)
+            Dirección
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Direccion)
@@ -65,13 +63,13 @@
             @Html.DisplayFor(model => model.Alergias)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.EstadoCivil)
+            Estado civil
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.EstadoCivil)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Profesion)
+            Profesión
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Profesion)
@@ -83,7 +81,7 @@
             @Html.DisplayFor(model => model.Nacionalidad)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Remitido)
+            Remitido por
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Remitido)
@@ -95,20 +93,22 @@
             @Html.DisplayFor(model => model.Antecedentes)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.TipoSange)
+            Tipo de sangre
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.TipoSange)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.NoRegistro)
+            No. Registro
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.NoRegistro)
         </dd>
     </dl>
 </div>
+@*
 <div>
-    @Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
-    <a asp-action="Index">Back to List</a>
+    @Html.ActionLink("Editar", "Editar", new { /* id = Model.PrimaryKey */ }) |
+    <a asp-action="Index">Volver</a>
 </div>
+*@

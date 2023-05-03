@@ -11,8 +11,14 @@
 
 </head>
 <body>
+
+
     <div class="container-menu container-fluid vh-100 d-flex" style="background-color:#f2f2f2;">
+        <button id="toggle-button" class="toggle-button">
+            <i class="fas fa-bars"></i>
+        </button>
         <nav class="menu align-content-center justify-content-center">
+         
             <div class="logo align-content-center justify-content-center d-flex mx-auto my-auto mt-4 ">
                     <img src="~/img/Logo.png" alt="Logo" style="width:80%" class="">
             </div>
@@ -20,18 +26,19 @@
             <b>Bienvenido Edgar Hernandez</b>
             <hr>
             <div class="botones btn-group-vertical  mt-2">
-                <a class="menu_bt" href="/Pacientes"><img class="menu_icon" src="~/img/paciente.png"> Pacientes</a>
-                <a class="menu_bt" href="/Consultas"><img class="menu_icon" src="~/img/logout.png">Consultas</a>
-                <a class="menu_bt" href="/Pagos"><img class="menu_icon" src="~/img/logout.png">pagar Consultas</a>
-                <a class="menu_bt " href="/Citas"><img class="menu_icon" src="~/img/logout.png">Citas</a>
-                <a class="menu_bt " href="/Reportes"><img class="menu_icon" src="~/img/logout.png">Reportes</a>
-                <a class="menu_bt " href="/Servicios"><img class="menu_icon" src="~/img/logout.png">Servicios</a>
-                <a class="menu_bt " href="/Usuarios"><img class="menu_icon" src="~/img/logout.png">Usuarios</a>
-                <a class="menu_bt " href="/Config"><img class="menu_icon" src="~/img/logout.png">Configuración</a>
-                <a class="menu_bt logout " href="/"><img class="menu_icon" src="~/img/logout.png"> Cerrar Sesión</a>
+                <a class="menu_bt" href="/Pacientes"> <i class="fa-solid fa-user-injured fa-xl menu_icon"></i> Pacientes</a>
+                <a class="menu_bt" href="/Consultas"><i class="fa-solid fa-notes-medical fa-xl menu_icon"></i>Consultas</a>
+                <a class="menu_bt" href="/Pagos"><i class="fa-solid fa-money-bill fa-xl menu_icon"></i> Pagar Consultas</a>
+                <a class="menu_bt " href="/Citas"><i class="fa-solid fa-calendar fa-xl menu_icon"></i>Citas</a>
+                <a class="menu_bt " href="/Reportes"><i class="fa-regular fa-file-lines fa-xl menu_icon"></i>Reportes</a>
+                <a class="menu_bt " href="/Servicios"><i class="fa-solid fa-hand-holding-medical fa-xl menu_icon"></i>Servicios</a>
+                <a class="menu_bt " href="/Usuarios"><i class="fa-solid fa-users fa-xl menu_icon"></i>Usuarios</a>
+                <a class="menu_bt " href="/Config"><i class="fa-solid fa-gears fa-xl menu_icon"></i>Configuración</a>
+                <a class="menu_bt logout " href="/"><i class="fa-solid fa-right-from-bracket fa-xl menu_icon"></i>Cerrar Sesión</a>
             </div>
         </nav>
-        <div class="container mx-auto px-0 mt-5" >
+       
+        <div class="container-larger mx-auto px-0 mt-5" >
             <main role="main" class="pb-3">
                 @RenderBody()
             </main>

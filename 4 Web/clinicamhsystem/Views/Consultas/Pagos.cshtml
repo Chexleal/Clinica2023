@@ -1,0 +1,86 @@
+﻿@model ConsultaViewModel
+
+
+
+@{
+    ViewData["Title"] = "Pagos";
+}
+@section Links{
+    <link rel="stylesheet" href="~/css/pages/Consultas.css" asp-append-version="true" />
+}
+
+<partial name="~/Views/Shared/_modalEdit.cshtml" />
+
+<div class="card w-100 shadow-lg mt-5">
+    <div class="card-body">
+        <div class=" table-responsive ">
+            <table id="table" class="table table-striped ">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Motivo de consulta</th>
+                        <th>Total</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Consultas.Where(x => x.Terminada))
+                    {
+                        <tr>
+                            <td>@item.Fecha.ToString("d")</td>
+                            <td>@item.PacienteInformacion.Nombre</td>
+                            <td>@item.PacienteInformacion.Apellido</td>
+                            <td>@item.MotivoConsulta</td>
+                            <td>@item.Total</td>
+                            <td>
+                                <div class="options d-flex ">
+                                    <a class="option" href="@Url.Action("Pagar","Consultas",new{consultaId=item.IdConsulta})">Pagar</a>
+                                    <button class="option" onclick="ShowEditModal('@item.IdConsulta')">Editar</button>
+                                    <form asp-action="Eliminar" asp-route-id="@item.IdConsulta">
+                                        <button class="option" type="submit">Eliminar</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script src="~/js/pages/consultas.js" asp-append-version="true"></script>
+    <script>
+        let urls = {
+            getConsulta: "@Url.Action("GetConsulta", "Consultas")",
+        }
+
+        $(document).ready(function () {
+            $(".modal-editar").click(function () {
+                var consulta = JSON.parse($(this).data("consulta"));
+
+                $('#editModal #Fecha').val(consulta.Nombre);
+                $('#editModal #Apellido').text(consulta.Nombre);
+                $('#editModal #Dpi').text(consulta.Nombre);
+                $('#editModal #item.FechaNacimiento').text(consulta.Nombre);
+                $('#editModal #Genero').text(consulta.Nombre);
+                $('#editModal #Telefono').text(consulta.Nombre);
+                $('#editModal #Correo').text(consulta.Nombre);
+                $('#editModal #Direccion').text(consulta.Nombre);
+                $('#editModal #Alergias').text(consulta.Nombre);
+                $('#editModal #EstadoCivil').text(consulta.Nombre);
+                $('#editModal #Profesion').text(consulta.Nombre);
+                $('#editModal #Nacionalidad').text(consulta.Nombre);
+                $('#editModal #Remitido').text(consulta.Nombre);
+                $('#editModal #Antecedentes').text(consulta.Nombre);
+                $('#editModal #TipoSangre').text(consulta.Nombre);
+
+                // Abrir el modal
+                $("#editModal").modal("show");
+            });
+        });
+    </script>
+}

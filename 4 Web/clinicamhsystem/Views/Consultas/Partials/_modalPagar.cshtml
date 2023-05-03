@@ -1,0 +1,39 @@
+﻿<!-- Modal Pagar Consulta-->
+<div class="modal fade" id="pagarConsultaModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">CPagar Consulta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="pagarConsulta" action="@Url.Action("Pagos","Consultas")" method="POST">
+                    <input hidden id="IdConsulta" name="IdConsulta" />
+                    <div class="form-group">
+                        <label for="Servicio">Servicio:</label>
+                        <select class="form-control" id="servicio">
+                            @foreach (var opcion in Model.MotivoCobro)
+                            {
+                                <option>@opcion</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="Producto" class="control-label">Descripción</label>
+                        <input name="Producto" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="Valor" class="control-label">Valor</label>
+                        <input name="Valor" class="form-control" />
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="submit" class="btn btn-primary" form="crearConsulta">Agregar</button>
+            </div>
+
+        </div>
+    </div>
+</div>

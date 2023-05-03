@@ -1,30 +1,17 @@
-﻿@model ConsultaViewModel
-
+@using Newtonsoft.Json;
+@*@model IEnumerable<ClinicaDomain.Consulta>*@
+@model clinicaWeb.Models.ConsultasModel;
 
 @{
     ViewData["Title"] = "Consultas";
+    ViewData["PagadaSi"] = "Si";
 }
 @section Links{
     <link rel="stylesheet" href="~/css/pages/Consultas.css" asp-append-version="true" />
 }
 
-    <h1>Consultas</h1>
-
-    @*<div class="row">
-    <form asp-action="Search" method="get">
-        <div class="input-group">
-            <input type="text" class="form-control" placeholder="Buscar usuario" id="input" name="input">
-            <div class="input-group-append">
-                <input type="submit" class="btn btn-secondary" id="botonBusqueda" value="Buscar" />
-            </div>
-        </div>
-    </form>
-</div>*@
-
+@*
     <div class="card w-100 shadow-lg mt-5">
-        <p>
-            <a asp-action="Create" method="get">Crear Consulta</a>
-        </p>
         <p>
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
                 Agregar Consulta
@@ -46,47 +33,65 @@
                     @foreach (var item in Model.Consultas.Where(x => !x.Terminada))
                     {
                         <tr>
-                            <td>@item.Fecha</td>
+                            <td>@item.Fecha.ToString("d")</td>
                             <td>@item.PacienteInformacion.Nombre</td>
                             <td>@item.PacienteInformacion.Apellido</td>
                             <td>@item.MotivoConsulta</td>
-                            <td>
-                                <div class="options d-flex ">
-                                    <a class="option" href="@Url.Action("Index","ContinuarConsulta",new{consultaId=item.IdConsulta})">Continuar</a>
-                                    <a class="option" href="/Usuarios/Detalles/@item.IdConsulta">Ver</a>
+                            @if (item.Terminada == false)*@
 
-                                    @*<a class="option" href="/Usuarios/Editar/@item.IdUsuario">Editar</a>*@
-                                    <a class="option" href="@Url.Action("Editar","Consultas",new{id = @item.IdConsulta}) ">Editar</a>
-                                    <form asp-action="Eliminar" asp-route-id="@item.IdConsulta">
-                                        <button class="option" type="submit">Eliminar</button>
-                                    </form>
-                                </div>
-                            </td>
-                            @*<td>
-                        <button class="btn" type="button" id="rowMenu" data-bs-toggle="dropdown" aria-expanded="false">
-                        ...
-                        </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item" href="/Usuarios/Detalles/@item.IdUsuario">Ver</a>
-                        <a class="dropdown-item" href="/Usuarios/Editar/@item.IdUsuario">Editar</a>
-                        <form asp-action="Eliminar" asp-route-id="@item.IdUsuario">
-                        <button class="dropdown-item" type="submit">Eliminar</button>
-                        </form>
-                        <form asp-action="Desactivar" asp-route-id="@item.IdUsuario">
-                        <button class="dropdown-item" type="submit">Desactivar</button>
-                        </form>
-
-                        </div>
-                        </td>*@
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
+@*<partial name="~/Views/Shared/_modalEdit.cshtml" />
+<partial name="Partials/_modalCrear.cshtml" />
+<partial name="Partials/_modalCrearConsulta.cshtml" />*@
+<h1>Consultas</h1>
+<div class="card w-100 shadow-lg mt-5">
+    <p>     
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+            Agregar Consulta
+        </button>
+        <button type="submit" class="btn btn-primary" href="@Url.Action("crearPdf") data-bs-toggle="modal" data-bs-target="#createModal">
+            Pdf Test
+        </button>
+    </p>
+    <div class="card-body">
+        <div class=" table-responsive ">
+            <table id="table" class="table table-striped ">
+        <thead class="table-dark">
+            <tr>
+                @*<th>Nombre</th>
+                <th>Apellido</th>*@
+                <th>Fecha</th>
+                <th>Peso</th>
+                <th>Motivo de consulta</th>
+                <th class="">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Consulta)
+            {
+                <tr>
+                   @* <td>@item.PacienteInformacion.Nombre</td>
+                    <td>@item.PacienteInformacion.Apellido</td>*@
+                    <td>@item.Fecha.ToString("d")</td>
+                    <td>@item.Peso</td>
+                    <td>@item.MotivoConsulta</td>
+                      <td>
+                          <div class="options d-flex ">
+                          <a class="option" href="@Url.Action("Index","ContinuarConsulta",new{consultaId=item.IdConsulta})">Continuar</a>
+                          <a class="option" href="/Consultas/Detalles/@item.IdConsulta">Ver</a>
+                          <a class="option" href="@Url.Action("Editar","Consultas",new{id = @item.IdConsulta}) ">Editar</a>
+                          <form asp-action="Eliminar" asp-route-id="@item.IdConsulta">
+                               <button class="option" type="submit">Eliminar</button>
+                          </form>
+                     </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+  </div>
+</div>
 </div>
 
-<!-- Modal Crear Usuario-->
+<!-- Modal Crear Consulta-->
 <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -101,9 +106,9 @@
                             <div class="form-group">
                                 <label class="control-label">Paciente</label>
                                 <select name="Paciente" class="form-control">
-                                    @foreach (var paciente in Model.Pacientes)
+                                    @foreach (var paciente in Model.Paciente)
                                     {
-                                        <option value="@paciente.Correo">@paciente.Direccion</option>
+                                        <option value="@paciente.IdPaciente">@paciente.Nombre @paciente.Apellido - @paciente.Dpi</option>
                                     }
                                 </select>
                             </div>
@@ -132,11 +137,7 @@
                                 <input name="Temperatura" class="form-control" />
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="control-label">No. de registro</label>
-                                <input name="NoRegistro" id="NoRegistro" class="form-control" />
-                            </div>
+                        <div class="col-md-6">                         
                             <div class="form-group">
                                 <label class="control-label">Motivo de Consulta</label>
                                 <input name="MotivoConsulta" class="form-control" />
@@ -180,6 +181,90 @@
         </div>
     </div>
 </div>
+
+
+@*
+<!-- Modal Editar Consulta-->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Editar Paciente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @*await Html.PartialAsync("_Editar")
+                <form id="editar" asp-action="Editar" method="POST">
+                    <div class="form-group">
+                        <label class="control-label">Nombre</label>
+                        <input name="Nombre" id="Nombre" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Apellido</label>
+                        <input name="Apellido" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Dpi</label>
+                        <input name="Dpi" id="Dpi" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Fecha de nacimiento</label>
+                        <input name="item.FechaNacimiento" type="date" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Genero</label>
+                        <input name="Genero" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Teléfono</label>
+                        <input name="Telefono" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Correo</label>
+                        <input name="Correo" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Direccion</label>
+                        <input name="Direccion" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Alergias</label>
+                        <input name="Alergias" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Estado civil</label>
+                        <input name="EstadoCivil" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Profesion</label>
+                        <input name="Profesion" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Nacionalidad</label>
+                        <input name="Nacionalidad" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Remitido por</label>
+                        <input name="Remitido" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Antecedentes</label>
+                        <input name="Antecedentes" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Tipo de sangre</label>
+                        <input name="TipoSange" class="form-control" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary" form="editar">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+*@
 
 @section Scripts{
     <script src="~/js/pages/consultas.js" asp-append-version="true"></script>

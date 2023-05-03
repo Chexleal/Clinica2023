@@ -15,7 +15,7 @@ function CreateTable() {
         dom: 'Bfrtip',
         "pageLength": 20,
         "language": {
-            searchPlaceholder:'Buscar Consulta',
+            searchPlaceholder:'Buscar Usuario',
             sSearch: '',
             lengthMenu: 'MENU items/page',
             paginate: {

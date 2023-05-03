@@ -1,5 +1,5 @@
 ﻿using ClinicaDomain;
-//using iText.Html2pdf;
+using iText.Html2pdf;
 //using Microsoft.EntityFrameworkCore;
 using PaaS.Framework.Utils.Extensions;
 using ServiceStack;
@@ -110,7 +110,7 @@ namespace ClinicaServices
             }
 
 
-            _recetaServices.Create(new Receta { IdConsulta = consulta.IdConsulta });
+            //_recetaServices.Create(new Receta { IdConsulta = consulta.IdConsulta });
 
         }
     }

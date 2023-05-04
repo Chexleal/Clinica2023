@@ -6,12 +6,11 @@ table td {
     white-space: nowrap !important;
 }
 
-
+container-menu {
+    background-color: #f2f2f2;
+}
 html {
     font-size: 16px;
-}
-
-html {
     position: relative;
     min-height: 100%;
 }
@@ -22,8 +21,10 @@ html {
 }
 
     .container-larger.hidden {
-        transform: translateX(-10%);
+        transform: translateX(-5vw);
+        width: 100vw;
         transition: transform 0.3s ease-in-out;
+        transition: width 0.3s ease-in-out;
     }
 
 
@@ -37,8 +38,8 @@ html {
     text-align: center;
     align-content: center;
     display: block;
-    background-color: #4D7491;
-    /*background-color: #8bc2f2; #B4D9F8; #66ADEA;*/
+    background-color: #8bc2f2;
+    /*background-color: #8bc2f2; #B4D9F8; #66ADEA;#4D7491*/
     width: 15vw;
     padding: 0;
     margin: 0;
@@ -79,11 +80,12 @@ hr {
     background-color: transparent;
     border: 0px;
     width: 100%;
-    padding: 2%;
+    padding: 4%;
     padding-left: 9%;
     text-decoration: none;
     color: #222222;
     cursor: pointer;
+    font-size:1vw;
 }
 
 
@@ -110,14 +112,15 @@ hr {
     background-color: #fff;
     color: #009999;
     transition: all 0.3s ease;
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     position: absolute;
     top: 10px;
-    left: 14.3vw;
+    left: 14vw;
     display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 2;
 }
 
 .toggle-button.hidden-tgb {
@@ -130,6 +133,16 @@ hr {
 
 @media (max-width: 767px) {
 
+    .toggle-button {
+        left: 2vw;
+        transform: translateX(2vw);
+        transition: transform 0.3s ease-in-out;
+    }
+        .toggle-button.hidden-tgb {
+            transform: translateX(84vw);
+            transition: transform 0.3s ease-in-out;
+        }
+
     html {
         font-size: 12px;
     }
@@ -137,20 +150,41 @@ hr {
     .menu {
         transform: translateX(-100%);
         transition: transform 0.3s ease-in-out;
-    }
-
-    .menu.hidden {
-        text-align: center;
-        align-content: center;
-        display: block;
-        background-color: #199687;
-        /*background-color: #8bc2f2; #B4D9F8; #66ADEA;*/
-        width: 15vw;
+        position: absolute;
+        width: 100%;
         padding: 0;
         margin: 0;
-        position: relative;
-        transform: translateX(0);
-        transition: transform 0.3s ease-in-out;
+        z-index: 1;
+        height:100%
+    }
+
+        .menu.hidden {
+            text-align: center;
+            align-content: center;
+            display: block;
+            background-color: #8bc2f2;
+            /*background-color: #8bc2f2; #B4D9F8; #66ADEA;#199687*/
+            width: 100%;
+            padding: 0;
+            margin: 0;
+            position: absolute;
+            transform: translateX(0);
+            transition: transform 0.3s ease-in-out;
+            z-index: 1;
+            height: 100%;
+        }
+
+    .menu_bt {
+        display: flex;
+        background-color: transparent;
+        border: 0px;
+        width: 100%;
+        padding: 4%;
+        padding-left: 9%;
+        text-decoration: none;
+        color: #222222;
+        cursor: pointer;
+        font-size: 6vw;
     }
 
     .container {
@@ -161,8 +195,64 @@ hr {
 
 @media (max-width: 480px) {
     /* Estilos para smartphones en posición vertical */
+    .menu {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+        position: absolute;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        z-index: 1;
+    }
+        .menu.hidden {
+            text-align: center;
+            align-content: center;
+            display: block;
+            background-color: #8bc2f2;
+            /*background-color: #8bc2f2; #B4D9F8; #66ADEA;#199687*/
+            width: 100%;
+            padding: 0;
+            margin: 0;
+            position: absolute;
+            transform: translateX(0);
+            transition: transform 0.3s ease-in-out;
+            z-index: 1;
+        }
+
+    .menu_bt {
+        display: flex;
+        background-color: transparent;
+        border: 0px;
+        width: 100%;
+        padding: 3%;
+        padding-left: 9%;
+        text-decoration: none;
+        color: #222222;
+        cursor: pointer;
+        font-size: 4vw;
+    }
 }
 
 @media (max-width: 767px) {
     /* Estilos */
 }
+
+.dataTables_wrapper .dataTables_filter input {
+    border: none;
+    border-bottom: 2px solid #999;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 8px 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: #666;
+    background-color: transparent;
+    margin-bottom: 20px;
+    transition: border-bottom 0.2s ease-in-out;
+
+}
+
+    .dataTables_wrapper .dataTables_filter input:focus {
+        outline: none;
+        border-bottom: 2px solid #0099cc;
+    }

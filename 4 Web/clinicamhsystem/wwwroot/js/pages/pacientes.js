@@ -9,6 +9,8 @@ $(document).ready(function () {
 
 function CreateTable() {
     $('#tablePaciente').DataTable({
+
+        "responsive": true,
         "ordering": true,
         "lengthChange": true,
         dom: 'Bfrtip',

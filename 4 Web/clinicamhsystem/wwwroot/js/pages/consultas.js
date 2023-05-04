@@ -9,7 +9,6 @@ $(document).ready(function () {
 
 function CreateTable() {
     $('#table').DataTable({
-        "autoWidth": true,
         "ordering": true,
         "lengthChange": true,
         dom: 'Bfrtip',

@@ -3,6 +3,7 @@ using clinicamhsystem.Models;
 using ClinicaServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace clinicaWeb.Controllers
 {
@@ -28,20 +29,12 @@ namespace clinicaWeb.Controllers
             return View(new PagarConsultaViewModel { Consultas = consultas, Servicios = servicios });
         }
 
-
-        // POST: PagosController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public ActionResult Modal()
         {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            var consultas = _consultaServices.GetAll();
+            var detalles = _detallesServices.GetAll();
+            var servicios = _serviciosServices.GetAll();
+            return View(new PagarConsultaViewModel { Consultas = consultas, Servicios = servicios });
         }
 
         /*[HttpGet]
@@ -59,11 +52,33 @@ namespace clinicaWeb.Controllers
             return PartialView("Detalles", (new DetallesPagarViewModel { Detalles = detalles, Servicios = servicios, Id_consulta = idconsulta }));
         }
 
+
         [HttpPost]
         // GET: ConsultasController/Pagos
-        public void Pagos(DetalleCobro detalle)
+        public IActionResult AddDetalle(DetalleCobro detalle)
         {
+            //var detalleC = JsonSerializer.Deserialize<DetalleCobro>(detalle);
+            //var detalleC = (DetalleCobro)detalle;
+            Console.WriteLine(detalle);
+
             _detallesServices.AddDetalle(detalle);
+            var detalles = _detallesServices.GetAll();
+            var servicios = _serviciosServices.GetAll();
+            return PartialView("Detalles", (new DetallesPagarViewModel { Detalles = detalles, Servicios = servicios, Id_consulta = detalle.IdConsulta }));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Eliminar(Guid id, Guid idConsulta)
+        {
+            try
+            {
+                _detallesServices.Delete(id);
+            }
+            catch { }
+            var detalles = _detallesServices.GetAll();
+            var servicios = _serviciosServices.GetAll();
+            return PartialView("Detalles", (new DetallesPagarViewModel { Detalles = detalles, Servicios = servicios, Id_consulta = idConsulta }));
         }
     }
 }

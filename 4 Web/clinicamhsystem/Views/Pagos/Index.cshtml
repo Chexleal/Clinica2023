@@ -7,6 +7,7 @@
 }
 @section Links{
     <link rel="stylesheet" href="~/css/pages/Consultas.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/detallePagos.css" asp-append-version="true" />
 }
 
 <partial name="~/Views/Shared/_modalEdit.cshtml" />
@@ -62,52 +63,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                @*@foreach (var opcion in Model.Detalles.Where(x => x.IdConsulta == idconsulta))
-                {
-                    @Model.Servicios.FirstOrDefault(p => p.IdMotivoCobro == opcion.IdMotivoCobro).Descripcion
-                    @opcion.Producto
-                    @opcion.Valor
-                    @opcion.Cantidad
-                }
-                <br />
-                <form id="pagarConsulta" action="@Url.Action("Pagos","Consultas")" method="POST">
-                    <input hidden id="IdConsulta" name="IdConsulta" />
-                    <div class="row">
-                        <div class="col-md-3">
-                    <div class="form-group">
-                        <label for="Servicio">Servicio:</label>
-                        <select class="form-control" id="servicio">
-                            @foreach (var opcion in Model.Servicios)
-                            {
-                                <option>@opcion.Descripcion</option>
-                            }
-                        </select>
-                    </div>
-                    </div>
-                        <div class="col-md-4">
-                    <div class="form-group">
-                        <label for="Producto" class="control-label">Descripción</label>
-                        <input name="Producto" class="form-control" />
-                    </div>
-                    </div>
-                        <div class="col-md-2">
-                    <div class="form-group">
-                        <label for="Valor" class="control-label">Valor</label>
-                                <input name="Valor" class="form-control" />
-                    </div>
-                    </div>
-                        <div class="col-md-2">
-                            <div class="form-group">
-                                <label for="Cantidad" class="control-label">Cantidad</label>
-                                <input name="Cantidad" class="form-control" />
-                            </div>
-                        </div>
-                        <div class="col-md-1">
-                            <br />
-                            <button onclick="@{}">+</button>
-                        </div>
-                    </div>
-                </form>*@
             </div>
 
             <div class="modal-footer">
@@ -125,9 +80,4 @@
 @section Scripts{
     <script src="~/js/pages/consultas.js" asp-append-version="true"></script>
     <script src="~/js/pages/pagos.js" asp-append-version="true"></script>
-    <script>
-        let urls = {
-            Detalles: "@Url.Action("Detalles", "Pagos")",
-        }
-    </script>
 }

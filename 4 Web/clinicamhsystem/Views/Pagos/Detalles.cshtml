@@ -1,0 +1,62 @@
+﻿@model DetallesPagarViewModel
+
+@{
+    ViewData["Title"] = "Detalles";
+}
+@foreach (var opcion in Model.Detalles.Where(x => x.IdConsulta == Model.Id_consulta))
+{
+    @Model.Servicios.FirstOrDefault(p => p.IdMotivoCobro == opcion.IdMotivoCobro).Descripcion
+    <br />
+    @opcion.Producto
+    <br />
+    @opcion.Valor
+    <br />
+    @opcion.Cantidad
+    <br />
+    @opcion.Subtotal
+    <br />
+}
+<br />
+<br />
+<form id="pagarConsulta" action="@Url.Action("Pagos","Pagos")" method="POST">
+    <input hidden id="IdConsulta" name="IdConsulta" value="@Model.Id_consulta" />
+    <div class="row">
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="Servicio">Servicio:</label>
+                <select class="form-control" id="IdMotivoCobro" name="IdMotivoCobro">
+                    @foreach (var opcion in Model.Servicios)
+                    {
+                        <option value="@opcion.IdMotivoCobro">@opcion.Descripcion</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="Producto" class="control-label">Descripción</label>
+                <input name="Producto" class="form-control" />
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label for="Valor" class="control-label">Valor</label>
+                <input name="Valor" class="form-control" />
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label for="Cantidad" class="control-label">Cantidad</label>
+                <input name="Cantidad" class="form-control" />
+            </div>
+        </div>
+        <div class="col-md-1">
+            <br />
+            @*<button onclick="@{
+                }">
+                +
+            </button>*@
+        <button type="submit">+</button>
+        </div>
+    </div>
+</form>

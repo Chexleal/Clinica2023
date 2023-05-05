@@ -7,7 +7,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="crearConsulta" action="@Url.Action("Create","Consultas")" method="POST">
+                <form id="crearConsulta" method="POST" action="@Url.Action("Create","Consultas")">
                     <input hidden id="IdPaciente" name="IdPaciente" />
                     <div class="form-group">
                         <label for="Peso" class="control-label">Peso</label>

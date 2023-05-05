@@ -52,7 +52,9 @@ namespace ClinicaServices
         public void AddDetalle(DetalleCobro detalle)
         {
             detalle.IdDetalleCobro = Guid.NewGuid();
-            _dbContext.DetalleCobros.Add(detalle);
+            detalle.Subtotal = detalle.Cantidad * detalle.Valor;
+            var consulta = _dbContext.Consulta.FirstOrDefault(x => x.IdConsulta == detalle.IdConsulta);
+            consulta.DetalleCobros.Add(detalle);
             _dbContext.SaveChanges();
         }
     }

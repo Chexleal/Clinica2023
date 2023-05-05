@@ -57,8 +57,8 @@
             <table id="table" class="table table-striped ">
         <thead class="table-dark">
             <tr>
-                @*<th>Nombre</th>
-                <th>Apellido</th>*@
+                <th>Nombre</th>
+                <th>Apellido</th>
                 <th>Fecha</th>
                 <th>Peso</th>
                 <th>Motivo de consulta</th>
@@ -69,8 +69,8 @@
             @foreach (var item in Model.Consulta)
             {
                 <tr>
-                   @* <td>@item.PacienteInformacion.Nombre</td>
-                    <td>@item.PacienteInformacion.Apellido</td>*@
+                   <td>@item.PacienteInformacion.Nombre</td>
+                    <td>@item.PacienteInformacion.Apellido</td>
                     <td>@item.Fecha.ToString("d")</td>
                     <td>@item.Peso</td>
                     <td>@item.MotivoConsulta</td>

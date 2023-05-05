@@ -10,7 +10,6 @@
 }
 
 <partial name="~/Views/Shared/_modalEdit.cshtml" />
-
 <div class="card w-100 shadow-lg mt-5">
     <div class="card-body">
         <div class=" table-responsive ">
@@ -36,8 +35,12 @@
                             <td>@item.Diagnostico</td>
                             <td>
                                 <div class="options d-flex ">
-                                    @*<a class="option" href="@Url.Action("Pagos","Consultas",new{consultaId=item.IdConsulta})">Pagar</a>*@
-                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#pagarConsultaModal">Pagar</button>
+                                    @*<a class="option" href="@Url.Action("Detalles","Pagos",new{consultaId=item.IdConsulta})">Pagar</a>*@
+                                    @*<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#pagarConsultaModal" data-idconsulta="@item.IdConsulta">Pagar</button>*@
+                                    @*<button class="btn-detalles" data-id="@item.IdConsulta">Pagar</button>*@
+                                    @*<button class="btn" onclick="ShowDetallesModal('@item.IdConsulta')">Pagar</button>*@
+                                   @* <button class="option" onclick="ShowDetallesModal('@item.IdConsulta')">Pagar</button>*@
+                                    <button class="btn-detalles option" data-id="@item.IdConsulta">Pagar</button>
                                     <a class="option" href="@Url.Action("Receta","Consultas",new{consultaId=item.IdConsulta})">Receta</a>
                                 </div>
                             </td>
@@ -52,17 +55,19 @@
 
 <!-- Modal Pagar Consulta-->
 <div class="modal fade" id="pagarConsultaModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">Pagar Consulta</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                @*@{List<DetalleCobro}*@
-                @foreach (var opcion in Model.Servicios)
+                @*@foreach (var opcion in Model.Detalles.Where(x => x.IdConsulta == idconsulta))
                 {
-                    <option>@opcion.Descripcion</option>
+                    @Model.Servicios.FirstOrDefault(p => p.IdMotivoCobro == opcion.IdMotivoCobro).Descripcion
+                    @opcion.Producto
+                    @opcion.Valor
+                    @opcion.Cantidad
                 }
                 <br />
                 <form id="pagarConsulta" action="@Url.Action("Pagos","Consultas")" method="POST">
@@ -79,13 +84,13 @@
                         </select>
                     </div>
                     </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                     <div class="form-group">
                         <label for="Producto" class="control-label">Descripción</label>
                         <input name="Producto" class="form-control" />
                     </div>
                     </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                     <div class="form-group">
                         <label for="Valor" class="control-label">Valor</label>
                                 <input name="Valor" class="form-control" />
@@ -102,7 +107,7 @@
                             <button onclick="@{}">+</button>
                         </div>
                     </div>
-                </form>
+                </form>*@
             </div>
 
             <div class="modal-footer">
@@ -119,19 +124,10 @@
 
 @section Scripts{
     <script src="~/js/pages/consultas.js" asp-append-version="true"></script>
+    <script src="~/js/pages/pagos.js" asp-append-version="true"></script>
     <script>
-        $(document).ready(function () {
-            $(".modal-pagar").click(function () {
-                var consulta = JSON.parse($(this).data("consulta"));
-            });
-        });
-    </script>
-
-    <script>
-        $(document).ready(function () {
-            $('#btn-modal').click(function () {
-                location.reload();
-            });
-        });
+        let urls = {
+            Detalles: "@Url.Action("Detalles", "Pagos")",
+        }
     </script>
 }

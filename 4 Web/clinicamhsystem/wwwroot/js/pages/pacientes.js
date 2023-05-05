@@ -92,3 +92,25 @@ function ShowConsultaModal(id) {
     $('#createConsultaModal').modal('show');
     $('#IdPaciente').val(id);
 }
+
+function ShowHistorialModal(consultas) {
+    $('#loading').show();
+    $("#table > tbody").empty();
+
+    consultas.forEach(c => {
+
+        $('#table > tbody:last-child').append(`<tr>
+                                                <td>${parseDate(c.Fecha)}</td>
+                                                <td>${c.MotivoConsulta}</td>
+                                                <td>${c.Diagnostico}</td>
+                                                <td>${c.Observaciones}</td>
+                                                <td>
+                                                    <div class="options d-flex ">
+                                                    <a class="option" href="/Usuarios/Detalles/@item.IdConsulta">Ver</a>
+                                                    </div>
+                                                </td>
+                                               </tr>`);
+    });
+    $("#modalConsulta").modal('show');
+    $('#loading').hide();
+}

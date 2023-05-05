@@ -16,7 +16,7 @@ function ShowHistorialModal(consultas) {
 
     consultas.forEach(c => {
         $('#table > tbody:last-child').append(`<tr>
-                                                <td>${c.Fecha}</td>
+                                                <td>${parseDate(c.Fecha) }</td>
                                                 <td>${c.MotivoConsulta}</td>
                                                 <td>${c.Diagnostico}</td>
                                                 <td>${c.Observaciones}</td>

@@ -1,6 +1,7 @@
 ﻿@using Newtonsoft.Json;
+@using ClinicaDomain;
 @using ClinicaInfrastructure;
-@model IEnumerable<ClinicaDomain.Paciente>
+@model clinicaWeb.Models.PacientesViewModel
 
 @{
     ViewData["Title"] = "Pacientes";
@@ -12,6 +13,7 @@
     <partial name="~/Views/Shared/_modalEdit.cshtml" />
     <partial name="Partials/_modalCrear.cshtml" />
     <partial name="Partials/_modalCrearConsulta.cshtml" />
+    <partial name="Partials/_modalHistorial.cshtml" />
 
 
 
@@ -43,10 +45,10 @@
                         </tr>
                     </thead>
                     <tbody>
-                    @foreach (var item in Model)
+                    @foreach (var item in Model.Pacientes)
                     {
                         <tr>
-                            <td><button class="option" onclick="ShowConsultaModal('@item.IdPaciente')">Generar consulta</button></td>
+                            <td><button class="option btn btn-outline-info" onclick="ShowConsultaModal('@item.IdPaciente')">Generar consulta</button></td>
                             <td>@item.NoRegistro</td>
                             <td>@item.Nombre</td>
                             <td>@item.Apellido</td>
@@ -58,10 +60,25 @@
                             <td>@item.TipoSange</td>
                             <td>
                                 <div class="options d-flex ">
-                                    <a class="option" href="@Url.Action("Historial","Pacientes",new{id = item.IdPaciente}) ">Historial</a>
-                                    <button class="option" onclick="ShowEditModal('@item.IdPaciente')">Ver Datos</button>
+                                    @{
+                                        var consultas = new List<Consulta>(Model.Consultas.Where(x=>x.IdPaciente==item.IdPaciente).ToList());
+                                        // Almacenar el PacienteInformacion de cada objeto de consultas en una lista
+                                        var pacientesInformacion = consultas.Select(c => c.PacienteInformacion).ToList();
+                                        // Asignar null a la propiedad PacienteInformacion de cada objeto de consultas
+                                        consultas.ForEach(c => c.PacienteInformacion = null);
+                                        // Serializar la lista de consultas modificada
+                                        var historiaJson = JsonConvert.SerializeObject(consultas);
+                                        // Asignar el PacienteInformacion correspondiente a cada objeto de consultas
+                                        consultas.Zip(pacientesInformacion, (c, p) => new { Consulta = c, PacienteInformacion = p })
+                                        .ToList()
+                                        .ForEach(cp => cp.Consulta.PacienteInformacion = cp.PacienteInformacion);
+
+                                    }
+                                    <button class="option btn btn-outline-info" onclick="ShowHistorialModal(@historiaJson)">Historial</button>
+
+                                    <button class="option btn btn-outline-info" onclick="ShowEditModal('@item.IdPaciente')">Ver Datos</button>
                                     <form asp-action="Eliminar" asp-route-id="@item.IdPaciente">
-                                        <button class="option" type="submit">Eliminar</button>
+                                        <button class="option btn btn-outline-info" type="submit">Eliminar</button>
                                     </form>
                                 </div>
                             </td>

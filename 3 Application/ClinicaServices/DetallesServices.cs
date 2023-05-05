@@ -1,4 +1,5 @@
 ﻿using ClinicaDomain;
+using Microsoft.AspNetCore.Mvc;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace ClinicaServices
         DetalleCobro GetDetalle(Guid id);
         List<DetalleCobro> GetAll();
         void AddDetalle(DetalleCobro detalle);
-        void DeleteDetalle(Guid id);
+        void Delete(Guid id);
     }
     public class DetalleServices : IDetallesServices
     {
@@ -39,16 +40,6 @@ namespace ClinicaServices
             return _dbContext.DetalleCobros.ToList();
         }
 
-        public void DeleteDetalle(Guid id)
-        {
-            var detalle = GetDetalle(id);
-            if (detalle is not null)
-            {
-                _dbContext.DetalleCobros.Remove(detalle);
-                _dbContext.SaveChanges();
-            }
-        }
-
         public void AddDetalle(DetalleCobro detalle)
         {
             detalle.IdDetalleCobro = Guid.NewGuid();
@@ -56,6 +47,16 @@ namespace ClinicaServices
             var consulta = _dbContext.Consulta.FirstOrDefault(x => x.IdConsulta == detalle.IdConsulta);
             consulta.DetalleCobros.Add(detalle);
             _dbContext.SaveChanges();
+        }
+
+        public void Delete(Guid id)
+        {
+            var detalle = GetDetalle(id);
+            if (detalle is not null)
+            {
+                _dbContext.DetalleCobros.Remove(detalle);
+                _dbContext.SaveChanges();
+            }
         }
     }
 }

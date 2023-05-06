@@ -130,9 +130,9 @@ public partial class ClinicaContext : DbContext
                 .HasColumnType("numeric(18, 0)")
                 .HasColumnName("cantidad");
 
-            entity.HasOne(d => d.IdConsultaNavigation).WithMany(p => p.DetalleCobros)
-                .HasForeignKey(d => d.IdConsulta)
-                .HasConstraintName("FK__Detalle_c__id_co__34C8D9D1");
+            //entity.HasOne(d => d.IdConsultaNavigation).WithMany(p => p.DetalleCobros)
+            //    .HasForeignKey(d => d.IdConsulta)
+            //    .HasConstraintName("FK__Detalle_c__id_co__34C8D9D1");
 
             entity.HasOne(d => d.IdMotivoCobroNavigation).WithMany(p => p.DetalleCobros)
                 .HasForeignKey(d => d.IdMotivoCobro)

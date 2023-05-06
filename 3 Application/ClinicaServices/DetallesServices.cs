@@ -44,8 +44,8 @@ namespace ClinicaServices
         {
             detalle.IdDetalleCobro = Guid.NewGuid();
             detalle.Subtotal = detalle.Cantidad * detalle.Valor;
-            var consulta = _dbContext.Consulta.FirstOrDefault(x => x.IdConsulta == detalle.IdConsulta);
-            consulta.DetalleCobros.Add(detalle);
+            //var consulta = _dbContext.Consulta.FirstOrDefault(x => x.IdConsulta == detalle.IdConsulta);
+            _dbContext.DetalleCobros.Add(detalle);
             _dbContext.SaveChanges();
         }
 

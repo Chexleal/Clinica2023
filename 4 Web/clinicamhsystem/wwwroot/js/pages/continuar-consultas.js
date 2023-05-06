@@ -37,3 +37,10 @@ function ShowReceta(/*detail,id*/) {
     //$('#descripcionReceta').val(detail);
     //$('#idConsulta').val(id);
 }
+
+function SetReadOnly() {
+    $('textarea').attr('readonly', true);
+    $('input').attr('readonly', true);
+}
+
+

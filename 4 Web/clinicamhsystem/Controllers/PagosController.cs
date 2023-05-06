@@ -62,13 +62,13 @@ namespace clinicaWeb.Controllers
             Console.WriteLine(detalle);
 
             _detallesServices.AddDetalle(detalle);
+
             var detalles = _detallesServices.GetAll();
             var servicios = _serviciosServices.GetAll();
             return PartialView("Detalles", (new DetallesPagarViewModel { Detalles = detalles, Servicios = servicios, Id_consulta = detalle.IdConsulta }));
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public ActionResult Eliminar(Guid id, Guid idConsulta)
         {
             try

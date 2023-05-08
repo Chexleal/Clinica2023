@@ -5,11 +5,11 @@
 }
 <div class="table-container" id="table-container" name="table-container">
 <div class="table-responsive">
-<table class="table table-borderless table-sm">
-    <thead>
+<table class="table table-borderless table-sm table-striped ">
+            <thead class="table-dark">
         <tr>
+            <th>Servicio</th>
             <th>Descripción</th>
-            <th>Producto</th>
             <th>Valor</th>
             <th>Cantidad</th>
             <th>Subtotal</th>
@@ -26,10 +26,8 @@
                 <td>@opcion.Cantidad</td>
                 <td>@opcion.Subtotal</td>
                 <td>
-                    <form asp-action="Eliminar" asp-route-id="@opcion.IdDetalleCobro">
-                        <button class="option" type="submit">Eliminar</button>
-                                <input hidden id="idConsulta" name="idConsulta" value="@opcion.IdConsulta"/>
-                    </form>
+                            <button class="option btn btn-outline-danger" type="button" onclick="deleteDetalle('@opcion.IdDetalleCobro')">Eliminar</button>
+                        <input hidden id="idConsulta" name="idConsulta" value="@opcion.IdConsulta"/>
                 </td>
             </tr>
         }
@@ -39,7 +37,7 @@
 </div>
 <br />
 <br />
-<form id="pagarConsulta" action="@Url.Action("Pagos","Pagos")" method="POST">
+<form id="agregarDetalleForm"  method="POST">
     <input hidden id="IdConsulta" name="IdConsulta" value="@Model.Id_consulta" />
     <div class="row">
         <div class="col-md-3">
@@ -72,16 +70,7 @@
             </div>
         </div>
         <div class="col-md-1">
-            <script>
-                // Código JavaScript aquí
-                console.log("before");
-            </script>
-            <br />
-            @*<button onclick="@{
-                }">
-                +
-            </button>*@
-            <button class="btn-add" type="submit">+</button>
+            <button class="btn btn-outline-info mt-4" type="button" onclick="addDetalle()">+</button>
         </div>
     </div>
 </form>

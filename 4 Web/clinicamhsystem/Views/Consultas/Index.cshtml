@@ -68,7 +68,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model.Consultas)
+            @foreach (var item in Model.Consultas.Where(x=>!x.Terminada))
             {
                 <tr>
                     <td>@item.Fecha</td>
@@ -182,89 +182,6 @@
     </div>
 </div>
 
-
-@*
-<!-- Modal Editar Consulta-->
-<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Editar Paciente</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                @*await Html.PartialAsync("_Editar")
-                <form id="editar" asp-action="Editar" method="POST">
-                    <div class="form-group">
-                        <label class="control-label">Nombre</label>
-                        <input name="Nombre" id="Nombre" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Apellido</label>
-                        <input name="Apellido" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Dpi</label>
-                        <input name="Dpi" id="Dpi" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Fecha de nacimiento</label>
-                        <input name="item.FechaNacimiento" type="date" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Genero</label>
-                        <input name="Genero" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Teléfono</label>
-                        <input name="Telefono" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Correo</label>
-                        <input name="Correo" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Direccion</label>
-                        <input name="Direccion" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Alergias</label>
-                        <input name="Alergias" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Estado civil</label>
-                        <input name="EstadoCivil" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Profesion</label>
-                        <input name="Profesion" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Nacionalidad</label>
-                        <input name="Nacionalidad" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Remitido por</label>
-                        <input name="Remitido" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Antecedentes</label>
-                        <input name="Antecedentes" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Tipo de sangre</label>
-                        <input name="TipoSange" class="form-control" />
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="submit" class="btn btn-primary" form="editar">Guardar</button>
-            </div>
-        </div>
-    </div>
-</div>
-*@
 
 @section Scripts{
     <script src="~/js/pages/consultas.js" asp-append-version="true"></script>

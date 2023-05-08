@@ -15,7 +15,7 @@ namespace ClinicaServices
     {
         Consulta GetConsulta(Guid id);
         List<Consulta> GetAll();
-        List<Consulta> SearchConsulta(string input);
+        //List<Consulta> SearchConsulta(string input);
         void AddConsulta(Consulta consulta);
         void UpdateConsulta(Consulta consulta);
         void DeleteConsulta(Guid id);
@@ -52,32 +52,32 @@ namespace ClinicaServices
             }
         }
 
-        public List<Consulta> SearchConsulta(string input)
-        {
+        //public List<Consulta> SearchConsulta(string input)
+        //{
 
-            if (input.IsNullOrEmpty()) return null;
-            else
-            {
-                //DE ESTA FORMA NO SE NECESITA IR POR TODOS LOS USUARIOS, SINO SE FILTRAN DIRECTOS EN DB, LO CUAL LO HACE MAS RÁPIDO
-                List<Consulta> result = _dbContext.Consulta.Where(x =>
-                x.IdConsulta.ToString().Contains(input) ||
-                x.Diagnostico.Contains(input) ||
-                x.Fecha.ToString().Contains(input) ||
-                x.MotivoConsulta.Contains(input) ||
-                x.Observaciones.Contains(input) ||
-                x.Peso.Contains(input) ||
-                x.Pagada.ToString().Contains(input) ||
-                x.PresionArterial.ToString().Contains(input) ||
-                x.Radiografias.ToString().Contains(input) ||
-                x.Temperatura.Contains(input) ||
-                x.Terminada.ToString().Contains(input) ||
-                x.TiempoDuracion.ToString().Contains(input) ||
-                x.Total.ToString().Contains(input)).ToList();
-                return result;
-            }
+        //    if (input.IsNullOrEmpty()) return null;
+        //    else
+        //    {
+        //        //DE ESTA FORMA NO SE NECESITA IR POR TODOS LOS USUARIOS, SINO SE FILTRAN DIRECTOS EN DB, LO CUAL LO HACE MAS RÁPIDO
+        //        List<Consulta> result = _dbContext.Consulta.Where(x =>
+        //        x.IdConsulta.ToString().Contains(input) ||
+        //        x.Diagnostico.Contains(input) ||
+        //        x.Fecha.ToString().Contains(input) ||
+        //        x.MotivoConsulta.Contains(input) ||
+        //        x.Observaciones.Contains(input) ||
+        //        x.Peso.Contains(input) ||
+        //        x.Pagada.ToString().Contains(input) ||
+        //        x.PresionArterial.ToString().Contains(input) ||
+        //        x.Radiografias.ToString().Contains(input) ||
+        //        x.Temperatura.Contains(input) ||
+        //        x.Terminada.ToString().Contains(input) ||
+        //        x.TiempoDuracion.ToString().Contains(input) ||
+        //        x.Total.ToString().Contains(input)).ToList();
+        //        return result;
+        //    }
 
             
-        }
+        //}
 
         public void UpdateConsulta(Consulta consulta)
         {

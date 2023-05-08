@@ -100,12 +100,12 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="crear" asp-action="Create" method="POST">
+                <form id="crear" method="POST" action="@Url.Action("Create","Consultas")">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="control-label">Paciente</label>
-                                <select name="Paciente" class="form-control">
+                                <select name="IdPaciente" class="form-control">
                                     @foreach (var paciente in Model.Pacientes)
                                     {
                                         <option value="@paciente.IdPaciente">@paciente.Nombre @paciente.Apellido - @paciente.Dpi</option>
@@ -113,21 +113,11 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label class="control-label">Fecha</label>
-                                <input name="Fecha" type="date" class="form-control" />
-                            </div>
-                            <div class="form-group">
                                 <label class="control-label">Peso del paciente</label>
                                 <input name="Peso" id="Peso" class="form-control" />
                             </div>
-                            <div class="form-group">
-                                <label class="control-label">Duracion</label>
-                                <input name="Duracion" id="Duracion" class="form-control" />
-                            </div>
-                            <div class="form-group">
-                                <label class="control-label">Radiografias</label>
-                                <input name="Radiografias" id="Radiografias" class="form-control" />
-                            </div>
+                        </div>
+                        <div class="col-md-6">
                             <div class="form-group">
                                 <label class="control-label">Presion Arterial</label>
                                 <input name="PresionArterial" id="PresionArterial" class="form-control" />
@@ -137,37 +127,9 @@
                                 <input name="Temperatura" class="form-control" />
                             </div>
                         </div>
-                        <div class="col-md-6">                         
-                            <div class="form-group">
-                                <label class="control-label">Motivo de Consulta</label>
-                                <input name="MotivoConsulta" class="form-control" />
-                            </div>
-                            <div class="form-group">
-                                <label class="control-label">Diagnostico</label>
-                                <input name="Diagnostico" class="form-control" />
-                            </div>
-                            <div class="form-group">
-                                <label class="control-label">Observaciones</label>
-                                <input name="Observaciones" class="form-control" />
-                            </div>
-                            <div class="form-group">
-                                <label class="control-label">Pagada</label>
-                                <select name="Pagada" class="form-select" required>
-                                    <option value="true">Sí</option>
-                                    <option value="false">No</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="control-label">Total</label>
-                                <input name="Total" class="form-control" />
-                            </div>
-                            <div class="form-group">
-                                <label class="control-label">Terminada</label>
-                                <select name="Terminada" class="form-select" required>
-                                    <option value="true">Sí</option>
-                                    <option value="false">No</option>
-                                </select>
-                            </div>
+                        <div class="form-group">
+                            <label class="control-label">Motivo de Consulta</label>
+                            <input name="MotivoConsulta" class="form-control" />
                         </div>
                     </div>
                 </form>

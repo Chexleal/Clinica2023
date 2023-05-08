@@ -17,7 +17,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var opcion in Model.Detalles.Where(x => x.IdConsulta == Model.Id_consulta))
+        @foreach (var opcion in Model.Detalles.Where(x => x.IdConsulta == Model.consulta.IdConsulta))
         {
             <tr>
                 <td>@Model.Servicios.FirstOrDefault(p => p.IdMotivoCobro == opcion.IdMotivoCobro).Descripcion</td>
@@ -32,13 +32,21 @@
             </tr>
         }
     </tbody>
+            <tfoot>
+                <tr><td colspan="6"></td></tr>
+                <tr>
+                    <td colspan="3"></td>
+                    <td>Total</td>
+                    <td>@Model.consulta.Total</td>
+                </tr>
+            </tfoot>
 </table>
 </div>
 </div>
 <br />
 <br />
 <form id="agregarDetalleForm"  method="POST">
-    <input hidden id="IdConsulta" name="IdConsulta" value="@Model.Id_consulta" />
+    <input hidden id="IdConsulta" name="IdConsulta" value="@Model.consulta.IdConsulta" />
     <div class="row">
         <div class="col-md-3">
             <div class="form-group">
@@ -74,6 +82,14 @@
         </div>
     </div>
 </form>
+
+<br />
+<br />
+<br />
+<form asp-action="Pagar" asp-route-id="@Model.consulta.IdConsulta">
+    <button class="btn btn-primary ms-2 float-end" type="submit">Pagar</button>
+</form>
+<button class="btn btn-secondary float-end" data-bs-dismiss="modal">Cerrar</button>
 
 @section Scripts{
     <script src="~/js/pages/pagos.js" asp-append-version="true"></script>

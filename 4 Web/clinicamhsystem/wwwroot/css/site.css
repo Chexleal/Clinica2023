@@ -97,7 +97,7 @@ hr {
 }
 
 .menu_bt:hover {
-    background-color: #7397B2;
+    background-color: #0077c0;
     color: white;
 }
 
@@ -256,3 +256,8 @@ hr {
         outline: none;
         border-bottom: 2px solid #0099cc;
     }
+
+.active {
+    background-color: #0077c0;
+    color: white;
+}

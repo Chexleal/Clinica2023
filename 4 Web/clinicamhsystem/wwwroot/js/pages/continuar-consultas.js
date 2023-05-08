@@ -22,7 +22,7 @@ function ShowHistorialModal(consultas) {
                                                 <td>${c.Observaciones}</td>
                                                 <td>
                                                     <div class="options d-flex ">
-                                                    <a class="option" href="/Usuarios/Detalles/@item.IdConsulta">Ver</a>
+                                                    <a class="option" href="/ContinuarConsulta/Index?consultaId=${c.IdConsulta}">Ver</a>
                                                     </div>
                                                 </td>
                                                </tr>`);

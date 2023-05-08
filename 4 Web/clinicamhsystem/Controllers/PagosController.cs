@@ -49,7 +49,8 @@ namespace clinicaWeb.Controllers
         {
             var detalles = _detallesServices.GetAll();
             var servicios = _serviciosServices.GetAll();
-            return PartialView("Detalles", (new DetallesPagarViewModel { Detalles = detalles, Servicios = servicios, Id_consulta = idconsulta }));
+            var consulta = _consultaServices.GetConsulta(idconsulta);
+            return PartialView("Detalles", (new DetallesPagarViewModel { Detalles = detalles, Servicios = servicios, consulta = consulta }));
         }
 
 
@@ -65,7 +66,8 @@ namespace clinicaWeb.Controllers
 
             var detalles = _detallesServices.GetAll();
             var servicios = _serviciosServices.GetAll();
-            return PartialView("Detalles", (new DetallesPagarViewModel { Detalles = detalles, Servicios = servicios, Id_consulta = detalle.IdConsulta }));
+            var consulta = _consultaServices.GetConsulta(detalle.IdConsulta);
+            return PartialView("Detalles", (new DetallesPagarViewModel { Detalles = detalles, Servicios = servicios, consulta = consulta }));
         }
 
         [HttpPost]
@@ -78,7 +80,19 @@ namespace clinicaWeb.Controllers
             catch { }
             var detalles = _detallesServices.GetAll();
             var servicios = _serviciosServices.GetAll();
-            return PartialView("Detalles", (new DetallesPagarViewModel { Detalles = detalles, Servicios = servicios, Id_consulta = idConsulta }));
+            var consulta = _consultaServices.GetConsulta(idConsulta);
+            return PartialView("Detalles", (new DetallesPagarViewModel { Detalles = detalles, Servicios = servicios, consulta = consulta }));
+        }
+
+        [HttpPost]
+        public ActionResult Pagar(Guid id)
+        {
+            try
+            {
+                _detallesServices.Pagar(id);
+            }
+            catch { }
+            return RedirectToAction("Index");
         }
     }
 }

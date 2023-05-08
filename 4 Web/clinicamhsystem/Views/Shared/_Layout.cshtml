@@ -26,14 +26,14 @@
             <b>Hola Edgar Hernandez</b>
             <hr>
             <div class="botones btn-group-vertical  mt-2">
-                <a class="menu_bt" href="/Pacientes"> <i class="fa-solid fa-user-injured fa-xl menu_icon"></i> Pacientes</a>
-                <a class="menu_bt" href="/Consultas"><i class="fa-solid fa-notes-medical fa-xl menu_icon"></i>Consultas</a>
-                <a class="menu_bt" href="/Pagos"><i class="fa-solid fa-money-bill fa-xl menu_icon"></i> Pagar Consultas</a>
-                <a class="menu_bt " href="/Citas"><i class="fa-solid fa-calendar fa-xl menu_icon"></i>Citas</a>
-                <a class="menu_bt " href="/Reportes"><i class="fa-regular fa-file-lines fa-xl menu_icon"></i>Reportes</a>
-                <a class="menu_bt " href="/Servicios"><i class="fa-solid fa-hand-holding-medical fa-xl menu_icon"></i>Servicios</a>
-                <a class="menu_bt " href="/Usuarios"><i class="fa-solid fa-users fa-xl menu_icon"></i>Usuarios</a>
-                <a class="menu_bt " href="/Config"><i class="fa-solid fa-gears fa-xl menu_icon"></i>Configuración</a>
+                <a class="menu_bt @((ViewContext.RouteData.Values["controller"].ToString() == "Pacientes") ? "active" : "")" href="/Pacientes"> <i class="fa-solid fa-user-injured fa-xl menu_icon"></i> Pacientes</a>
+                <a class="menu_bt @((ViewContext.RouteData.Values["controller"].ToString() == "Consultas" || ViewContext.RouteData.Values["controller"].ToString() =="ContinuarConsulta") ? "active" : "")" href="/Consultas"><i class="fa-solid fa-notes-medical fa-xl menu_icon"></i>Consultas</a>
+                <a class="menu_bt @((ViewContext.RouteData.Values["controller"].ToString() == "Pagos") ? "active" : "")" href="/Pagos"><i class="fa-solid fa-money-bill fa-xl menu_icon"></i> Pagar Consultas</a>
+                <a class="menu_bt @((ViewContext.RouteData.Values["controller"].ToString() == "Citas") ? "active" : "")" href="/Citas"><i class="fa-solid fa-calendar fa-xl menu_icon"></i>Citas</a>
+                <a class="menu_bt @((ViewContext.RouteData.Values["controller"].ToString() == "Reportes") ? "active" : "")" href="/Reportes"><i class="fa-regular fa-file-lines fa-xl menu_icon"></i>Reportes</a>
+                <a class="menu_bt @((ViewContext.RouteData.Values["controller"].ToString() == "Servicios") ? "active" : "")" href="/Servicios"><i class="fa-solid fa-hand-holding-medical fa-xl menu_icon"></i>Servicios</a>
+                <a class="menu_bt @((ViewContext.RouteData.Values["controller"].ToString() == "Usuarios") ? "active" : "")" href="/Usuarios"><i class="fa-solid fa-users fa-xl menu_icon"></i>Usuarios</a>
+                <a class="menu_bt @((ViewContext.RouteData.Values["controller"].ToString() == "Configuración") ? "active" : "")" href="/Config"><i class="fa-solid fa-gears fa-xl menu_icon"></i>Configuración</a>
                 <a class="menu_bt logout " href="/"><i class="fa-solid fa-right-from-bracket fa-xl menu_icon"></i>Cerrar Sesión</a>
             </div>
         </nav>

@@ -16,13 +16,13 @@ function ShowHistorialModal(consultas) {
 
     consultas.forEach(c => {
         $('#table > tbody:last-child').append(`<tr>
-                                                <td>${c.Fecha}</td>
+                                                <td>${parseDate(c.Fecha) }</td>
                                                 <td>${c.MotivoConsulta}</td>
                                                 <td>${c.Diagnostico}</td>
                                                 <td>${c.Observaciones}</td>
                                                 <td>
                                                     <div class="options d-flex ">
-                                                    <a class="option" href="/Usuarios/Detalles/@item.IdConsulta">Ver</a>
+                                                    <a class="option" href="/ContinuarConsulta/Index?consultaId=${c.IdConsulta}">Ver</a>
                                                     </div>
                                                 </td>
                                                </tr>`);
@@ -37,3 +37,10 @@ function ShowReceta(/*detail,id*/) {
     //$('#descripcionReceta').val(detail);
     //$('#idConsulta').val(id);
 }
+
+function SetReadOnly() {
+    $('textarea').attr('readonly', true);
+    $('input').attr('readonly', true);
+}
+
+

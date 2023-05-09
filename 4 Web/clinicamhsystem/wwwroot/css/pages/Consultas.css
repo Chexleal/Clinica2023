@@ -10,16 +10,6 @@
     width: 300%;
 }
 
-.card{
-    border:none;
-}
-
-div.dataTables_filter {
-}
-
-.dataTables_filter {
-}
-
 .dataTables_wrapper .dataTables_filter {
     float: left;
     text-align: center;
@@ -32,19 +22,6 @@ div.dataTables_filter {
 .table{
     border: 1px solid;
     margin-top: 10px;
-}
-
-.dataTables_wrapper {
-}
-
-    .dataTables_wrapper .dataTables_length {
-    }
-
-.tableUser_filter.dataTables_filter {
-}
-
-
-div.tableUser_filter.dataTables_filter {
 }
 
 .dataTables_wrapper .dataTables_paginate {

@@ -96,8 +96,11 @@
             <div class="row mt-5">
                 <div class="col col-sm col-md col-lg col-xl col-xxl">
                     <input hidden id="terminado" name="Terminada" value="@Model.Consulta.IdPaciente" />
-                    <button type="submit" id="btnGuardar" class="btn btn-outline-dark mb-3">Guardar Cambios</button>
-                    <button type="submit" id="btnTerminar" class="btn btn-dark mb-3">Terminar Consulta</button>
+                    @if (!Model.Consulta.Terminada)
+                    {
+                        <button type="submit" id="btnGuardar" class="btn btn-outline-dark mb-3">Guardar Cambios</button>
+                        <button type="submit" id="btnTerminar" class="btn btn-dark mb-3">Terminar Consulta</button>
+                    }
                 </div>
             </div>
         </div>
@@ -108,4 +111,12 @@
 
 @section Scripts{
     <script src="~/js/pages/continuar-consultas.js" asp-append-version="true"></script>
+    <script>
+        var state = "@Model.Consulta.Terminada";
+        if(state=='True'){
+           
+            SetReadOnly();
+        }
+
+    </script>
 }

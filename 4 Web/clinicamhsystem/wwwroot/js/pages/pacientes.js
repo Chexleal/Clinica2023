@@ -9,7 +9,8 @@ $(document).ready(function () {
 
 function CreateTable() {
     $('#tablePaciente').DataTable({
-        "autoWidth": true,
+
+        "responsive": true,
         "ordering": true,
         "lengthChange": true,
         dom: 'Bfrtip',
@@ -90,4 +91,26 @@ function ShowEditModal(id) {
 function ShowConsultaModal(id) {
     $('#createConsultaModal').modal('show');
     $('#IdPaciente').val(id);
+}
+
+function ShowHistorialModal(consultas) {
+    $('#loading').show();
+    $("#table > tbody").empty();
+
+    consultas.forEach(c => {
+
+        $('#table > tbody:last-child').append(`<tr>
+                                                <td>${parseDate(c.Fecha)}</td>
+                                                <td>${c.MotivoConsulta}</td>
+                                                <td>${c.Diagnostico}</td>
+                                                <td>${c.Observaciones}</td>
+                                                <td>
+                                                    <div class="options d-flex ">
+                                                    <a class="option" href="/ContinuarConsulta/Index?consultaId=${c.IdConsulta}">Ver</a>
+                                                    </div>
+                                                </td>
+                                               </tr>`);
+    });
+    $("#modalConsulta").modal('show');
+    $('#loading').hide();
 }

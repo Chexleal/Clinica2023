@@ -26,13 +26,13 @@ namespace clinicaWeb.Controllers
             var pacientes = _pacienteServices.GetAll();
             var consultas = _consultaServices.GetAll();
             
-            ConsultasModel modelo = new ConsultasModel();
+            //ConsultasModel modelo = new ConsultasModel();
 
-            modelo.Paciente = pacientes;
-            modelo.Consulta = consultas;
-            return View(modelo);
+            //modelo.Paciente = pacientes;
+            //modelo.Consulta = consultas;
+            //return View(modelo);
             //return View(consultas);
-            //return View(new ConsultaViewModel { Consultas = consultas, Pacientes = pacientes });
+            return View(new ConsultasViewModel { Consultas = consultas, Pacientes = pacientes });
         }
 
         /*
@@ -68,13 +68,11 @@ namespace clinicaWeb.Controllers
         */
         // POST: ConsultasController/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public ActionResult Create(Consulta consulta)
         {
             try
             {
                 _consultaServices.AddConsulta(consulta);
-                return RedirectToAction("Index");
             }
             catch
             {           

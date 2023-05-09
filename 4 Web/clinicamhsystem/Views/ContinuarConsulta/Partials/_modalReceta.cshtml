@@ -12,6 +12,7 @@
     <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
+
                 <h5 class="modal-title"><a href="@Url.Action("DescargarPdf",new {consultaId=Model.Consulta.IdConsulta})" id="btnGuardar" class="btn btn-outline-dark mb-3">Descargar</a></h5>
                 @*<h5 class="modal-title"><a href="@Url.Action("DescargarPdf")" id="btnGuardar" class="btn btn-outline-dark mb-3">Descargar</a></h5>*@
                 <h5 class="modal-title"><a href="@Url.Action("VistaPdf",new {consultaId=Model.Consulta.IdConsulta})" id="btnGuardar" class="btn btn-outline-dark mb-3">ver pdf en pagina</a></h5>
@@ -19,6 +20,9 @@
                 @*<a class="btn button-primary" asp-controller="ContinuarConsulta" asp-action="VistaPdf" target="_blank">ver PDf en pagina</a>*@
                 <a class="btn button-primary" asp-controller="ContinuarConsulta" asp-action="DescargarPdf" asp-route-id="@newConsultaId" target="_blank">descargar weno</a>
                 <embed src="@Url.Action("VistaPdf","ContinuarConsulta")" width="400" height="400" type="aplication/pdf"/>
+
+                <h5 class="modal-title"><a href="@Url.Action("Descargar",new {consultaId=Model.Consulta.IdConsulta})" id="btnGuardar" class="btn btn-outline-dark mb-3">Descargar</a></h5>
+
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div id="modalRecetaBody" class="modal-body">

@@ -72,6 +72,7 @@ public class PacienteServices : IPacienteServices
             pacienteDB.Remitido = paciente.Remitido;
             pacienteDB.Antecedentes = paciente.Antecedentes;
             pacienteDB.TipoSange = paciente.TipoSange;
+            pacienteDB.NoRegistro = paciente.NoRegistro;
             pacienteDB.BeforeSaveChanges();
             _dbContext.SaveChanges();
         }

@@ -1,10 +1,12 @@
 ﻿using ClinicaDomain;
+using Microsoft.AspNetCore.Mvc;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 
 namespace ClinicaServices
 {
@@ -12,8 +14,10 @@ namespace ClinicaServices
     {
         DetalleCobro GetDetalle(Guid id);
         List<DetalleCobro> GetAll();
+        List<DetalleCobro> GetDetallesByConsulta(Guid consultaId);
         void AddDetalle(DetalleCobro detalle);
-        void DeleteDetalle(Guid id);
+        void Delete(Guid id);
+        void Pagar(Guid IdConsulta);
     }
     public class DetalleServices : IDetallesServices
     {
@@ -39,20 +43,34 @@ namespace ClinicaServices
             return _dbContext.DetalleCobros.ToList();
         }
 
-        public void DeleteDetalle(Guid id)
+        public void AddDetalle(DetalleCobro detalle)
+        {
+            detalle.IdDetalleCobro = Guid.NewGuid();
+            detalle.Subtotal = detalle.Cantidad * detalle.Valor;
+            Consulta consulta = _dbContext.Consulta.FirstOrDefault(p => p.IdConsulta == detalle.IdConsulta);
+            consulta.Total += detalle.Subtotal;
+
+            //var consulta = _dbContext.Consulta.FirstOrDefault(x => x.IdConsulta == detalle.IdConsulta);
+            _dbContext.DetalleCobros.Add(detalle);
+            _dbContext.SaveChanges();
+        }
+
+        public void Delete(Guid id)
         {
             var detalle = GetDetalle(id);
             if (detalle is not null)
             {
+                var consulta = _dbContext.Consulta.FirstOrDefault(p => p.IdConsulta == detalle.IdConsulta);
+                consulta.Total -= detalle.Subtotal;
                 _dbContext.DetalleCobros.Remove(detalle);
                 _dbContext.SaveChanges();
             }
         }
 
-        public void AddDetalle(DetalleCobro detalle)
+        public void Pagar(Guid idConsulta)
         {
-            detalle.IdDetalleCobro = Guid.NewGuid();
-            _dbContext.DetalleCobros.Add(detalle);
+            var consulta = _dbContext.Consulta.FirstOrDefault(p => p.IdConsulta == idConsulta);
+            consulta.Pagada = true;
             _dbContext.SaveChanges();
         }
     }

@@ -60,13 +60,13 @@ public class UserServices : IUserServices
         //return _dbContext.Usuarios.ToList();
     }
 
-    public bool RecoverAccount(string email, string userName)
+    public bool RecoverAccount(string userEmail, string userName)
     {
-
+        string secPass = "pwqyxudymqccltdr";
         // Send an email to the user with instructions to reset their password
-        string fromAddress = "emrivera2001@gmail.com";
-        string fromPassword = "nopass";
-        string toAddress = email;
+        string fromAddress = "traumah_recovery@outlook.com";
+        string fromPassword = "thrtohajbvykrmvy";
+        string toAddress = userEmail;
         string subject = "Password reset for your account";
         string body = "<html>" +
                          "<body>" +
@@ -77,26 +77,34 @@ public class UserServices : IUserServices
                        "</html>";
 
 
+        // Configuración del cliente SMTP
+        var smtpClient = new SmtpClient("smtp-mail.outlook.com")
+        {
+            Port = 587,
+            Credentials = new NetworkCredential(fromAddress, fromPassword),
+            EnableSsl = true
+        };
+
+        // Creación del correo electrónico
+        var email = new MailMessage
+        {
+            From = new MailAddress(fromAddress),
+            Subject = subject,
+            Body = body,
+            IsBodyHtml = true
+        };
+        email.To.Add(toAddress);
+
+        // Envío del correo electrónico
         try
         {
-            using (MailMessage mail = new MailMessage(fromAddress, toAddress, subject, body))
-            {
-                mail.IsBodyHtml = true;
-                using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
-                {
-                    smtp.EnableSsl = true;
-                    smtp.UseDefaultCredentials = false;
-                    smtp.Credentials = new NetworkCredential(fromAddress, fromPassword);
-                    smtp.Send(mail);
-                }
-            }
-
+            smtpClient.Send(email);
+            Console.WriteLine("Correo electrónico enviado exitosamente.");
             return true;
         }
         catch (Exception ex)
         {
-            // Handle any exceptions that occur while sending the email
-            Console.WriteLine("Error sending email: " + ex.Message);
+            Console.WriteLine("Error al enviar correo electrónico: " + ex.Message);
             return false;
         }
     }

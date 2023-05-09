@@ -1,8 +1,13 @@
 ﻿using ClinicaDomain;
 using clinicamhsystem.Models;
 using ClinicaServices;
+using DinkToPdf;
+using DinkToPdf.Contracts;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using System.Text;
+using System.Web;
 
 namespace clinicaWeb.Controllers
 {
@@ -12,12 +17,14 @@ namespace clinicaWeb.Controllers
         private readonly IConsultaServices _consultaServices;
         private readonly IRecetaServices _recetaServices;
         private readonly IPacienteServices _pacienteServices;
+        private readonly IConverter _converter;
 
-        public ContinuarConsulta(IConsultaServices consultaServices, IPacienteServices pacienteServices, IRecetaServices recetaServices)
+        public ContinuarConsulta(IConsultaServices consultaServices, IPacienteServices pacienteServices, IRecetaServices recetaServices, IConverter converter)
         {
             _consultaServices = consultaServices;
             _pacienteServices = pacienteServices;
             _recetaServices = recetaServices;
+            _converter = converter;
         }
 
 
@@ -73,13 +80,117 @@ namespace clinicaWeb.Controllers
         }
 
         [HttpGet]
-        public void Descargar(Guid consultaId)
+        public ActionResult Descargar(Guid consultaId)
         {
             var receta = _recetaServices.GetByConsulta(consultaId);
             if (receta is null)
             {
-              // LOGICA PARA DESCARGAR
+                //eturn new Rotativa.ViewAsPdf("Index", consultaId);
+                return null;
             }
+            else
+                return null;
+        }
+
+        public ActionResult VistaPdf(Guid consultaId)
+        {
+            var receta = _recetaServices.GetByConsulta(consultaId);
+            //ViewData["detalleReceta"] = receta.Descripcion.ToString();
+            ViewData["detalleReceta"] = "recetita vista pdf";
+            return View("Index1vistapdf");
+        }
+
+        public ActionResult PdfPage()
+        {
+           //var receta = _recetaServices.GetByConsulta(consultaId);
+           //ViewData["detalleReceta"] = receta.Descripcion.ToString();
+           //ViewData["detalleReceta"] = "recetita pdf page";
+
+            string paginaActual = HttpContext.Request.Path;
+            string urlPagina = HttpContext.Request.GetEncodedUrl();
+            urlPagina = urlPagina.Replace(paginaActual, "");
+            urlPagina = $"{urlPagina}/ContinuarConsulta/VistaPdf";
+
+            var pdf = new HtmlToPdfDocument()
+            {
+                GlobalSettings = new GlobalSettings()
+                {
+                    PaperSize = PaperKind.A4,
+                    Orientation = Orientation.Portrait
+
+                },
+                Objects =
+                {
+                    new ObjectSettings()
+                    {
+                        Page = urlPagina
+                    }
+                }
+
+            };
+
+            var archivoPdf = _converter.Convert(pdf);
+
+            return File(archivoPdf, "aplication/pdf");
+        }
+
+        public ActionResult DescargarPdf(Guid consultaIds)
+        {
+            //var receta = _recetaServices.GetByConsulta(consultaId);
+            //ViewData["detalleReceta"] = receta.Descripcion.ToString();
+            //ViewData["detalleReceta"] = "recetita descargar pdf";
+
+            string paginaActual = HttpContext.Request.Path; // "/ContinuarConsulta/DescargarPdf"
+
+            string urlPagina = HttpContext.Request.GetEncodedUrl(); // 		urlPagina	"https://localhost:7070/ContinuarConsulta/DescargarPdf?consultaId=966967ee-49ab-4d85-bc5a-2826deb75257"	string
+
+
+            Uri uri = new Uri(urlPagina);
+            string queryString = uri.Query;
+            string consultaId = HttpUtility.ParseQueryString(queryString).Get("consultaId");
+            string baseUrl = uri.OriginalString.Substring(0, uri.OriginalString.IndexOf("?"));
+
+            string path = uri.LocalPath;
+            string controller = path.Split('/')[1];
+            string action = path.Split('/')[2];
+
+            string originUrl = uri.GetLeftPart(UriPartial.Authority);
+
+            StringBuilder newUrlBuild = new StringBuilder(originUrl);
+            newUrlBuild.Append("/");
+            newUrlBuild.Append(controller);
+            newUrlBuild.Append("/VistaPdf?");
+            newUrlBuild.Append(consultaId);
+
+            urlPagina = newUrlBuild.ToString();
+
+            string example = "https://localhost:7070/ContinuarConsulta/VistaPdf?consultaId=966967ee-49ab-4d85-bc5a-2826deb75257";
+            string exaple2 = "https://localhost:7070?consultaId=966967ee-49ab-4d85-bc5a-2826deb75257/ContinuarConsulta/VistaPdf";
+
+            var pdf = new HtmlToPdfDocument()
+            {
+                GlobalSettings = new GlobalSettings()
+                {
+                    PaperSize = PaperKind.A4,
+                    Orientation = Orientation.Portrait
+
+                },
+                Objects =
+                {
+                    new ObjectSettings()
+                    {
+                        Page = urlPagina // "https://localhost:7070?consultaId=966967ee-49ab-4d85-bc5a-2826deb75257"	
+
+                    }
+                }
+
+            };
+
+            string url = urlPagina.ToString();
+            var archivoPdf = _converter.Convert(pdf);
+            string nombrePDf = "receta_"+ DateTime.Now.ToString("ddMMyyyy")+".pdf";
+
+            return File(archivoPdf, "aplication/pdf",nombrePDf);
         }
 
 

@@ -1,6 +1,7 @@
 ﻿using ClinicaDomain;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ClinicaServices;
 
@@ -17,6 +18,7 @@ public class RecetaServices : IRecetaServices
     public RecetaServices(ClinicaContext dbContext)
     {
         _dbContext = dbContext;
+       
     }
 
     public Receta Get(Guid id)
@@ -32,6 +34,12 @@ public class RecetaServices : IRecetaServices
     public void Update(Receta receta)
     {
         _dbContext.SaveChanges();
+    }
+
+    public void recetaConverter()
+    {
+        var builder = WebApplication.CreateBuilder();
+       // builder.Services.AddSingleton(typeof(Converter(), new Synchrini));
     }
 
     public void Create(Receta receta)

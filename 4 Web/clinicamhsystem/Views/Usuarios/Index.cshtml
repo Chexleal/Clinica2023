@@ -8,76 +8,82 @@
     <link rel="stylesheet" href="~/css/pages/Usuarios.css" asp-append-version="true" />
 }
 
-<div class="card card-body ">
-    <p>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
-           Agregar Usuario
-        </button>
-    </p>
-    <table id="tableUser" class="table">
-        <thead class="table-dark">
-            <tr>
-                <th>Usuario</th>
-                <th>Nombre</th>
-                <th>Teléfono</th>
-                <th>Correo</th>
-                <th>Dpi</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
+<div class="card w-100 shadow-lg mt-5">
+
+    <div class="card-header bg-ligth">
+        <h3 class="h3">Usuarios</h3>
+    </div>
+    <div class="card-body ">
+        <p>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+                Agregar Usuario
+            </button>
+        </p>
+        <table id="tableUser" class="table">
+            <thead class="table-dark">
                 <tr>
-                    <td>@item.NombreUsuario</td>
-                    <td>@item.Nombre @item.Apellido</td>
-                    <td>@item.Telefono</td>
-                    <td>@item.Correo</td>
-                    <td>@item.Dpi</td>
-                    <td>
-                        <div class="options d-flex ">
-                            <a class="option" href="/Usuarios/Detalles/@item.IdUsuario">Ver</a>
-                            <a class="option" href="@Url.Action("Editar","Usuarios",new{id=item.IdUsuario}) ">Editar</a>
-                            <form asp-action="Eliminar" asp-route-id="@item.IdUsuario">
-                                <button class="option" type="submit">Eliminar</button>
-                            </form>
-                            @if (item.UsuarioActivo == true)
-                            {
-                                <form asp-action="Activate" asp-route-id="@item.IdUsuario">
-                                    <input type="hidden" value="false" name="state"/>
-                                    <button class="option" type="submit">Desactivar</button>
-                                </form>
-                            }
-                            else
-                            {
-                                <form asp-action="Activate" asp-route-id="@item.IdUsuario">
-                                    <input type="hidden" value="true" name="state" />
-                                    <button class="option" type="submit">Activar</button>
-                                </form>
-                            }
-                        </div>
-                    </td>
-                    @*<td>
-                        <button class="btn" type="button" id="rowMenu" data-bs-toggle="dropdown" aria-expanded="false">
-                            ...
-                        </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="dropdown-item" href="/Usuarios/Detalles/@item.IdUsuario">Ver</a>
-                            <a class="dropdown-item" href="/Usuarios/Editar/@item.IdUsuario">Editar</a>
-                            <form asp-action="Eliminar" asp-route-id="@item.IdUsuario">
-                                <button class="dropdown-item" type="submit">Eliminar</button>
-                            </form>
-                            <form asp-action="Desactivar" asp-route-id="@item.IdUsuario">
-                                <button class="dropdown-item" type="submit">Desactivar</button>
-                            </form>
-
-                        </div>
-                </td>*@
+                    <th>Usuario</th>
+                    <th>Nombre</th>
+                    <th>Teléfono</th>
+                    <th>Correo</th>
+                    <th>Dpi</th>
+                    <th>Acciones</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.NombreUsuario</td>
+                        <td>@item.Nombre @item.Apellido</td>
+                        <td>@item.Telefono</td>
+                        <td>@item.Correo</td>
+                        <td>@item.Dpi</td>
+                        <td>
+                            <div class="options d-flex ">
+                                <a class="option" href="/Usuarios/Detalles/@item.IdUsuario">Ver</a>
+                                <a class="option" href="@Url.Action("Editar","Usuarios",new{id=item.IdUsuario}) ">Editar</a>
+                                <form asp-action="Eliminar" asp-route-id="@item.IdUsuario">
+                                    <button class="option" type="submit">Eliminar</button>
+                                </form>
+                                @if (item.UsuarioActivo == true)
+                                {
+                                    <form asp-action="Activate" asp-route-id="@item.IdUsuario">
+                                        <input type="hidden" value="false" name="state" />
+                                        <button class="option" type="submit">Desactivar</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form asp-action="Activate" asp-route-id="@item.IdUsuario">
+                                        <input type="hidden" value="true" name="state" />
+                                        <button class="option" type="submit">Activar</button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                        @*<td>
+                    <button class="btn" type="button" id="rowMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                    ...
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <a class="dropdown-item" href="/Usuarios/Detalles/@item.IdUsuario">Ver</a>
+                    <a class="dropdown-item" href="/Usuarios/Editar/@item.IdUsuario">Editar</a>
+                    <form asp-action="Eliminar" asp-route-id="@item.IdUsuario">
+                    <button class="dropdown-item" type="submit">Eliminar</button>
+                    </form>
+                    <form asp-action="Desactivar" asp-route-id="@item.IdUsuario">
+                    <button class="dropdown-item" type="submit">Desactivar</button>
+                    </form>
 
+                    </div>
+                    </td>*@
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    </div>
 </div>
 
 <!-- Modal Crear Usuario-->
@@ -90,7 +96,7 @@
             </div>
             <div class="modal-body">
                 <form id="crear" asp-action="Create" method="POST">
-                
+
                     <div class="form-group">
                         <label class="control-label">Usuario</label>
                         <input name="NombreUsuario" id="NombreUsuario" class="form-control" />
@@ -167,5 +173,5 @@
 </div>
 
 @section Scripts{
-<script src="~/js/pages/usuarios.js" asp-append-version="true"></script>
+    <script src="~/js/pages/usuarios.js" asp-append-version="true"></script>
 }

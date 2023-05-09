@@ -33,7 +33,7 @@ public partial class Consulta
 
     public bool Terminada { get; set; }
 
-    //public virtual ICollection<DetalleCobro> DetalleCobros { get; } = new List<DetalleCobro>();
+    //public virtual ICollection<DetalleCobro> DetalleCobros { get; set; } = new List<DetalleCobro>();
 
     public Paciente PacienteInformacion { get; set; }
 

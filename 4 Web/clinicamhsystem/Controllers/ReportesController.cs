@@ -1,83 +1,42 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using ClinicaServices;
+using clinicaWeb.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace clinicaWeb.Controllers
 {
     public class ReportesController : Controller
     {
-        // GET: ReportesController
+        private readonly IPacienteServices _pacienteServices;
+        private readonly IConsultaServices _consultaServices;
+        private readonly IServiciosServices _serviciosServices;
+
+        public ReportesController(IConsultaServices consultaServices, IPacienteServices pacienteServices, IServiciosServices serviciosServices)
+        {
+            _consultaServices = consultaServices;
+            _pacienteServices = pacienteServices;
+            _serviciosServices = serviciosServices;
+        }
+
+        // GET: UsuariosController
         public ActionResult Index()
         {
-            return View();
+            var pacientes = _pacienteServices.GetAll();
+            //var consultas = _consultaServices.GetAll();
+            var servicios = _serviciosServices.GetAll();
+
+            return View(new ReportesViewModel { Pacientes = pacientes, Servicios = servicios, Servicio = null });
         }
 
-        // GET: ReportesController/Details/5
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
-
-        // GET: ReportesController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: ReportesController/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public ActionResult Search(Guid servicioid)
         {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
+            var pacientes = _pacienteServices.GetAll();
+            var servicios = _serviciosServices.GetAll();
+            //var consultas = _pacienteServices.GetConsultasFiltradas();
+            var servicio = _serviciosServices.GetServicio(servicioid);
 
-        // GET: ReportesController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
-
-        // POST: ReportesController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: ReportesController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: ReportesController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            return View(new ReportesViewModel { Pacientes = pacientes, Servicios = servicios, Servicio = servicio });
         }
     }
 }

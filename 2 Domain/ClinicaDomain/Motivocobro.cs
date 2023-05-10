@@ -10,4 +10,9 @@ public partial class MotivoCobro
     public string Descripcion { get; set; }
 
     public virtual ICollection<DetalleCobro> DetalleCobros { get; } = new List<DetalleCobro>();
+
+    public void BeforeSaveChanges()
+    {
+        Descripcion ??= string.Empty;
+    }
 }

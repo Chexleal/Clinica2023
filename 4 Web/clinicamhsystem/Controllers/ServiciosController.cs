@@ -1,14 +1,30 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using ClinicaDomain;
+using clinicamhsystem.Models;
+using ClinicaServices;
+using clinicaWeb.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace clinicaWeb.Controllers
 {
     public class ServiciosController : Controller
     {
+        private readonly IServiciosServices _services;
+        private readonly ClinicaContext _dbContext;
+
+
+        public ServiciosController(IServiciosServices serviciosServices)
+        {
+            _services = serviciosServices;
+        }
+
+
         // GET: ServiciosController
         public ActionResult Index()
         {
-            return View();
+            var servicios = _services.GetAll();
+            return View(new ServiciosViewModel { Servicios = servicios});
         }
 
         // GET: ServiciosController/Details/5
@@ -18,15 +34,23 @@ namespace clinicaWeb.Controllers
         }
 
         // GET: ServiciosController/Create
-        public ActionResult Create()
+        [HttpPost]
+        public ActionResult Create(MotivoCobro servicio)
         {
-            return View();
+            try
+            {
+                _services.AddServicio(servicio);
+            }
+            catch
+            {
+            }
+            return RedirectToAction("Index");
         }
 
         // POST: ServiciosController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public ActionResult CreateP(IFormCollection collection)
         {
             try
             {
@@ -59,10 +83,18 @@ namespace clinicaWeb.Controllers
             }
         }
 
-        // GET: ServiciosController/Delete/5
-        public ActionResult Delete(int id)
+        // POST: ServiciosControler/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Eliminar(Guid id)
         {
-            return View();
+            try
+            {
+                _services.DeleteServicio(id);
+            }
+            catch { }
+            var servicios = _services.GetAll();
+            return View("Index",servicios);
         }
 
         // POST: ServiciosController/Delete/5

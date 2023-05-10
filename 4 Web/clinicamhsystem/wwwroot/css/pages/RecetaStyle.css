@@ -1,0 +1,56 @@
+﻿/*.upper {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.upper2 {
+    position: absolute;
+    top: 90;
+    right: 0;
+}
+
+.middle {
+    position: absolute;
+    top: 200px;
+    left: 0;
+    right: 0;
+}
+*/
+.under {
+    position: absolute;
+    bottom:1500;
+    left: 0;
+    right: 0;
+}
+
+
+body {
+    font-family: 'Roboto', sans-serif;
+}
+
+.logoTh {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 300px;
+    height: 100px;
+}
+
+    .logoTh img {
+        display: block;
+        margin: auto;
+    }
+
+.CompanyName {
+    margin: 0;
+}
+
+.Tittle {
+    color: #591CFF;
+    font-size: 12px;
+}
+
+.Descrip {
+    font-size: 12px;
+}

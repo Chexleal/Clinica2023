@@ -94,7 +94,7 @@ namespace clinicaWeb.Controllers
             }
             catch { }
             var servicios = _services.GetAll();
-            return View("Index",servicios);
+            return RedirectToAction("Index");
         }
 
         // POST: ServiciosController/Delete/5

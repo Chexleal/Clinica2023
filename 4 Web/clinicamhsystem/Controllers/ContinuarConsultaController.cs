@@ -190,7 +190,7 @@ namespace clinicaWeb.Controllers
             {
                 GlobalSettings = new GlobalSettings()
                 {
-                    PaperSize = PaperKind.A4,
+                    PaperSize = PaperKind.A5,
                     Orientation = Orientation.Portrait
 
                 },

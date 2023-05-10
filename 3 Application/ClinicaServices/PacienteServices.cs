@@ -11,6 +11,7 @@ public interface IPacienteServices
     List<Paciente>? GetAll();
     void UpdatePaciente(Paciente paciente);
     void DeletePaciente(Guid id);
+    List<Consulta>? GetConsultasFiltradas(Guid servicioId);
 }
 public class PacienteServices : IPacienteServices
 {
@@ -88,4 +89,15 @@ public class PacienteServices : IPacienteServices
         }
     }
 
+    public List<Consulta>? GetConsultasFiltradas(Guid servicioId)
+    {
+        List<Consulta> consultas = new();
+
+        //foreach (var detalle in )
+        //{
+
+        //}
+
+        return consultas;
+    }
 }

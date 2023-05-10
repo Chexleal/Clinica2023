@@ -1,18 +1,24 @@
 ﻿@model ConsultaContinuarViewModel
+@using ClinicaDomain
+@using Newtonsoft.Json
+
 <!-- Modal Crear Paciente-->
 @{
     //var receta = Model.Consulta.Receta.FirstOrDefault();
     var newConsultaId = Model.Consulta.IdConsulta;
-    // var receta = Model.Consulta.Receta.
-   // receta ??= new();
-    //ViewData["receta"] = new { receta.IdReceta };
 }
 
 <div class="modal fade" id="modalReceta" tabindex="-1" role="dialog" aria-labelledby="modalReceta" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><a href="@Url.Action("Descargar",new {consultaId=Model.Consulta.IdConsulta})" id="btnGuardar" class="btn btn-outline-dark mb-3">Descargar</a></h5>
+                <h5 class="modal-title"><a href="@Url.Action("DescargarPdf",new {consultaId=Model.Consulta.IdConsulta})" id="btnGuardar" class="btn btn-outline-dark mb-3">Descargar</a></h5>
+                @*<h5 class="modal-title"><a href="@Url.Action("DescargarPdf")" id="btnGuardar" class="btn btn-outline-dark mb-3">Descargar</a></h5>*@
+                @*<h5 class="modal-title"><a href="@Url.Action("VistaPdf",new {consultaId=Model.Consulta.IdConsulta})" id="btnGuardar" class="btn btn-outline-dark mb-3">Ver Pdf en Pagina</a></h5>*@
+                @*<a class="btn button-primary" asp-controller="ContinuarConsulta" asp-action="VistaPdf" asp-route-id="@receta.IdReceta" target="_blank">ver PDf en pagina</a>*@
+                @*<a class="btn button-primary" asp-controller="ContinuarConsulta" asp-action="VistaPdf" target="_blank">ver PDf en pagina</a>*@
+               @* <a class="btn button-primary" asp-controller="ContinuarConsulta" asp-action="DescargarPdf" asp-route-id="@newConsultaId" target="_blank">Descargar ASP</a>*@
+               @* <embed src="@Url.Action("VistaPdf","ContinuarConsulta")" width="400" height="400" type="aplication/pdf"/>*@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div id="modalRecetaBody" class="modal-body">
@@ -20,7 +26,7 @@
                     <div class="row mt-2">
                         <div class="col col-sm col-md col-lg col-xl col-xxl">
                             <label class="fw-bold" for="observaciones">Descripción: </label>
-                            <textarea class="form-control" id="descripcionReceta" name="Descripcion">@newConsultaId.ToString()</textarea>
+                            <textarea class="form-control" id="descripcionReceta" name="Descripcion"></textarea>
                         </div>
                     </div>
                     <div class="row mt-5">

@@ -4,47 +4,24 @@
 @{
     Layout = null;
     var recetaDetalle = ViewData["detalleReceta"];
+    var fecha = ViewData["fecha"];
+    var paciente = ViewData["Paciente"];
+
+
 }
 
+
 <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="~/css/pages/RecetaStyle.css" asp-append-version="true" />
+</head>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
-<style>
-    .logoTh {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 300px;
-        height: 100px;
-    }
 
-        .logoTh img {
-            display: block;
-            margin: auto;
-        }
-
-    body {
-        font-family: 'Roboto', sans-serif;
-    }
-
-    .CompanyName {
-        margin: 0;
-    }
-
-    .Tittle {
-        color: #591CFF;
-        font-size: 12px;
-    }
-
-    .Descrip {
-        font-size: 12px;
-    }
-</style>
-
-
-
-<div class="text-center prueba">
+<div class="upper">
     <img src="~/img/Logo.png" alt="Logo" class="logoTh">
     <table style="border-style: none; width:100%;">
         <tr>
@@ -65,7 +42,7 @@
     </table>
 </div>
 
-<div>
+<div class="upper2">
     <hr style="border: 0.5px solid #004169 ;">
 
     <table style="border-style: none; width:100%;">
@@ -77,15 +54,15 @@
             </th>
             <th style="text-align: right">
                 <b style="font-size: 20px; color: #000000 ">Fecha:</b><br>
-                <b style="font-size: 15px;">22 de septiembre de 2020</b>
+                <b style="font-size: 15px;">@fecha</b>
             </th>
         </tr>
     </table>
 </div>
 
-<div>
+<div class="middle">
     <hr style="border: 0.5px solid #004169 ;">
-    <b style="font-size: 17px;">Paciente: Zoe Aguilon</b>
+    <b style="font-size: 17px;">Paciente: @paciente</b>
     <hr style="border: 0.5px solid #004169 ;">
     <p style=" text-align: center; font-size: 17px;">-OMITIR CUALQUIER PRESCRIPCION DESPUES DE ESTA LINEA-</p><br><br>
     <p>@recetaDetalle</p>
@@ -97,6 +74,9 @@
     <br/>
     <p style=" text-align: center; font-size: 17px;">-NO PERMITA QUE LE CAMBIEN LA RECETA-</p>
     <hr style="border: 0.5px solid #004169 ;">
+</div>
+
+<div class="under">
     <table style="border-style: none; width:100%;">
         <tr style="margin-left: 3px">
             <th style="text-align: center">

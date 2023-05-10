@@ -1,11 +1,11 @@
 ﻿@model ConsultaContinuarViewModel
+@using ClinicaDomain
+@using Newtonsoft.Json
+
 <!-- Modal Crear Paciente-->
 @{
     //var receta = Model.Consulta.Receta.FirstOrDefault();
     var newConsultaId = Model.Consulta.IdConsulta;
-    // var receta = Model.Consulta.Receta.
-   // receta ??= new();
-    //ViewData["receta"] = new { receta.IdReceta };
 }
 
 <div class="modal fade" id="modalReceta" tabindex="-1" role="dialog" aria-labelledby="modalReceta" aria-hidden="true">
@@ -20,7 +20,7 @@
                     <div class="row mt-2">
                         <div class="col col-sm col-md col-lg col-xl col-xxl">
                             <label class="fw-bold" for="observaciones">Descripción: </label>
-                            <textarea class="form-control" id="descripcionReceta" name="Descripcion">@newConsultaId.ToString()</textarea>
+                            <textarea class="form-control" id="descripcionReceta" name="Descripcion"></textarea>
                         </div>
                     </div>
                     <div class="row mt-5">

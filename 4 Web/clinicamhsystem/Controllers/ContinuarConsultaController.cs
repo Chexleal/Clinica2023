@@ -32,8 +32,9 @@ namespace clinicaWeb.Controllers
         public ActionResult Index(Guid consultaId)
         {
             var consulta = _consultaServices.GetConsulta(consultaId);
+            var receta = _recetaServices.GetByConsulta(consultaId);
             //var paciente = _pacienteServices.GetPacienteById(consulta.IdPaciente);
-            return View(new ConsultaContinuarViewModel { Consulta = consulta/*, Paciente = paciente */});
+            return View(new ConsultaContinuarViewModel { Consulta = consulta,Receta=receta/*, Paciente = paciente */});
         }
 
 
@@ -81,100 +82,15 @@ namespace clinicaWeb.Controllers
         }
 
         [HttpGet]
-        public ActionResult Descargar(Guid consultaId)
-        {
-            var receta = _recetaServices.GetByConsulta(consultaId);
-            if (receta is null)
-            {
-                //eturn new Rotativa.ViewAsPdf("Index", consultaId);
-                return null;
-            }
-            else
-                return null;
-        }
-
-        public ActionResult VistaPdf(Guid consultaId)
-        {
-            if(consultaId == Guid.Empty)
-            {
-
-                //Si la consultaId viene vacia, se hace un query al url para obtener el id de la consulta.
-                string urlPagina = HttpContext.Request.GetEncodedUrl();
-                Uri uri = new Uri(urlPagina);
-                string query = uri.Query; // retorna id de la cosnulta
-                string consultaIdQ = query.Substring(1); // remueve el signo "?"
-
-                //con el id de la consulta obtenido se parsea a un GUID para usar el servicio de  GetByCosnulta y mostrarlo en el pdf.
-                Guid consultaIdQuery = Guid.Parse(consultaIdQ);
-                var recetaQ = _recetaServices.GetByConsulta(consultaIdQuery);
-                var consulta = _consultaServices.GetConsulta(consultaIdQuery);
-                var pacienteInfo = _pacienteServices.GetPacienteById(consulta.IdPaciente);
-
-                //se declaran variables en ViewData para llenar la informacion en el pdf
-                ViewData["fecha"] = recetaQ.Fecha.ToString();
-                ViewData["Paciente"] = pacienteInfo.Nombre + " " + pacienteInfo.Apellido;
-                ViewData["detalleReceta"] = recetaQ.Descripcion.ToString();
-                return View("ConsultaPdf");
-            }
-            else
-            {
-                var receta = _recetaServices.GetByConsulta(consultaId);
-
-                var consulta = _consultaServices.GetConsulta(consultaId);
-                var pacienteInfo = _pacienteServices.GetPacienteById(consulta.IdPaciente);
-                ViewData["Paciente"] = pacienteInfo.Nombre + " " + pacienteInfo.Apellido;
-                ViewData["fecha"] = receta.Fecha.ToString();
-                ViewData["detalleReceta"] = receta.Descripcion.ToString();
-                return View("ConsultaPdf");
-            }
-        }
-
-        public ActionResult PdfPage()
-        {
-
-            string paginaActual = HttpContext.Request.Path;
-            string urlPagina = HttpContext.Request.GetEncodedUrl();
-            urlPagina = urlPagina.Replace(paginaActual, "");
-            urlPagina = $"{urlPagina}/ContinuarConsulta/VistaPdf";
-
-            var pdf = new HtmlToPdfDocument()
-            {
-                GlobalSettings = new GlobalSettings()
-                {
-                    PaperSize = PaperKind.A5,
-                    Orientation = Orientation.Portrait
-                },
-                Objects =
-                {
-                    new ObjectSettings()
-                    {
-                        Page = urlPagina
-                    }
-                }
-
-            };
-
-            var archivoPdf = _converter.Convert(pdf);
-
-            return File(archivoPdf, "aplication/pdf");
-        }
-
         public ActionResult DescargarPdf(Guid consultaIds)
         {
-
-            string paginaActual = HttpContext.Request.Path;
-
+            var consultaInfo = _consultaServices.GetConsulta(consultaIds);
             string urlPagina = HttpContext.Request.GetEncodedUrl();
-
-
             Uri uri = new Uri(urlPagina);
-            string queryString = uri.Query;
-            string consultaId = HttpUtility.ParseQueryString(queryString).Get("consultaId");
-            string baseUrl = uri.OriginalString.Substring(0, uri.OriginalString.IndexOf("?"));
+            string consultaId = consultaIds.ToString();
 
             string path = uri.LocalPath;
             string controller = path.Split('/')[1];
-            string action = path.Split('/')[2];
 
             string originUrl = uri.GetLeftPart(UriPartial.Authority);
 
@@ -192,22 +108,19 @@ namespace clinicaWeb.Controllers
                 {
                     PaperSize = PaperKind.A5,
                     Orientation = Orientation.Portrait
-
                 },
                 Objects =
                 {
                     new ObjectSettings()
                     {
                         Page = urlPagina // "https://localhost:7070?consultaId=966967ee-49ab-4d85-bc5a-2826deb75257"	
-
                     }
                 }
 
             };
-
-            string url = urlPagina.ToString();
             var archivoPdf = _converter.Convert(pdf);
-            string nombrePDf = "receta_"+ DateTime.Now.ToString("ddMMyyyy")+".pdf";
+            //string nombrePDf = "receta_"+ consultaInfo.PacienteInformacion.Nombre+ DateTime.Now.ToString("ddMMyyyy")+".pdf";
+            string nombrePDf = $"receta_{consultaInfo.PacienteInformacion.Nombre}_{consultaInfo.PacienteInformacion.Apellido}_{DateTime.Now.ToString("ddMMyyyy")}.pdf";
 
             return File(archivoPdf, "aplication/pdf",nombrePDf);
         }

@@ -12,7 +12,7 @@
     <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><a href="@Url.Action("Descargar",new {consultaId=Model.Consulta.IdConsulta})" id="btnGuardar" class="btn btn-outline-dark mb-3">Descargar</a></h5>
+                <h5 class="modal-title"><a href="@Url.Action("DescargarPdf",new {consultaIds=Model.Consulta.IdConsulta})" id="btnGuardar" class="btn btn-outline-dark mb-3">Descargar</a></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div id="modalRecetaBody" class="modal-body">
@@ -20,7 +20,7 @@
                     <div class="row mt-2">
                         <div class="col col-sm col-md col-lg col-xl col-xxl">
                             <label class="fw-bold" for="observaciones">Descripción: </label>
-                            <textarea class="form-control" id="descripcionReceta" name="Descripcion"></textarea>
+                            <textarea class="form-control" id="descripcionReceta" name="Descripcion">@Model.Receta.Descripcion</textarea>
                         </div>
                     </div>
                     <div class="row mt-5">

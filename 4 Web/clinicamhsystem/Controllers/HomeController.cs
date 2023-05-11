@@ -17,8 +17,8 @@ namespace clinicamhsystem.Controllers
 
         public IActionResult Index()
         {
-            var users = _userServices.GetAll();
-            return View(new HomeViewModel { Usuarios = users });
+            //var users = _userServices.GetAll();
+            return View();
         }
 
         public IActionResult LogIn(string password, string user)

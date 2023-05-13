@@ -9,53 +9,52 @@
 @section Links{
     <link rel="stylesheet" href="~/css/pages/Consultas.css" asp-append-version="true" />
 }
-@*<partial name="~/Views/Shared/_modalEdit.cshtml" />
+    @*<partial name="~/Views/Shared/_modalEdit.cshtml" />
 <partial name="Partials/_modalCrear.cshtml" />
 <partial name="Partials/_modalCrearConsulta.cshtml" />*@
-<div class="card w-100 shadow-lg mt-5">
+    <div class="card w-100 shadow-lg mt-5">
 
         <div class="card-header bg-ligth">
             <h3 class="h3">Consultas</h3>
         </div>
-    <div class="card-body">
+        <div class="card-body">
             <p>
                 <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#createModal">
                     <i class="fa-solid fa-plus fa-bounce"></i> Agregar Consulta
                 </button>
             </p>
-        <div class=" table-responsive ">
-            <table id="table" class="table table-striped ">
-        <thead class="table-dark">
-            <tr>
-                <th>Fecha</th>
-                <th>Nombre</th>
-                <th>Apellido</th>
-                <th>Motivo de consulta</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.Consultas.Where(x=>!x.Terminada))
-            {
-                <tr>
-                    <td>@item.Fecha</td>
-                    <td>@item.PacienteInformacion.Nombre</td>
-                    <td>@item.PacienteInformacion.Apellido</td>          
-                    <td>@item.MotivoConsulta</td>
-                      <td>
-                          <div class="options d-flex ">
-                          <a class="option" href="@Url.Action("Index","ContinuarConsulta",new{consultaId=item.IdConsulta})">Continuar</a>
-                          <form asp-action="Eliminar" asp-route-id="@item.IdConsulta">
-                               <button class="option" type="submit">Eliminar</button>
-                          </form>
-                          </div>
-                     </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-  </div>
-</div>
+            <div class=" table-responsive ">
+                <table id="table" class="table table-striped ">
+                    <thead class="table-dark">
+                        <tr>
+                            <th></th>
+                            <th>Fecha</th>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>Motivo de consulta</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var item in Model.Consultas.Where(x => !x.Terminada))
+                    {
+                        <tr>
+                            <td><a class="option" href="@Url.Action("Index","ContinuarConsulta",new{consultaId=item.IdConsulta})">Continuar</a></td>
+                            <td>@item.Fecha</td>
+                            <td>@item.PacienteInformacion.Nombre</td>
+                            <td>@item.PacienteInformacion.Apellido</td>
+                            <td>@item.MotivoConsulta</td>
+                            <td>
+                                    <form asp-action="Eliminar" asp-route-id="@item.IdConsulta">
+                                        <button class="option" type="submit">Eliminar</button>
+                                    </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <!-- Modal Crear Consulta-->

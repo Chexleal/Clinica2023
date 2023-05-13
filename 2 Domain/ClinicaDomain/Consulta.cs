@@ -37,7 +37,7 @@ public partial class Consulta
 
     public Paciente PacienteInformacion { get; set; }
 
-    public virtual ICollection<Receta> Receta { get; } = new List<Receta>();
+    //public virtual ICollection<Receta> Receta { get; } = new List<Receta>();
 
     public void BeforeSaveChanges()
     {

@@ -11,18 +11,19 @@ container-menu {
 }
 html {
     font-size: 16px;
-    position: relative;
     min-height: 100%;
 }
 
 .container-larger {
     width: 80vw;
     transition: transform 0.3s ease-in-out;
+    position: relative;
+    left:8vw;
 }
 
     .container-larger.hidden {
-        transform: translateX(-5vw);
-        width: 100vw;
+        transform: translateX(-8vw);
+        width: 90vw;
         transition: transform 0.3s ease-in-out;
         transition: width 0.3s ease-in-out;
     }
@@ -43,9 +44,11 @@ html {
     width: 15vw;
     padding: 0;
     margin: 0;
-    position: relative;
+    position: fixed;
     transform: translateX(0);
     transition: transform 0.3s ease-in-out;
+    height:100vh;
+
 }
 
     .menu.hidden {
@@ -131,6 +134,61 @@ hr {
         color: #22cece;
     }
 
+/* Estilos para tablets */
+@media only screen and (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+
+    .toggle-button {
+        left: 18.5vw;
+    }
+
+    .menu {
+        text-align: center;
+        align-content: center;
+        display: block;
+        background-color: #8bc2f2;
+        /*background-color: #8bc2f2; #B4D9F8; #66ADEA;#4D7491*/
+        width: 20vw;
+        padding: 0;
+        margin: 0;
+        transform: translateX(0);
+        transition: transform 0.3s ease-in-out;
+        top: 0;
+        height:125vh;
+    }
+
+        .menu.hidden {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+        }
+
+    .menu_bt {
+        display: flex;
+        background-color: transparent;
+        border: 0px;
+        width: 100%;
+        padding: 4%;
+        padding-left: 9%;
+        text-decoration: none;
+        color: #222222;
+        cursor: pointer;
+        font-size:1.4vw;
+    }
+
+    .container-larger {
+        width: 70vw;
+        transition: transform 0.3s ease-in-out;
+
+    }
+
+    .container-larger.hidden {
+        transform: translateX(-5vw);
+        width:85vw;
+        transition: transform 0.3s ease-in-out;
+        transition: width 0.3s ease-in-out;
+    }
+
+}
+
 @media (max-width: 767px) {
 
     .toggle-button {
@@ -187,9 +245,15 @@ hr {
         font-size: 6vw;
     }
 
-    .container {
-        margin-left: 0;
+    .container-larger {
+        left: 0vw;
     }
+
+        .container-larger.hidden {
+            left: 0vw;
+            transform: translateX(0vw);
+            width: 80vw;
+        }
 
 }
 

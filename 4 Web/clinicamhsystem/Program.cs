@@ -22,6 +22,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ClinicaContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+ 
 }, ServiceLifetime.Singleton);
 
 

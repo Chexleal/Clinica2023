@@ -14,5 +14,5 @@ public partial class Receta
     public virtual ICollection<DetalleReceta> DetalleReceta { get; } = new List<DetalleReceta>();
     public string Descripcion { get; set; }
 
-    public virtual Consulta IdConsultaNavigation { get; set; }
+    //public virtual Consulta IdConsultaNavigation { get; set; }
 }

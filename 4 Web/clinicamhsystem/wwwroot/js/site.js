@@ -31,3 +31,8 @@ function parseDate(stringDate) {
    return cadenaFechaHora = `${dia}/${mes}/${anio} ${hora}:${minutos}:${segundos}`; // crea la cadena de fecha y hora concatenando los componentes obtenidos
 
 }
+
+function OpenReceta(id) {
+    window.open(urlReceta +id, '_blank');
+
+}

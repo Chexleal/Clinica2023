@@ -120,6 +120,7 @@ namespace clinicaWeb.Controllers
             return View("Index", consultas);
         }
 
+
         public ActionResult crearPdf()
         {
             _consultaServices.createPdf(inhtmlPath, toPdfPath);

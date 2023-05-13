@@ -13,7 +13,7 @@ public partial class Consulta
 
     public string Peso { get; set; }
 
-    public DateTime TiempoDuracion { get; set; }
+    public TimeSpan TiempoDuracion { get; set; }
 
     public bool Radiografias { get; set; }
 

@@ -9,5 +9,6 @@ namespace clinicaWeb.Models
         public List<Paciente> Pacientes { get; set; }
 
         public MotivoCobro Servicio { get; set; }
+        public Paciente Paciente { get; set; }
     }
 }

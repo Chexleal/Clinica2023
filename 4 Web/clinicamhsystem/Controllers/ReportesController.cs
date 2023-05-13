@@ -29,7 +29,18 @@ namespace clinicaWeb.Controllers
         }
 
         [HttpPost]
-        public ActionResult Search(Guid servicioid)
+        public ActionResult Paciente(Guid pacienteid)
+        {
+            var pacientes = _pacienteServices.GetAll();
+            var servicios = _serviciosServices.GetAll();
+            var paciente = _pacienteServices.GetPacienteById(pacienteid);
+            //var consultas = _pacienteServices.GetConsultasFiltradas();   
+
+            return View("Index",new ReportesViewModel { Pacientes = pacientes, Servicios = servicios, Paciente = paciente});
+        }
+
+        [HttpPost]
+        public ActionResult Servicios(Guid servicioid)
         {
             var pacientes = _pacienteServices.GetAll();
             var servicios = _serviciosServices.GetAll();

@@ -6,21 +6,67 @@
     ViewData["Title"] = "Reportes";
 }
 @section Links{
-    <link rel="stylesheet" href="~/css/pages/Consultas.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/Reportes.css" asp-append-version="true" />
 }
 
 <div class="card w-100 shadow-lg mt-5">
-
-    <div class="card-header bg-ligth">
-        <h3 class="h3">Filtros</h3>
-    </div>
     <div class="card-body">
-        <form>
+            <!-- Tabs -->
+
+        <ul class="nav nav-tabs" id="myTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="tab1-tab" data-bs-toggle="tab" data-bs-target="#tab1" type="button" role="tab" aria-controls="tab1" aria-selected="true">Por Paciente</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tab2-tab" data-bs-toggle="tab" data-bs-target="#tab2" type="button" role="tab" aria-controls="tab2" aria-selected="false">Por Servicios</button>
+                </li>
+            </ul>
+
+            <!-- Contenido de los tabs -->
+            <div class="tab-content" id="myTabsContent">
+                <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
+                <form id="paciente-search" method="POST" action="@Url.Action("Paciente","Reportes")">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="control-label">Del</label>
+                                <input class="form-control" type="date" name="from" id="from" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="control-label">Al</label>
+                                <input class="form-control" type="date" name="to" id="to" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="control-label">Paciente</label>
+                                <select name="IdPaciente" class="form-control">
+                                    <option></option>
+                                    @foreach (var paciente in Model.Pacientes)
+                                    {
+                                        <option value="@paciente.IdPaciente">@paciente.Nombre @paciente.Apellido - @paciente.Dpi</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3 d-flex">
+                            <div class="form-group">
+                                <label class="control-label"></label>
+                                <button type="submit" id="paciente-search" class="form-control btn btn-primary d-inline-block">Buscar</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                </div>
+                <div class="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="tab2-tab">
+                    <form>
             <div class="row">
                 <div class="col-md-3">
                     <div class="form-group">
                         <label class="control-label">Del</label>
-                        <input class="form-control" type="date" name="from" id="from"/>
+                        <input class="form-control" type="date" name="from" id="from" />
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -29,19 +75,7 @@
                         <input class="form-control" type="date" name="to" id="to" />
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label class="control-label">Paciente</label>
-                        <select name="IdPaciente" class="form-control">
-                            <option></option>
-                            @foreach (var paciente in Model.Pacientes)
-                            {
-                                <option value="@paciente.IdPaciente">@paciente.Nombre @paciente.Apellido - @paciente.Dpi</option>
-                            }
-                        </select>
-                    </div>
-                    </div>
-                <div class="col-md-3">
+                @*<div class="col-md-3">
                     <div class="form-group">
                         <label class="control-label">Servicio</label>
                         <select name="IdPaciente" class="form-control">
@@ -52,13 +86,22 @@
                             }
                         </select>
                     </div>
-                    </div>
-                </div>
-                <br />
-            <button type="submit" class="btn btn-primary d-block mx-auto">Buscar</button>
+                </div>*@
+                        <div class="col-md-3 d-flex">
+                            <div class="form-group">
+                                <label class="control-label"></label>
+                                <button type="submit" class="form-control btn btn-primary d-inline-block">Buscar</button>
+                            </div>
+                        </div>
+            </div>  
         </form>
+                </div>
+            </div>
+        
     </div>
 </div>
+
+
 
 <div class="card w-100 shadow-lg mt-5">
 
@@ -78,23 +121,29 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var paciente in Model.Pacientes)
+                    @{
+                        if (Model.Paciente != null)
+                        {
+                        <td>@Model.Paciente.Nombre</td>
+                        }
+                    }
+                    @*@foreach (var paciente in Model.Pacientes)
                     {
                         foreach (var consulta in paciente.Consulta)
                         {
-                                    <tr>
-                                        <td>@consulta.Fecha</td>
-                                        <td>@consulta.PacienteInformacion.Nombre</td>
-                                        <td>@consulta.PacienteInformacion.Apellido</td>
-                                        <td>@consulta.MotivoConsulta</td>
-                                        <td>
-                                            <div class="options d-flex ">
-                                                <a class="option" href="@Url.Action("Index","ContinuarConsulta",new{consultaId=consulta.IdConsulta})">@consulta.Total</a>
-                                            </div>
-                                        </td>
-                                    </tr>                      
-                        }    
-                    }
+                            <tr>
+                                <td>@consulta.Fecha</td>
+                                <td>@consulta.PacienteInformacion.Nombre</td>
+                                <td>@consulta.PacienteInformacion.Apellido</td>
+                                <td>@consulta.MotivoConsulta</td>
+                                <td>
+                                    <div class="options d-flex ">
+                                        <a class="option" href="@Url.Action("Index","ContinuarConsulta",new{consultaId=consulta.IdConsulta})">@consulta.Total</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }*@
                 </tbody>
             </table>
         </div>

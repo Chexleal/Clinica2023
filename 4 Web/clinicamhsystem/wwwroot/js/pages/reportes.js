@@ -23,7 +23,8 @@ function CreateTable() {
         "ordering": true,
         "lengthChange": true,
         searching: false,
-        dom: 'Bfrtip',
+        dom: '<"table-title">Bfrtip',
+        buttons: ['copy', 'excel', 'pdf', 'print'],
         "pageLength": 20,
         "language": {
             searchPlaceholder: 'Buscar consultas',

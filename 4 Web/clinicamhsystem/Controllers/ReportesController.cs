@@ -1,53 +1,53 @@
 ﻿using ClinicaServices;
 using clinicaWeb.Models;
+using clinicaWeb.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace clinicaWeb.Controllers
+namespace clinicaWeb.Controllers;
+[SecurityFilter("Reportes")]
+public class ReportesController : Controller
 {
-    public class ReportesController : Controller
+    private readonly IPacienteServices _pacienteServices;
+    private readonly IConsultaServices _consultaServices;
+    private readonly IServiciosServices _serviciosServices;
+
+    public ReportesController(IConsultaServices consultaServices, IPacienteServices pacienteServices, IServiciosServices serviciosServices)
     {
-        private readonly IPacienteServices _pacienteServices;
-        private readonly IConsultaServices _consultaServices;
-        private readonly IServiciosServices _serviciosServices;
+        _consultaServices = consultaServices;
+        _pacienteServices = pacienteServices;
+        _serviciosServices = serviciosServices;
+    }
 
-        public ReportesController(IConsultaServices consultaServices, IPacienteServices pacienteServices, IServiciosServices serviciosServices)
-        {
-            _consultaServices = consultaServices;
-            _pacienteServices = pacienteServices;
-            _serviciosServices = serviciosServices;
-        }
+    // GET: UsuariosController
+    public ActionResult Index()
+    {
+        var pacientes = _pacienteServices.GetAll();
+        //var consultas = _consultaServices.GetAll();
+        var servicios = _serviciosServices.GetAll();
 
-        // GET: UsuariosController
-        public ActionResult Index()
-        {
-            var pacientes = _pacienteServices.GetAll();
-            //var consultas = _consultaServices.GetAll();
-            var servicios = _serviciosServices.GetAll();
+        return View(new ReportesViewModel { Pacientes = pacientes, Servicios = servicios, Servicio = null });
+    }
 
-            return View(new ReportesViewModel { Pacientes = pacientes, Servicios = servicios, Servicio = null });
-        }
+    [HttpPost]
+    public ActionResult Paciente(Guid pacienteid)
+    {
+        var pacientes = _pacienteServices.GetAll();
+        var servicios = _serviciosServices.GetAll();
+        var paciente = _pacienteServices.GetPacienteById(pacienteid);
+        //var consultas = _pacienteServices.GetConsultasFiltradas();   
 
-        [HttpPost]
-        public ActionResult Paciente(Guid pacienteid)
-        {
-            var pacientes = _pacienteServices.GetAll();
-            var servicios = _serviciosServices.GetAll();
-            var paciente = _pacienteServices.GetPacienteById(pacienteid);
-            //var consultas = _pacienteServices.GetConsultasFiltradas();   
+        return View("Index",new ReportesViewModel { Pacientes = pacientes, Servicios = servicios, Paciente = paciente});
+    }
 
-            return View("Index",new ReportesViewModel { Pacientes = pacientes, Servicios = servicios, Paciente = paciente});
-        }
+    [HttpPost]
+    public ActionResult Servicios(Guid servicioid)
+    {
+        var pacientes = _pacienteServices.GetAll();
+        var servicios = _serviciosServices.GetAll();
+        //var consultas = _pacienteServices.GetConsultasFiltradas();
+        var servicio = _serviciosServices.GetServicio(servicioid);
 
-        [HttpPost]
-        public ActionResult Servicios(Guid servicioid)
-        {
-            var pacientes = _pacienteServices.GetAll();
-            var servicios = _serviciosServices.GetAll();
-            //var consultas = _pacienteServices.GetConsultasFiltradas();
-            var servicio = _serviciosServices.GetServicio(servicioid);
-
-            return View(new ReportesViewModel { Pacientes = pacientes, Servicios = servicios, Servicio = servicio });
-        }
+        return View(new ReportesViewModel { Pacientes = pacientes, Servicios = servicios, Servicio = servicio });
     }
 }

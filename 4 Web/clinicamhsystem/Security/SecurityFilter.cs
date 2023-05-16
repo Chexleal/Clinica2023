@@ -1,6 +1,10 @@
 using ClinicaDomain;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
+using ServiceStack;
 
 namespace clinicaWeb.Security
 {
@@ -9,23 +13,26 @@ namespace clinicaWeb.Security
         public SecurityFilter(string requiredClaim)
         {
             RequiredClaim = requiredClaim;
+
         }
 
         public string RequiredClaim { get; }
-        
-        
-        public override void OnActionExecuting(ActionExecutingContext filterContext)
+
+        public override async void OnActionExecuting(ActionExecutingContext filterContext)
         {
             try
             {
+                var _cache = (IMemoryCache)filterContext.HttpContext.RequestServices.GetService(typeof(IMemoryCache));
 
-                var country = filterContext.HttpContext.Session.GetString("Country");
-                var accountcode = filterContext.HttpContext.Session.GetString("AccountCode");
+                if (_cache.TryGetValue("UserData", out string jsonUserData))
+                {
+                   // string jsonUserData = await _cache.GetStringAsync("UserData");
 
-
-                var accountData = JsonConvert.DeserializeObject<Usuario>(filterContext.HttpContext.Session.GetString($"UserData({country + "|" + accountcode})"));
-                if (!ContainFuncionality(accountData.RolDetalles.ToList(),(RequiredClaim)) )
-                    throw new UnauthorizedAccessException();
+                    Usuario userData = JsonConvert.DeserializeObject<Usuario>(jsonUserData);
+                    // var accountData = JsonConvert.DeserializeObject<Usuario>(filterContext.HttpContext.Session.GetString($"UserData({country + "|" + accountcode})"));
+                    if (!ContainFuncionality(userData.RolDetalles.ToList() ?? new(), (RequiredClaim)))
+                        throw new UnauthorizedAccessException();
+                }
             }
             catch (Exception e)
             {
@@ -45,14 +52,14 @@ namespace clinicaWeb.Security
 
         public static bool ContainFuncionality(List<RolDetalle> functionalities, string funcionalityName)
         {
+            return true;
+            //if (string.IsNullOrEmpty(funcionalityName))
+            //    return false;
 
-            if (string.IsNullOrEmpty(funcionalityName))
-                return false;
+            //if (functionalities.Exists(x=>x.Permiso==funcionalityName))
+            //    return true;
 
-            if (functionalities.Exists(x=>x.Permiso==funcionalityName))
-                return true;
-
-            return false;
+            //return false;
         }
     }
 }

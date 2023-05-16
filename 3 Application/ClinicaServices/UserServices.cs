@@ -10,7 +10,7 @@ namespace ClinicaServices;
 
 public interface IUserServices
 {
-    bool Authenticate(string user, string password);
+    Usuario Authenticate(string user, string password);
 
     bool CheckUserExist(string userName);
     string? CheckAnswer(string userName);
@@ -44,11 +44,10 @@ public class UserServices : IUserServices
         _dbContext.SaveChanges();
     }
 
-    public bool Authenticate(string user, string password)
+    public Usuario Authenticate(string user, string password)
     {
         var userItem = _dbContext.Usuarios.FirstOrDefault(x => x.Password == password && x.NombreUsuario == user);
-        if (userItem is null) return false;
-        return true;
+        return userItem;
     }
 
     public List<Usuario> GetAll()

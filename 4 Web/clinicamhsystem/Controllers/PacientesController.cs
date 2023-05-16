@@ -2,10 +2,11 @@
 using ClinicaServices;
 using Microsoft.AspNetCore.Mvc;
 using clinicaWeb.Models;
+using clinicaWeb.Security;
 
 namespace clinicaWeb.Controllers;
 
-//[SecurityFilter("Pacientes")]
+[SecurityFilter("Pacientes")]
 public class PacientesController: Controller
 {
 

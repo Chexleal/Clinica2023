@@ -310,8 +310,8 @@ hr {
     font-size: 16px;
     font-weight: 500;
     color: #666;
+    margin-bottom:10px;
     background-color: transparent;
-    margin-bottom: 20px;
     transition: border-bottom 0.2s ease-in-out;
 
 }
@@ -320,6 +320,11 @@ hr {
         outline: none;
         border-bottom: 2px solid #0099cc;
     }
+
+.dataTables_wrapper .dt-buttons {
+    position:absolute;
+
+}
 
 .active {
     background-color: #0077c0;

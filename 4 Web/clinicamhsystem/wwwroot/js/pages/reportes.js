@@ -37,7 +37,7 @@ function CreateTable() {
                 extend: 'copy',
                 text: '<i class="fas fa-clone"></i><strong>Copiar</strong>',
                 messageTop: '',
-                className: "text-dark btn-light",
+                className: "btn btn-outline-dark",
                 title: "Reporte",
                 filename: "Reporte",
                 exportOptions: {
@@ -51,7 +51,7 @@ function CreateTable() {
                 extend: 'excel',
                 text: '<i class="fas fa-file-excel"></i><strong>Excel </strong>',
                 messageTop: '',
-                className: "text-dark btn-light",
+                className: "btn btn-outline-dark",
                 title: "Reporte",
                 filename: "Reporte",
                 exportOptions: {
@@ -60,6 +60,18 @@ function CreateTable() {
                         page: 'all',
                         search: 'none'
                     }
+                },
+                orientation: "landscape",
+                pageSize: "LEGAL"
+            }, {
+                extend: 'pdf',
+                text: '<i class="fas fa-file-excel"></i><strong>PDf </strong>',
+                messageTop: '',
+                className: "btn btn-outline-dark",
+                title: "Reporte",
+                filename: "Reporte",
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7],
                 },
                 orientation: "landscape",
                 pageSize: "LEGAL"

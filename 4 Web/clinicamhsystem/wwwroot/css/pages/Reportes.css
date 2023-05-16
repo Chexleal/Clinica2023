@@ -9,3 +9,12 @@
     color:dodgerblue;
     text-decoration: underline;
 }
+
+.encabezado{
+    color:black;
+}
+
+.centered-span {
+    display: block; /* Cambia la visualización a bloque */
+    text-align: center; /* Centra el texto dentro del bloque */
+}

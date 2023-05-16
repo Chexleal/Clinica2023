@@ -106,15 +106,26 @@
 <div class="card w-100 shadow-lg mt-5" id="reporte">
 
     <div class="card-header bg-ligth">
-        <h3 class="h3">Reporte</h3>
+        <h3 class="titulo">Reporte</h3>
     </div>
     <div class="card-body">
         <div class=" table-responsive ">
             @{
                 if (Model.Paciente != null)
                 {
-                    <h5>
-                        Nombre: @Model.Paciente.Nombre Apellido: @Model.Paciente.Apellido Dpi: @Model.Paciente.Dpi No. Consultas: @Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date).ToList().Count Total: Q
+                    <h5 class="encabezado fw-normal">
+                        <span class="centered-span">Resumen de consultas<br /><br>
+                            Del &nbsp;&nbsp; @Model.From.ToString("dd/MM/yyyy") &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Al &nbsp;&nbsp; @Model.To.ToString("dd/MM/yyyy")
+                        </span>
+                    <br>
+                        <br>
+                        Paciente: <span class="fw-bold">
+                            @Model.Paciente.Nombre @Model.Paciente.Apellido &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        </span> Dpi: <span class="fw-bold">
+                            @Model.Paciente.Dpi
+                        </span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; No. Consultas: <span class="fw-bold">
+                            @Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date).ToList().Count
+                        </span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Total: Q
                         @{
                             decimal total = 0.0M;
                             foreach (var consulta in Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date))
@@ -122,9 +133,21 @@
                                 total += consulta.Total;
                             }
                         }
-                        @total
+                        <span class="fw-bold">
+                            @total
+                        </span>
+
                         <br>
-                        Del @Model.From.ToString("dd/MM/yyyy") Al @Model.To.ToString("dd/MM/yyyy")
+                        <br>
+                    </h5>
+                } else if (Model.EsServicio)
+                {
+
+                    <h5 class="encabezado fw-normal">
+                        <span class="centered-span">
+                            Resumen de ingresos por servicios<br /><br>
+                            Del &nbsp;&nbsp; @Model.From.ToString("dd/MM/yyyy") &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Al &nbsp;&nbsp; @Model.To.ToString("dd/MM/yyyy")
+                        </span>
                         <br>
                         <br>
                     </h5>

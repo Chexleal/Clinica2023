@@ -38,6 +38,11 @@ namespace ClinicaServices
             return _dbContext.DetalleCobros.Where(x => x.IdConsulta.Equals(consultaId)).ToList();
         }
 
+        //public List<DetalleCobro> GetDetallesByServicio(Guid consultaId)
+        //{
+        //    return _dbContext.DetalleCobros.Where(x => x.IdConsulta.Equals(consultaId)).ToList();
+        //}
+
         public List<DetalleCobro> GetAll()
         {
             return _dbContext.DetalleCobros.ToList();

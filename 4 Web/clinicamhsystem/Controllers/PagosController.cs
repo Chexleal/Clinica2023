@@ -55,13 +55,13 @@ public class PagosController : Controller
     }
 
 
-    [HttpPost]
-    // GET: ConsultasController/Pagos
-    public IActionResult AddDetalle(DetalleCobro detalle)
-    {
-        //var detalleC = JsonSerializer.Deserialize<DetalleCobro>(detalle);
-        //var detalleC = (DetalleCobro)detalle;
-        Console.WriteLine(detalle);
+        [HttpPost]
+        // GET: ConsultasController/Pagos
+        public IActionResult AddDetalle(DetalleCobro detalle)
+        {
+            //var detalleC = JsonSerializer.Deserialize<DetalleCobro>(detalle);
+            //var detalleC = (DetalleCobro)detalle;
+            //Console.WriteLine(detalle);
 
         _detallesServices.AddDetalle(detalle);
 

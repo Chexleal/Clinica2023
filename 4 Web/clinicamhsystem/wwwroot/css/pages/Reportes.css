@@ -2,3 +2,10 @@
 .tab-pane {
     background-color: transparent !important;
 }
+
+.btn-total{
+    background-color: transparent;
+    border: none;
+    color:dodgerblue;
+    text-decoration: underline;
+}

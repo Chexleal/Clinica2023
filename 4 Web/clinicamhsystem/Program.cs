@@ -1,16 +1,21 @@
 using ClinicaServices;
 using clinicaWeb.Extensions;
-using DinkToPdf;
-using DinkToPdf.Contracts;
+//using DinkToPdf;
+//using DinkToPdf.Contracts;
 using Microsoft.EntityFrameworkCore;
+//using Microsoft.Identity.Client;
+//using WkHtmlToPdfDotNet;
+//using WkHtmlToPdfDotNet.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddMemoryCache();
 
 
 //Pdf Services
-var context = new CustomAsemblyLoadContext();
-context.LoadUnmanagedLibrary(Path.Combine(Directory.GetCurrentDirectory(), "LibreriaPDF/libwkhtmltox.dll"));
-builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
+//var context = new CustomAsemblyLoadContext();
+//context.LoadUnmanagedLibrary(Path.Combine(Directory.GetCurrentDirectory(), @"LibreriaPDF32\libwkhtmltox.dll"));
+//builder.Services.AddSingleton(typeof(IConverter), new BasicConverter(new PdfTools()));
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -18,6 +23,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ClinicaContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+ 
 }, ServiceLifetime.Singleton);
 
 
@@ -26,7 +32,6 @@ builder.Host.ConfigureServices(services =>
     services.AddRazorPages();
     services.AddRazorPages().AddRazorRuntimeCompilation();
 });
-
 builder.Services.WebInjections();
 
 var app = builder.Build();

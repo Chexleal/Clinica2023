@@ -73,11 +73,11 @@ public partial class ClinicaContext : DbContext
                 .HasColumnName("fecha");
             entity.Property(e => e.IdPaciente).HasColumnName("id_paciente");
             entity.Property(e => e.MotivoConsulta)
-                .HasMaxLength(200)
+                .HasMaxLength(1000)
                 .IsUnicode(false)
                 .HasColumnName("motivo_consulta");
             entity.Property(e => e.Observaciones)
-                .HasMaxLength(200)
+                .HasMaxLength(1000)
                 .IsUnicode(false)
                 .HasColumnName("observaciones");
             entity.Property(e => e.Pagada).HasColumnName("pagada");
@@ -103,6 +103,7 @@ public partial class ClinicaContext : DbContext
             entity.HasOne(d => d.PacienteInformacion).WithMany(p => p.Consulta)
                 .HasForeignKey(d => d.IdPaciente)
                 .HasConstraintName("FK__Consulta__id_pac__300424B4");
+
         });
 
         modelBuilder.Entity<DetalleCobro>(entity =>
@@ -244,6 +245,7 @@ public partial class ClinicaContext : DbContext
                 .HasMaxLength(25)
                 .IsUnicode(false)
                 .HasColumnName("tipo_sange");
+
         });
 
         modelBuilder.Entity<Receta>(entity =>
@@ -262,9 +264,9 @@ public partial class ClinicaContext : DbContext
               .HasColumnName("descripcion");
             entity.Property(e => e.IdConsulta).HasColumnName("id_consulta");
 
-            entity.HasOne(d => d.IdConsultaNavigation).WithMany(p => p.Receta)
-                .HasForeignKey(d => d.IdConsulta)
-                .HasConstraintName("FK__Receta__id_consu__38996AB5");
+            //entity.HasOne(d => d.IdConsultaNavigation).WithMany(p => p.Receta)
+            //    .HasForeignKey(d => d.IdConsulta)
+            //    .HasConstraintName("FK__Receta__id_consu__38996AB5");
         });
 
         modelBuilder.Entity<RolDetalle>(entity =>

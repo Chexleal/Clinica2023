@@ -96,7 +96,9 @@ namespace ClinicaServices
             consulta.Pagada = false;
             consulta.BeforeSaveChanges();
             _dbContext.Consulta.Add(consulta);
-            _dbContext.SaveChanges();           
+            _dbContext.SaveChanges();
+
+            _recetaServices.Create(new Receta { IdConsulta = consulta.IdConsulta });
         }
 
         public void createPdf(string inHtmlPath, string toPdfPath)

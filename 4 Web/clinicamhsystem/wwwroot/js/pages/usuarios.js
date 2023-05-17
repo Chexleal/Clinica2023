@@ -42,7 +42,7 @@ function CreateTable() {
                 extend: 'copy',
                 text: '<i class="fas fa-clone"></i><strong>Copiar</strong>',
                 messageTop: '',
-                className: "text-dark btn-light",
+                className: "btn btn-outline-dark",
                 title: "Usuarios",
                 filename: "Usuarios",
                 exportOptions: {
@@ -56,7 +56,7 @@ function CreateTable() {
                 extend: 'excel',
                 text: '<i class="fas fa-file-excel"></i><strong>Excel </strong>',
                 messageTop: '',
-                className: "text-dark btn-light",
+                className: "btn btn-outline-dark",
                 title: "Usuarios",
                 filename: "Usuarios",
                 exportOptions: {

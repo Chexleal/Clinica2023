@@ -113,6 +113,8 @@
     <script src="~/js/pages/continuar-consultas.js" asp-append-version="true"></script>
     <script>
         var state = "@Model.Consulta.Terminada";
+
+        var urlReceta="@Url.Action("VistaPdf","ContinuarConsulta")?consultaId=";
         if(state=='True'){
            
             SetReadOnly();

@@ -2,114 +2,112 @@
 using clinicamhsystem.Models;
 using ClinicaServices;
 using clinicaWeb.Models;
+using clinicaWeb.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace clinicaWeb.Controllers
+namespace clinicaWeb.Controllers;
+[SecurityFilter("Servicios")]
+public class ServiciosController : Controller
 {
-    public class ServiciosController : Controller
+    private readonly IServiciosServices _services;
+
+    public ServiciosController(IServiciosServices serviciosServices)
     {
-        private readonly IServiciosServices _services;
-        private readonly ClinicaContext _dbContext;
+        _services = serviciosServices;
+    }
 
 
-        public ServiciosController(IServiciosServices serviciosServices)
+    // GET: ServiciosController
+    public ActionResult Index()
+    {
+        var servicios = _services.GetAll();
+        return View(new ServiciosViewModel { Servicios = servicios});
+    }
+
+    // GET: ServiciosController/Details/5
+    public ActionResult Details(int id)
+    {
+        return View();
+    }
+
+    // GET: ServiciosController/Create
+    [HttpPost]
+    public ActionResult Create(MotivoCobro servicio)
+    {
+        try
         {
-            _services = serviciosServices;
+            _services.AddServicio(servicio);
         }
-
-
-        // GET: ServiciosController
-        public ActionResult Index()
+        catch
         {
-            var servicios = _services.GetAll();
-            return View(new ServiciosViewModel { Servicios = servicios});
         }
+        return RedirectToAction("Index");
+    }
 
-        // GET: ServiciosController/Details/5
-        public ActionResult Details(int id)
+    // POST: ServiciosController/Create
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public ActionResult CreateP(IFormCollection collection)
+    {
+        try
+        {
+            return RedirectToAction(nameof(Index));
+        }
+        catch
         {
             return View();
         }
+    }
 
-        // GET: ServiciosController/Create
-        [HttpPost]
-        public ActionResult Create(MotivoCobro servicio)
+    // GET: ServiciosController/Edit/5
+    public ActionResult Edit(int id)
+    {
+        return View();
+    }
+
+    // POST: ServiciosController/Edit/5
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public ActionResult Edit(int id, IFormCollection collection)
+    {
+        try
         {
-            try
-            {
-                _services.AddServicio(servicio);
-            }
-            catch
-            {
-            }
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
-
-        // POST: ServiciosController/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult CreateP(IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: ServiciosController/Edit/5
-        public ActionResult Edit(int id)
+        catch
         {
             return View();
         }
+    }
 
-        // POST: ServiciosController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+    // POST: ServiciosControler/Delete/5
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public ActionResult Eliminar(Guid id)
+    {
+        try
         {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            _services.DeleteServicio(id);
         }
+        catch { }
+        var servicios = _services.GetAll();
+        return RedirectToAction("Index");
+    }
 
-        // POST: ServiciosControler/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Eliminar(Guid id)
+    // POST: ServiciosController/Delete/5
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public ActionResult Delete(int id, IFormCollection collection)
+    {
+        try
         {
-            try
-            {
-                _services.DeleteServicio(id);
-            }
-            catch { }
-            var servicios = _services.GetAll();
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
-
-        // POST: ServiciosController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        catch
         {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            return View();
         }
     }
 }

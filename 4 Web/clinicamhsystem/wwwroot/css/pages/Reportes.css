@@ -1,2 +1,4 @@
-﻿body {
+﻿
+.tab-pane {
+    background-color: transparent !important;
 }

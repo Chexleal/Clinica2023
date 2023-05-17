@@ -13,7 +13,7 @@ public partial class Consulta
 
     public string Peso { get; set; }
 
-    public DateTime TiempoDuracion { get; set; }
+    public TimeSpan TiempoDuracion { get; set; }
 
     public bool Radiografias { get; set; }
 
@@ -37,7 +37,7 @@ public partial class Consulta
 
     public Paciente PacienteInformacion { get; set; }
 
-    public virtual ICollection<Receta> Receta { get; } = new List<Receta>();
+    //public virtual ICollection<Receta> Receta { get; } = new List<Receta>();
 
     public void BeforeSaveChanges()
     {

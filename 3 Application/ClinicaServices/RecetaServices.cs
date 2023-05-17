@@ -33,6 +33,7 @@ public class RecetaServices : IRecetaServices
 
     public void Update(Receta receta)
     {
+        receta.Descripcion ??= string.Empty;
         _dbContext.SaveChanges();
     }
 
@@ -47,8 +48,7 @@ public class RecetaServices : IRecetaServices
             receta.IdReceta = Guid.NewGuid();
             receta.Fecha = DateTime.Now;
             receta.Descripcion ??= string.Empty;
-            var consulta = _dbContext.Consulta.FirstOrDefault(x => x.IdConsulta == receta.IdConsulta);
-             consulta.Receta.Add(receta);
+           _dbContext.Receta.Add(receta);
             _dbContext.SaveChanges();
     }
 }

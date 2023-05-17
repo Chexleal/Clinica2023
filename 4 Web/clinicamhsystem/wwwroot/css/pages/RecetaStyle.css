@@ -5,7 +5,7 @@
         margin-bottom: 5mm;
         margin-right: 5mm;
         margin-left: 5mm;
-    }
+}
 
     html, body {
         width: 148mm;
@@ -15,7 +15,7 @@
         margin-right: 5mm;
         margin-left: 5mm;
         padding: 0;
-    }
+}
 }
 
 
@@ -28,6 +28,7 @@
     padding: 0px;
     text-align: center;
 }
+
 
 body {
     font-family: 'Roboto', sans-serif;

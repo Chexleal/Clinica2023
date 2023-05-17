@@ -1,40 +1,53 @@
-﻿/*.upper {
-    position: absolute;
-    top: 0;
-    left: 0;
+﻿@media print {
+    @page {
+        size: A5;
+        margin-top: 5mm;
+        margin-bottom: 5mm;
+        margin-right: 5mm;
+        margin-left: 5mm;
+    }
+
+    html, body {
+        width: 148mm;
+        height: 210mm;
+        margin-top: 5mm;
+        margin-bottom: 5mm;
+        margin-right: 5mm;
+        margin-left: 5mm;
+        padding: 0;
+    }
 }
 
-.upper2 {
-    position: absolute;
-    top: 90;
-    right: 0;
-}
 
-.middle {
-    position: absolute;
-    top: 200px;
-    left: 0;
-    right: 0;
-}
-*/
-.under {
-    position: absolute;
-    bottom:1500;
-    left: 0;
-    right: 0;
-}
 
+.piePag {
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    padding: 0px;
+    text-align: center;
+}
 
 body {
     font-family: 'Roboto', sans-serif;
+    align-items: center;
+    color: rgb(1, 1, 39);
+    /* width: 148mm;
+    height: 210mm; */
+    margin-top: 5mm;
+    margin-bottom: 5mm;
+    margin-right: 5mm;
+    margin-left: 5mm;
 }
 
 .logoTh {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 300px;
-    height: 100px;
+    width: 150px;
+    height: 50px;
 }
 
     .logoTh img {
@@ -53,4 +66,12 @@ body {
 
 .Descrip {
     font-size: 12px;
+}
+
+.detalleReceta {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 80%;
 }

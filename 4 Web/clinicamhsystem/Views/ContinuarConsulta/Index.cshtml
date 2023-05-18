@@ -114,7 +114,7 @@
     <script>
         var state = "@Model.Consulta.Terminada";
 
-        var urlReceta="@Url.Action("VistaPdf","ContinuarConsulta")?consultaId=";
+        var urlReceta="@Url.Action("DescargarPdf","ContinuarConsulta")?consultaId=";
         var urlGetMedicamentos = "@Url.Action("GetMedicamentos","ContinuarConsulta")";
         if(state=='True'){
            

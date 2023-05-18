@@ -1,9 +1,12 @@
 ﻿@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
+@using ClinicaDomain
+@using ServiceStack
 @{
     Layout = null;
-    var recetaDetalle = ViewData["detalleReceta"];
+    var recetaDetalle =(List<DetalleReceta>) ViewData["detalleReceta"];
+    var observacionesReceta = ViewData["observacionesReceta"];
     var fecha = ViewData["fecha"];
     var paciente = ViewData["Paciente"];
 
@@ -68,7 +71,13 @@
             <table style="border-style: none; width:100%;">
                 <tr style="margin-left: 3px">
                     <th style="text-align: center">
-                        <p style="display: inline; font-size: 14px; font-weight:lighter">@recetaDetalle</p><br>
+                        @foreach (var item in recetaDetalle??new())
+                        {
+                            <p style="display: inline; font-size: 14px; font-weight:lighter">@item.Medicamento durante @item.DosisDias @(int.Parse(item.DosisDias) > 1 ? "días" : "día") cada  @(int.Parse(item.DosisTiempo) > 1 ? $"{@item.DosisTiempo} horas" : " hora")- Dosis: @item.Cantidad @(item.Instrucciones.IsNullOrEmpty()?"":$"-Instrucciones: {item.Instrucciones}")</p>
+                            <br>
+                            <br>
+                        }
+                        <p style="display: inline; font-size: 14px; font-weight:lighter">Otras observaciones: @observacionesReceta</p><br>
                         <p style="display: inline; font-size: 11px; font-weight:bold">-OMITIR CUALQUIER PRESCRIPCION DESPUES DE ESTA LINEA-</p><br>
                     </th>
                 </tr>
@@ -83,10 +92,6 @@
             <h1 style="display: inline; font-size: 11px; "> Contacto: </h1><br>
             <p style="display: inline; font-size: 11px; font-weight:lighter"><img src="~/img/tel.png" style="width: 14px; height: 14px;"> Tel: 7832-6115 - <img src="~/img/cel.png" style="width: 14px; height: 14px;"> Cel: 3116-0253</p><br>
             <p style="display: inline; font-size: 11px; font-weight:lighter"><img src="~/img/correo.png" style="width: 15px; height: 15px;"> Correo: dr.manuelhernandeztyo@gmail.com </p><br>
-            <h1 style="display: inline; font-size: 11px; font-weight:lighter"> Correo: dr.manuelhernandeztyo@gmail.com</h1><br>
-            </th>
-        </tr>
-    </table>
     <hr style="border: 0.5px solid #004169 ;">
     <table style="border-style: none; width:100%;">
         <tr style="margin-left: 3px">

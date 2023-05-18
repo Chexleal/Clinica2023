@@ -4,16 +4,16 @@
         margin-top: 5mm;
         margin-bottom: 5mm;
         margin-right: 5mm;
-        margin-left: 5mm;
+        margin-left: 1mm;
 }
 
     html, body {
         width: 148mm;
         height: 210mm;
-        margin-top: 5mm;
+        margin-top: auto;
         margin-bottom: 5mm;
         margin-right: 5mm;
-        margin-left: 5mm;
+        margin-left: 3mm;
         padding: 0;
 }
 }
@@ -36,10 +36,6 @@ body {
     color: rgb(1, 1, 39);
     /* width: 148mm;
     height: 210mm; */
-    margin-top: 5mm;
-    margin-bottom: 5mm;
-    margin-right: 5mm;
-    margin-left: 5mm;
 }
 
 .logoTh {

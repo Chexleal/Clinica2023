@@ -104,8 +104,9 @@ public class ContinuarConsulta : Controller
                 var consulta = _consultaServices.GetConsulta(consultaId);
                 var pacienteInfo = _pacienteServices.GetPacienteById(consulta.IdPaciente);
                 ViewData["Paciente"] = pacienteInfo.Nombre + " " + pacienteInfo.Apellido;
-                ViewData["fecha"] = receta.Fecha.ToString();
-                ViewData["detalleReceta"] = receta.Descripcion.ToString();
+                ViewData["fecha"] = receta.Fecha.ToString("dd/MM/yyyy");
+                ViewData["observacionesReceta"] = receta.Descripcion.ToString();
+                ViewData["detalleReceta"] = _recetaServices.GetAllDetalles(receta.IdReceta);
 
                 return View("ConsultaPdf");
         }

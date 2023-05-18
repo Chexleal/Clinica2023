@@ -12,7 +12,7 @@
     <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><a href="@Url.Action("DescargarPdf",new {consultaId=Model.Consulta.IdConsulta})" id="btnGuardar" class="btn btn-outline-dark mb-3">Descargar Pdf</a></h5>
+                <h5 class="modal-title"><button onclick="OpenReceta('@Model.Consulta.IdConsulta');" id="btnGuardar" class="btn btn-outline-dark mb-3">Descargar</button></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div id="modalRecetaBody" class="modal-body">

@@ -35,8 +35,9 @@ public class ContinuarConsulta : Controller
     {
         var consulta = _consultaServices.GetConsulta(consultaId);
         var receta = _recetaServices.GetByConsulta(consultaId) ?? new();
+        var medicamentos = _recetaServices.GetAllMedicamentos() ?? new();
         //var paciente = _pacienteServices.GetPacienteById(consulta.IdPaciente);
-        return View(new ConsultaContinuarViewModel { Consulta = consulta,Receta=receta/*, Paciente = paciente */});
+        return View(new ConsultaContinuarViewModel { Consulta = consulta, Receta = receta,Medicamentos= medicamentos/*, Paciente = paciente */});
     }
 
 
@@ -58,7 +59,7 @@ public class ContinuarConsulta : Controller
 
         _consultaServices.UpdateConsulta(consulta);
         if (consulta.Terminada) return RedirectToAction("Index", "Consultas");
-        return RedirectToAction("Index", new { consultaId =consulta.IdConsulta});
+        return RedirectToAction("Index", new { consultaId = consulta.IdConsulta });
     }
 
     [HttpPost]
@@ -122,7 +123,7 @@ public class ContinuarConsulta : Controller
         //string nombrePDf = $"receta_{consultaInfo.PacienteInformacion.Nombre}_{consultaInfo.PacienteInformacion.Apellido}_{DateTime.Now.ToString("ddMMyyyy")}.pdf";
 
         //return File(archivoPdf, "aplication/pdf",nombrePDf);
-        
+
         return Redirect(urlPagina);
     }
 
@@ -184,6 +185,31 @@ public class ContinuarConsulta : Controller
         {
             return View("Error");
         }
+    }
+
+    [HttpGet]
+    public ActionResult GetMedicamentos(Guid idReceta)
+    {
+        var detalles=_recetaServices.GetAllDetalles(idReceta);
+
+        return PartialView("Partials/_medicamentosTabla", new ConsultaContinuarViewModel {  DetallesReceta= detalles });
+    }
+
+    [HttpPost]
+    public ActionResult DeleteMedicamentos(Guid idDetalleReceta)
+    { 
+        var idReceta = _recetaServices.DeleteDetalle(idDetalleReceta);
+
+        return RedirectToAction("GetMedicamentos", new { idReceta });
+    }
+
+
+    [HttpPost]
+    public ActionResult AddDetalleReceta(DetalleReceta detalleReceta)
+    {
+        _recetaServices.AddDetalleReceta(detalleReceta);
+
+        return RedirectToAction("GetMedicamentos", new { idReceta = detalleReceta.IdReceta });
     }
 
 

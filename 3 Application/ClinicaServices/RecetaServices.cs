@@ -31,6 +31,7 @@ public class RecetaServices : IRecetaServices
     public void AddDetalleReceta(DetalleReceta detalleReceta)
     {
         detalleReceta.IdDetalleReceta=Guid.NewGuid();
+        detalleReceta.BeforeSaveChanges();
         _dbContext.DetalleReceta.Add(detalleReceta);
         _dbContext.SaveChanges();
 

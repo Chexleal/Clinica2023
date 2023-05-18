@@ -16,4 +16,12 @@ public partial class DetalleReceta
     public string Cantidad { get; set; }
 
     //public virtual Receta IdRecetaNavigation { get; set; }
+
+    public void BeforeSaveChanges()
+    {
+        DosisDias ??= string.Empty;
+        DosisTiempo ??= string.Empty;
+        Instrucciones ??= string.Empty;
+        Cantidad ??= string.Empty;
+    }
 }

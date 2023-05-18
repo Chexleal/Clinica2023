@@ -1,0 +1,38 @@
+﻿@model DetallesPagarViewModel
+
+@{
+    ViewData["Title"] = "Detalles";
+}
+<div class="table-container" id="table-container" name="table-container">
+    <div class="table-responsive">
+        <table class="table table-borderless table-sm table-striped ">
+            <thead class="table-dark">
+                <tr>
+                    <th>Servicio</th>
+                    <th>Descripción</th>
+                    <th>Valor</th>
+                    <th>Cantidad</th>
+                    <th>Subtotal</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var opcion in Model.Detalles)
+                {
+                    <tr>
+                        <td>@Model.Servicios.FirstOrDefault(p => p.IdMotivoCobro == opcion.IdMotivoCobro).Descripcion</td>
+                        <td>@opcion.Producto</td>
+                        <td>@opcion.Valor</td>
+                        <td>@opcion.Cantidad</td>
+                        <td>@opcion.Subtotal</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+<button class="btn btn-secondary float-end" data-bs-dismiss="modal">Cerrar</button>
+
+@section Scripts{
+    <script src="~/js/pages/pagos.js" asp-append-version="true"></script>
+}

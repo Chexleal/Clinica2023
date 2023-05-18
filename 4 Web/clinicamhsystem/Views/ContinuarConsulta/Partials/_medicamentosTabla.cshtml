@@ -1,0 +1,30 @@
+﻿@model ConsultaContinuarViewModel
+<!-- Modal Crear Paciente-->
+
+<table class="table table-borderless table-sm table-striped mt-lg-5">
+    <thead class="table-dark">
+        <tr>
+            <th>Medicamento</th>
+            <th>Durante(días)</th>
+            <th>Cada(horas)</th>
+            <th>Instrucciones</th>
+            <th>Cantidad</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var opcion in Model.DetallesReceta)
+        {
+            <tr>
+                <td>@opcion.Medicamento</td>
+                <td>@opcion.DosisDias</td>
+                <td>@opcion.DosisTiempo</td>
+                <td>@opcion.Instrucciones</td>
+                <td>@opcion.Cantidad</td>
+                <td>
+                    <button class="option btn btn-outline-danger" type="button" onclick="deleteDetalle('@opcion.IdDetalleReceta')">Eliminar</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

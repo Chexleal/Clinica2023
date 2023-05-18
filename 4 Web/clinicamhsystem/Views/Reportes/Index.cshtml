@@ -11,20 +11,20 @@
 
 <div class="card w-100 shadow-lg mt-5">
     <div class="card-body">
-            <!-- Tabs -->
+        <!-- Tabs -->
 
         <ul class="nav nav-tabs" id="myTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="tab1-tab" data-bs-toggle="tab" data-bs-target="#tab1" type="button" role="tab" aria-controls="tab1" aria-selected="true">Por Paciente</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="tab2-tab" data-bs-toggle="tab" data-bs-target="#tab2" type="button" role="tab" aria-controls="tab2" aria-selected="false">Por Servicios</button>
-                </li>
-            </ul>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tab1-tab" data-bs-toggle="tab" data-bs-target="#tab1" type="button" role="tab" aria-controls="tab1" aria-selected="true">Por Paciente</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab2-tab" data-bs-toggle="tab" data-bs-target="#tab2" type="button" role="tab" aria-controls="tab2" aria-selected="false">Por Servicios</button>
+            </li>
+        </ul>
 
-            <!-- Contenido de los tabs -->
-            <div class="tab-content" id="myTabsContent">
-                <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
+        <!-- Contenido de los tabs -->
+        <div class="tab-content" id="myTabsContent">
+            <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
                 <form id="paciente-search" method="POST" action="@Url.Action("Paciente","Reportes")">
                     <div class="row">
                         <div class="col-md-3">
@@ -59,93 +59,199 @@
                         </div>
                     </div>
                 </form>
-                </div>
-                <div class="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="tab2-tab">
-                    <form>
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label class="control-label">Del</label>
-                        <input class="form-control" type="date" name="from" id="from" />
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label class="control-label">Al</label>
-                        <input class="form-control" type="date" name="to" id="to" />
-                    </div>
-                </div>
-                @*<div class="col-md-3">
-                    <div class="form-group">
+            </div>
+            <div class="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="tab2-tab">
+                <form id="servicios-search" method="POST" action="@Url.Action("Servicios","Reportes")">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="control-label">Del</label>
+                                <input class="form-control" type="date" name="from" id="from" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="control-label">Al</label>
+                                <input class="form-control" type="date" name="to" id="to" />
+                            </div>
+                        </div>
+                        @*<div class="col-md-3">
+                        <div class="form-group">
                         <label class="control-label">Servicio</label>
                         <select name="IdPaciente" class="form-control">
-                            <option></option>
-                            @foreach (var servicio in Model.Servicios)
-                            {
-                                <option value="@servicio.IdMotivoCobro">@servicio.Descripcion</option>
-                            }
+                        <option></option>
+                        @foreach (var servicio in Model.Servicios)
+                        {
+                        <option value="@servicio.IdMotivoCobro">@servicio.Descripcion</option>
+                        }
                         </select>
-                    </div>
-                </div>*@
+                        </div>
+                        </div>*@
                         <div class="col-md-3 d-flex">
                             <div class="form-group">
                                 <label class="control-label"></label>
                                 <button type="submit" class="form-control btn btn-primary d-inline-block">Buscar</button>
                             </div>
                         </div>
-            </div>  
-        </form>
-                </div>
+                    </div>
+                </form>
             </div>
-        
+        </div>
+
     </div>
 </div>
 
 
-
-<div class="card w-100 shadow-lg mt-5">
+<!-- Reportes section -->
+<div class="card w-100 shadow-lg mt-5" id="reporte">
 
     <div class="card-header bg-ligth">
-        <h3 class="h3">Reporte</h3>
+        <h3 class="titulo">Reporte</h3>
     </div>
     <div class="card-body">
         <div class=" table-responsive ">
+            @{
+                if (Model.Paciente != null)
+                {
+                    <h5 class="encabezado fw-normal">
+                        <span class="centered-span">Resumen de consultas<br /><br>
+                            Del &nbsp;&nbsp; @Model.From.ToString("dd/MM/yyyy") &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Al &nbsp;&nbsp; @Model.To.ToString("dd/MM/yyyy")
+                        </span>
+                    <br>
+                        <br>
+                        Paciente: <span class="fw-bold">
+                            @Model.Paciente.Nombre @Model.Paciente.Apellido &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        </span> Dpi: <span class="fw-bold">
+                            @Model.Paciente.Dpi
+                        </span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; No. Consultas: <span class="fw-bold">
+                            @Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date).ToList().Count
+                        </span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Total: Q
+                        @{
+                            decimal total = 0.0M;
+                            foreach (var consulta in Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date))
+                            {
+                                total += consulta.Total;
+                            }
+                        }
+                        <span class="fw-bold">
+                            @total
+                        </span>
+
+                        <br>
+                        <br>
+                    </h5>
+                } else if (Model.EsServicio)
+                {
+
+                    <h5 class="encabezado fw-normal">
+                        <span class="centered-span">
+                            Resumen de ingresos por servicios<br /><br>
+                            Del &nbsp;&nbsp; @Model.From.ToString("dd/MM/yyyy") &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Al &nbsp;&nbsp; @Model.To.ToString("dd/MM/yyyy")
+                        </span>
+                        <br>
+                        <br>
+                    </h5>
+                }
+            }
+
             <table id="table" class="table table-striped ">
                 <thead class="table-dark">
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Nombre</th>
-                        <th>Apellido</th>
-                        <th>Motivo de consulta</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
                     @{
-                        if (Model.Paciente != null)
-                        {
-                        <td>@Model.Paciente.Nombre</td>
-                        }
-                    }
-                    @*@foreach (var paciente in Model.Pacientes)
-                    {
-                        foreach (var consulta in paciente.Consulta)
+                        if (Model.EsServicio)
                         {
                             <tr>
-                                <td>@consulta.Fecha</td>
-                                <td>@consulta.PacienteInformacion.Nombre</td>
-                                <td>@consulta.PacienteInformacion.Apellido</td>
-                                <td>@consulta.MotivoConsulta</td>
-                                <td>
-                                    <div class="options d-flex ">
-                                        <a class="option" href="@Url.Action("Index","ContinuarConsulta",new{consultaId=consulta.IdConsulta})">@consulta.Total</a>
-                                    </div>
-                                </td>
+                                <th>Descripción</th>
+                                <th>Cantidad</th>
+                                <th>Total</th>
                             </tr>
                         }
-                    }*@
+                        else if (Model.Paciente != null)
+                        {
+                            <tr>
+                                <th>Fecha y hora</th>
+                                <th>Duración</th>
+                                <th>Motivo de consulta</th>
+                                <th>Radiografías</th>
+                                <th>Total</th>
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr><th></th></tr>
+                        }
+                    }
+                </thead>
+                <tbody>
+                        @{
+                            if (Model.Paciente != null)
+                            {
+                                foreach (var consulta in Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date))
+                                {
+                                    <tr>
+                                    <td>@consulta.Fecha</td>
+                                    <td>@consulta.TiempoDuracion</td>
+                                    <td>@consulta.MotivoConsulta</td>
+                                    @if (consulta.Radiografias)
+                                    {
+                                        <td>Si</td>
+                                    }
+                                    else
+                                    {
+                                        <td>No</td>
+                                    }
+                                    <td>
+                                        <div class="options d-flex ">
+                                            <button class="btn-total option" data-id="@consulta.IdConsulta">Q @consulta.Total</button>
+                                        </div>
+                                    </td>
+                                    </tr>
+                                }
+                            }
+                            else if (Model.EsServicio)
+                            {
+                                foreach (var servicio in Model.Servicios)
+                                {
+                                    <tr>
+                                    <td>@servicio.Descripcion</td>
+
+                                    @{
+                                    var cantidad = 0;
+                                    var total = 0.0M;
+                                    @foreach (var paciente in Model.Pacientes)
+                                    {
+                                        foreach (var consulta in paciente.Consulta.Where(x => x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date))
+                                        {
+                                            @foreach (var detalle in Model.Detalles.Where(x => x.IdMotivoCobro == servicio.IdMotivoCobro && x.IdConsulta == consulta.IdConsulta))
+                                            {
+                                                cantidad += detalle.Cantidad;
+                                                total += detalle.Subtotal;
+                                            }
+                                        }
+                                    }
+
+                                    <td>@cantidad</td>
+                                    <td>@total</td>
+                                    }
+                                    </tr>
+                                }
+                            }
+                        }
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detalles total -->
+<div class="modal fade" id="detallesTotalModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Detalles total</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            </div>
         </div>
     </div>
 </div>

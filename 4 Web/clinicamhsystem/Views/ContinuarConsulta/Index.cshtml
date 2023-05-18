@@ -74,7 +74,7 @@
                 <p style="color: #2d8f77; font-weight: bold;">Historial</p>
             </button>
 
-            <button type="button" id="btnReceta" onclick="ShowReceta()" class="btn btn-mini" title="Receta">
+            <button type="button" id="btnReceta" onclick="ShowReceta('@Model.Receta.IdReceta')" class="btn btn-mini" title="Receta">
                 <i class="fa-solid fa-file-signature fa-bounce fa-xl" style="color: #2d8f77;"></i>
                 <p style="color: #2d8f77; font-weight: bold;">Receta</p>
             </button>
@@ -115,10 +115,12 @@
         var state = "@Model.Consulta.Terminada";
 
         var urlReceta="@Url.Action("VistaPdf","ContinuarConsulta")?consultaId=";
+        var urlGetMedicamentos = "@Url.Action("GetMedicamentos","ContinuarConsulta")";
         if(state=='True'){
            
             SetReadOnly();
         }
+       
 
     </script>
 }

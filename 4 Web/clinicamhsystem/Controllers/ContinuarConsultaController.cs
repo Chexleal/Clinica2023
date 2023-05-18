@@ -36,8 +36,9 @@ public class ContinuarConsulta : Controller
     {
         var consulta = _consultaServices.GetConsulta(consultaId);
         var receta = _recetaServices.GetByConsulta(consultaId) ?? new();
+        var medicamentos = _recetaServices.GetAllMedicamentos() ?? new();
         //var paciente = _pacienteServices.GetPacienteById(consulta.IdPaciente);
-        return View(new ConsultaContinuarViewModel { Consulta = consulta,Receta=receta/*, Paciente = paciente */});
+        return View(new ConsultaContinuarViewModel { Consulta = consulta, Receta = receta,Medicamentos= medicamentos/*, Paciente = paciente */});
     }
 
 
@@ -59,7 +60,7 @@ public class ContinuarConsulta : Controller
 
         _consultaServices.UpdateConsulta(consulta);
         if (consulta.Terminada) return RedirectToAction("Index", "Consultas");
-        return RedirectToAction("Index", new { consultaId =consulta.IdConsulta});
+        return RedirectToAction("Index", new { consultaId = consulta.IdConsulta });
     }
 
     [HttpPost]
@@ -109,102 +110,6 @@ public class ContinuarConsulta : Controller
                 return View("ConsultaPdf");
         }
 
-        //public ActionResult DescargarPdf(Guid consultaIds)
-        //{
-
-        //    string paginaActual = HttpContext.Request.Path;
-
-        //    string urlPagina = HttpContext.Request.GetEncodedUrl();
-
-
-        //    Uri uri = new Uri(urlPagina);
-        //    string queryString = uri.Query;
-        //    string consultaId = HttpUtility.ParseQueryString(queryString).Get("consultaId");
-        //    string baseUrl = uri.OriginalString.Substring(0, uri.OriginalString.IndexOf("?"));
-
-        //    string path = uri.LocalPath;
-        //    string controller = path.Split('/')[1];
-        //    string action = path.Split('/')[2];
-
-        //    string originUrl = uri.GetLeftPart(UriPartial.Authority);
-
-        //    ActionResult viewPdf = VistaPdf(consultaIds);
-                    }
-        //    var tourl = viewPdf.ToUrl();
-            
-        }
-        //    StringBuilder newUrlBuild = new StringBuilder(originUrl);
-        //    newUrlBuild.Append("/");
-        //    newUrlBuild.Append(controller);
-        //    newUrlBuild.Append("/VistaPdf?");
-        //    newUrlBuild.Append(consultaId);
-        public ActionResult DescargarPdf(Guid consultaIds)
-        //    urlPagina = newUrlBuild.ToString();
-
-        //    var pdf = new HtmlToPdfDocument()
-        //    {
-        //        GlobalSettings = new GlobalSettings()
-        //        {
-        //            PaperSize = PaperKind.A5,
-        //            Orientation = Orientation.Portrait
-
-        //        },
-        //        Objects =
-        //        {
-        //            new ObjectSettings()
-        //            {
-        //                Page = tourl//urlPagina // "https://localhost:7070?consultaId=966967ee-49ab-4d85-bc5a-2826deb75257"	
-
-        //            }
-        //        }
-            string originUrl = uri.GetLeftPart(UriPartial.Authority);
-        //    };
-            StringBuilder newUrlBuild = new StringBuilder(originUrl);
-        //    string url = urlPagina.ToString();
-        //    var archivoPdf = _converter.Convert(pdf);
-        //    string nombrePDf = "receta_"+ DateTime.Now.ToString("ddMMyyyy")+".pdf";
-            newUrlBuild.Append(consultaId);
-        //    return File(archivoPdf, "aplication/pdf",nombrePDf);
-        //}
-
-            string example = "https://localhost:7070/ContinuarConsulta/VistaPdf?consultaId=966967ee-49ab-4d85-bc5a-2826deb75257";
-            string exaple2 = "https://localhost:7070?consultaId=966967ee-49ab-4d85-bc5a-2826deb75257/ContinuarConsulta/VistaPdf";
-
-            var pdf = new HtmlToPdfDocument()
-            {
-                GlobalSettings = new GlobalSettings()
-                {
-                    PaperSize = PaperKind.A4,
-                    Orientation = Orientation.Portrait
-
-                },
-                Objects =
-                {
-                    new ObjectSettings()
-                    {
-                        Page = urlPagina // "https://localhost:7070?consultaId=966967ee-49ab-4d85-bc5a-2826deb75257"	
-
-                    }
-                }
-
-            };
-
-            string url = urlPagina.ToString();
-            var archivoPdf = _converter.Convert(pdf);
-            string nombrePDf = "receta_"+ DateTime.Now.ToString("ddMMyyyy")+".pdf";
-
-            return File(archivoPdf, "aplication/pdf",nombrePDf);
-        }
-
-
-            var consulta = _consultaServices.GetConsulta(consultaId);
-            var pacienteInfo = _pacienteServices.GetPacienteById(consulta.IdPaciente);
-            ViewData["Paciente"] = pacienteInfo.Nombre + " " + pacienteInfo.Apellido;
-            ViewData["fecha"] = receta.Fecha.ToString();
-            ViewData["detalleReceta"] = receta.Descripcion.ToString();
-            return View("~/Views/Shared/ConsultaPdf.cshtml");
-        }
-    }
 
     // GET: ConsultasController/Edit/5
     public ActionResult Editar(Guid id)
@@ -228,6 +133,31 @@ public class ContinuarConsulta : Controller
         {
             return View("Error");
         }
+    }
+
+    [HttpGet]
+    public ActionResult GetMedicamentos(Guid idReceta)
+    {
+        var detalles=_recetaServices.GetAllDetalles(idReceta);
+
+        return PartialView("Partials/_medicamentosTabla", new ConsultaContinuarViewModel {  DetallesReceta= detalles });
+    }
+
+    [HttpPost]
+    public ActionResult DeleteMedicamentos(Guid idDetalleReceta)
+    { 
+        var idReceta = _recetaServices.DeleteDetalle(idDetalleReceta);
+
+        return RedirectToAction("GetMedicamentos", new { idReceta });
+    }
+
+
+    [HttpPost]
+    public ActionResult AddDetalleReceta(DetalleReceta detalleReceta)
+    {
+        _recetaServices.AddDetalleReceta(detalleReceta);
+
+        return RedirectToAction("GetMedicamentos", new { idReceta = detalleReceta.IdReceta });
     }
 
 

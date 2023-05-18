@@ -12,7 +12,7 @@
     <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><button onclick="OpenReceta('@Model.Consulta.IdConsulta');" id="btnGuardar" class="btn btn-outline-dark mb-3">Descargar</button></h5>
+                <h5 class="modal-title"><button type="button" onclick="OpenReceta('@Model.Consulta.IdConsulta');" class="btn btn-outline-dark mb-3">Descargar</button></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div id="modalRecetaBody" class="modal-body">
@@ -62,7 +62,7 @@
                     <div class="row mt-5">
                         <div class="col col-sm col-md col-lg col-xl col-xxl">
                             <input hidden name="IdConsulta" value="@Model.Consulta.IdConsulta" />
-                            <button type="submit" id="btnGuardar" class="btn btn-dark mb-3">Guardar</button>
+                            <button type="submit" id="btnGuardarReceta" class="btn btn-dark mb-3">Guardar</button>
                         </div>
                     </div>
                 </form>

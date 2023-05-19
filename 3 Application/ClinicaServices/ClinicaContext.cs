@@ -67,7 +67,7 @@ public partial class ClinicaContext : DbContext
                 .ValueGeneratedNever()
                 .HasColumnName("id_consulta");
             entity.Property(e => e.Diagnostico)
-                .HasMaxLength(200)
+                .HasMaxLength(1000)
                 .IsUnicode(false)
                 .HasColumnName("diagnostico");
             entity.Property(e => e.Fecha)
@@ -207,7 +207,7 @@ public partial class ClinicaContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("alergias");
             entity.Property(e => e.Antecedentes)
-                .HasMaxLength(25)
+                .HasMaxLength(120)
                 .IsUnicode(false)
                 .HasColumnName("antecedentes");
             entity.Property(e => e.Apellido)
@@ -255,10 +255,13 @@ public partial class ClinicaContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("profesion");
             entity.Property(e => e.Remitido)
-                .HasMaxLength(25)
+                .HasMaxLength(60)
                 .IsUnicode(false)
                 .HasColumnName("remitido");
-            entity.Property(e => e.Telefono).HasColumnName("telefono");
+            entity.Property(e => e.Telefono)
+             .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("telefono");
             entity.Property(e => e.TipoSange)
                 .HasMaxLength(25)
                 .IsUnicode(false)

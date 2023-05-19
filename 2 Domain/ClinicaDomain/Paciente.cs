@@ -19,7 +19,7 @@ public partial class Paciente
 
     public string Genero { get; set; } 
 
-    public int Telefono { get; set; } 
+    public string Telefono { get; set; } 
 
     public string Correo { get; set; } 
 
@@ -63,5 +63,6 @@ public partial class Paciente
         Antecedentes ??= string.Empty;
         TipoSange ??= string.Empty;
         NoRegistro ??= string.Empty;
+        Telefono??=string.Empty;
     }
 }

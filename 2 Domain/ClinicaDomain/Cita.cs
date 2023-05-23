@@ -16,4 +16,5 @@ public partial class Cita
     public virtual Paciente IdPacienteNavigation { get; set; }
 
     public virtual Usuario IdUsuarioNavigation { get; set; }
+
 }

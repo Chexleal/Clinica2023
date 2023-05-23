@@ -1,83 +1,59 @@
-﻿using clinicaWeb.Security;
+﻿using ClinicaDomain;
+using ClinicaServices;
+using clinicaWeb.Models;
+using clinicaWeb.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json;
 
 namespace clinicaWeb.Controllers;
 [SecurityFilter("Citas")]
 public class CitasController : Controller
 {
+    private readonly IPacienteServices _pacienteServices;
+    private readonly ICitaServices _citaServices;
+    private readonly IMemoryCache _cache;
+
+    public CitasController(IPacienteServices pacienteServices , ICitaServices citaServices, IMemoryCache memoryCache)
+    {
+        _pacienteServices = pacienteServices;
+        _citaServices = citaServices;
+        _cache = memoryCache;
+    }
     // GET: CitasController
     public ActionResult Index()
     {
-        return View();
+        var pacientes = _pacienteServices.GetAll();
+        return View(new CitasViewModel { Pacientes = pacientes });
     }
 
-    // GET: CitasController/Details/5
-    public ActionResult Details(int id)
-    {
-        return View();
-    }
-
-    // GET: CitasController/Create
-    public ActionResult Create()
-    {
-        return View();
-    }
-
-    // POST: CitasController/Create
     [HttpPost]
-    [ValidateAntiForgeryToken]
-    public ActionResult Create(IFormCollection collection)
+    public ActionResult Add(Guid IdPaciente)
     {
-        try
+
+        if (_cache.TryGetValue("UserData", out string jsonUserData))
         {
-            return RedirectToAction(nameof(Index));
+            string fecha_str = Request.Form["fecha"];
+            string hora_str = Request.Form["hora"];
+
+            DateOnly fecha = DateOnly.ParseExact(fecha_str, "yyyy-MM-dd", null);
+            TimeOnly hora = TimeOnly.ParseExact(hora_str, "HH:mm", null);
+            DateTime combinedDateTime = new DateTime(fecha.Year, fecha.Month, fecha.Day, hora.Hour, hora.Minute, hora.Second);
+
+            Usuario userData = JsonConvert.DeserializeObject<Usuario>(jsonUserData);
+
+            Cita cita = new Cita();
+            cita.FechaHora = combinedDateTime;
+            cita.IdPaciente = IdPaciente;
+            cita.IdUsuario = userData.IdUsuario;
+
+            _citaServices.Add(cita);
+
         }
-        catch
-        {
-            return View();
-        }
+        var pacientes = _pacienteServices.GetAll();
+        return RedirectToAction("Index",new CitasViewModel { Pacientes = pacientes });
     }
 
-    // GET: CitasController/Edit/5
-    public ActionResult Edit(int id)
-    {
-        return View();
-    }
-
-    // POST: CitasController/Edit/5
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public ActionResult Edit(int id, IFormCollection collection)
-    {
-        try
-        {
-            return RedirectToAction(nameof(Index));
-        }
-        catch
-        {
-            return View();
-        }
-    }
-
-    // GET: CitasController/Delete/5
-    public ActionResult Delete(int id)
-    {
-        return View();
-    }
-
-    // POST: CitasController/Delete/5
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public ActionResult Delete(int id, IFormCollection collection)
-    {
-        try
-        {
-            return RedirectToAction(nameof(Index));
-        }
-        catch
-        {
-            return View();
-        }
-    }
 }

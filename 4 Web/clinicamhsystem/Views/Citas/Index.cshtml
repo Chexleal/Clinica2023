@@ -1,6 +1,94 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model clinicaWeb.Models.CitasViewModel;
 @{
-    <p>Citas...</p>
+    ViewData["Title"] = "Citas";
 }
+
+<full-calendar shadow options='{
+    "headerToolbar": {
+      "left": "prev,next today",
+      "center": "title",
+      "right": "dayGridMonth,dayGridWeek,dayGridDay"
+    }
+  }' />
+<script>
+    //var AddCitaModal = new bootstrap.Model(document.getElementById('addCitaModal'))
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'es',
+            //themeSystem: 'bootstrap5',
+            headerToolbar: {
+                left: 'prev, next, today',
+                center: 'title',
+                right: 'dayGridMonth, timeGridWeek, listWeek'
+            },
+            dateClick: function(data){
+                //alert(data.dateStr);
+                AddCita(data.dateStr);
+            //    document.getElementById('Fecha').value = data.dateStr;
+            //    AddCitaModal.show();
+            }
+        });
+        calendar.render();
+    });
+
+    function AddCita (date) {
+        $('#addCitaModal').modal('show');
+        $('#Fecha').val(date);
+        }
+</script>
+
+<div class="card w-100 shadow-lg mt-5" id="citas">
+
+    <div class="card-header bg-ligth">
+        <h3 class="titulo">Citas</h3>
+    </div>
+    <div class="card-body">
+        <div id='calendar'></div>
+</div>
+</div>
+
+
+<!-- Modal Agregar Cita -->
+<div class="modal fade" id="addCitaModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="titulo">Agregar cita</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="cita-form" method="POST" action="@Url.Action("Add","Citas")">
+                    <div class="form-group">
+                        <label class="control-label">Paciente</label>
+                        <select name="IdPaciente" class="form-control">
+                            @foreach (var paciente in Model.Pacientes)
+                            {
+                                <option value="@paciente.IdPaciente">@paciente.Nombre @paciente.Apellido - @paciente.Dpi</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col col-sm col-md col-lg col-xl col-xxl">
+                    <div class="form-group mb-3">
+                        <label for="Fecha" class="form-label">Fecha</label>
+                        <input type="date" name="Fecha" id="Fecha" class="form-control" />
+                    </div>
+                    </div>
+                    <div class="col col-sm col-md col-lg col-xl col-xxl">
+                    <div class="form-group mb-3">
+                        <label for="Hora" class="form-label">Hora</label>
+                        <input type="time" name="Hora" id="Hora" class="form-control" />
+                    </div>
+                    </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="submit" class="btn btn-primary" form="cita-form">Agendar</button>
+            </div>
+        </div>
+    </div>
+</div>

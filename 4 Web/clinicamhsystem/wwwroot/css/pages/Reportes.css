@@ -18,3 +18,7 @@
     display: block; /* Cambia la visualización a bloque */
     text-align: center; /* Centra el texto dentro del bloque */
 }
+
+.dataTables_filter{
+    visibility:hidden;
+}

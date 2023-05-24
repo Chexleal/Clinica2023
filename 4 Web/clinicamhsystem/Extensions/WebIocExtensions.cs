@@ -25,6 +25,7 @@ public static class WebIocExtensions
         services.AddScoped<IServiciosServices, ServiciosServices>();
         services.AddScoped<IDetallesServices, DetalleServices>();
         services.AddScoped<IRecetaServices, RecetaServices>();
+        services.AddScoped<ICitaServices, CitaServices>();
         #endregion
 
 

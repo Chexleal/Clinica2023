@@ -113,19 +113,12 @@
             @{
                 if (Model.Paciente != null)
                 {
-                    <h5 class="encabezado fw-normal">
+                    <h5 class="enc table-title encabezado fw-normal" id="tabla-encabezado">
                         <span class="centered-span">Resumen de consultas<br /><br>
                             Del &nbsp;&nbsp; @Model.From.ToString("dd/MM/yyyy") &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Al &nbsp;&nbsp; @Model.To.ToString("dd/MM/yyyy")
                         </span>
                     <br>
                         <br>
-                        Paciente: <span class="fw-bold">
-                            @Model.Paciente.Nombre @Model.Paciente.Apellido &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        </span> Dpi: <span class="fw-bold">
-                            @Model.Paciente.Dpi
-                        </span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; No. Consultas: <span class="fw-bold">
-                            @Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date).ToList().Count
-                        </span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Total: Q
                         @{
                             decimal total = 0.0M;
                             foreach (var consulta in Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date))
@@ -133,6 +126,23 @@
                                 total += consulta.Total;
                             }
                         }
+                        Paciente: <span class="fw-bold"> @Model.Paciente.Nombre @Model.Paciente.Apellido &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Dpi: <span class="fw-bold"> @Model.Paciente.Dpi </span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; No. Consultas: <span class="fw-bold"> @Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date).ToList().Count </span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Total: Q <span class="fw-bold">@total</span>
+
+                        <br>
+                        <br>
+                    </h5>
+                    <h5 class="visually-hidden table-title encabezado fw-normal hidden" id="tabla-encabezado2">
+                        <span class="centered-span">
+                            Resumen de consultas<br /><br>
+                            Del &nbsp;&nbsp; @Model.From.ToString("dd/MM/yyyy") &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Al &nbsp;&nbsp; @Model.To.ToString("dd/MM/yyyy")
+                        </span>
+                        <br>
+                        <br>
+                        Paciente: <span class="fw-bold">@Model.Paciente.Nombre @Model.Paciente.Apellido &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        </span> Dpi: <span class="fw-bold"> @Model.Paciente.Dpi
+                        </span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; No. Consultas: <span class="fw-bold">
+                            @Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date).ToList().Count
+                        </span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Total: Q
                         <span class="fw-bold">
                             @total
                         </span>
@@ -143,7 +153,7 @@
                 } else if (Model.EsServicio)
                 {
 
-                    <h5 class="encabezado fw-normal">
+                    <h5 class="enc table-title encabezado fw-normal" id="tabla-encabezado">
                         <span class="centered-span">
                             Resumen de ingresos por servicios<br /><br>
                             Del &nbsp;&nbsp; @Model.From.ToString("dd/MM/yyyy") &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Al &nbsp;&nbsp; @Model.To.ToString("dd/MM/yyyy")
@@ -164,6 +174,13 @@
                                 <th>Cantidad</th>
                                 <th>Total</th>
                             </tr>
+                            <script>
+                                var custom_file_name = "Resumen Servicios (@Model.From.ToString("dd-MM-yyyy") - @Model.To.ToString("dd-MM-yyyy"))"
+                                var num_columns = [0,1,2]
+                                var encabezado = document.getElementById("tabla-encabezado").textContent;
+                                var titulo = "Resumen de ingresos por servicios"
+                                var fechas = "Del  @Model.From.ToString("dd/MM/yyyy")       Al  @Model.To.ToString("dd/MM/yyyy")"
+                            </script>
                         }
                         else if (Model.Paciente != null)
                         {
@@ -174,6 +191,13 @@
                                 <th>Radiografías</th>
                                 <th>Total</th>
                             </tr>
+                            <script>
+                                var custom_file_name = "Consultas @Model.Paciente.Nombre @Model.Paciente.Apellido (@Model.From.ToString("dd-MM-yyyy") - @Model.To.ToString("dd-MM-yyyy"))"
+                                var num_columns = [0,1,2,3,4]
+                                var encabezado = document.getElementById("tabla-encabezado").textContent;
+                                var titulo = "Resumen de consultas"
+                                var fechas = "Del  @Model.From.ToString("dd/MM/yyyy")       Al  @Model.To.ToString("dd/MM/yyyy")"
+                                </script>
                         }
                         else
                         {

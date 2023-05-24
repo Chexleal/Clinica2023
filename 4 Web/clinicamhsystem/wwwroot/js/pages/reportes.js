@@ -1,5 +1,21 @@
 $(document).ready(function () {
     CreateTable();
+
+    $('.btn-total').click(function () {
+        var consultaId = $(this).data('id');
+        $.ajax({
+            url: '/Reportes/Detalles',
+            type: 'POST',
+            data: { idconsulta: consultaId },
+            success: function (result) {
+                $('#detallesTotalModal').find('.modal-body').html(result);
+                $('#detallesTotalModal').modal('show');
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+    });
 });
 
 function CreateTable() {
@@ -7,7 +23,8 @@ function CreateTable() {
         "ordering": true,
         "lengthChange": true,
         searching: false,
-        dom: 'Bfrtip',
+        dom: '<"table-title">Bfrtip',
+        buttons: ['copy', 'excel', 'pdf', 'print'],
         "pageLength": 20,
         "language": {
             searchPlaceholder: 'Buscar consultas',

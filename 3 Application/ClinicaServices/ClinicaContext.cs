@@ -32,6 +32,7 @@ public partial class ClinicaContext : DbContext
     public virtual DbSet<RolDetalle> RolDetalles { get; set; }
 
     public virtual DbSet<Usuario> Usuarios { get; set; }
+    public virtual DbSet<Medicamento> Medicamento { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -66,7 +67,7 @@ public partial class ClinicaContext : DbContext
                 .ValueGeneratedNever()
                 .HasColumnName("id_consulta");
             entity.Property(e => e.Diagnostico)
-                .HasMaxLength(200)
+                .HasMaxLength(1000)
                 .IsUnicode(false)
                 .HasColumnName("diagnostico");
             entity.Property(e => e.Fecha)
@@ -149,15 +150,32 @@ public partial class ClinicaContext : DbContext
             entity.Property(e => e.IdDetalleReceta)
                 .ValueGeneratedNever()
                 .HasColumnName("id_detalle_receta");
-            entity.Property(e => e.Descripcion)
-                .HasMaxLength(250)
-                .IsUnicode(false)
-                .HasColumnName("descripcion");
+            entity.Property(e => e.Medicamento)
+               .HasMaxLength(100)
+               .IsUnicode(false)
+               .HasColumnName("medicamento");
+            entity.Property(e => e.DosisDias)
+               .HasMaxLength(50)
+               .IsUnicode(false)
+               .HasColumnName("dosis_dia");
+            entity.Property(e => e.DosisTiempo)
+               .HasMaxLength(50)
+               .IsUnicode(false)
+               .HasColumnName("dosis_tiempo");
+            entity.Property(e => e.Instrucciones)
+               .HasMaxLength(250)
+               .IsUnicode(false)
+               .HasColumnName("instrucciones");
+            entity.Property(e => e.Cantidad)
+           .HasMaxLength(100)
+              .IsUnicode(false)
+           .HasColumnName("cantidad_med");
+
             entity.Property(e => e.IdReceta).HasColumnName("id_receta");
 
-            entity.HasOne(d => d.IdRecetaNavigation).WithMany(p => p.DetalleReceta)
-                .HasForeignKey(d => d.IdReceta)
-                .HasConstraintName("FK__Detalle_r__id_re__3B75D760");
+            //entity.HasOne(d => d.IdRecetaNavigation).WithMany(p => p.DetalleReceta)
+            //    .HasForeignKey(d => d.IdReceta)
+            //    .HasConstraintName("FK__Detalle_r__id_re__3B75D760");
         });
 
         modelBuilder.Entity<MotivoCobro>(entity =>
@@ -189,7 +207,7 @@ public partial class ClinicaContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("alergias");
             entity.Property(e => e.Antecedentes)
-                .HasMaxLength(25)
+                .HasMaxLength(120)
                 .IsUnicode(false)
                 .HasColumnName("antecedentes");
             entity.Property(e => e.Apellido)
@@ -237,10 +255,13 @@ public partial class ClinicaContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("profesion");
             entity.Property(e => e.Remitido)
-                .HasMaxLength(25)
+                .HasMaxLength(60)
                 .IsUnicode(false)
                 .HasColumnName("remitido");
-            entity.Property(e => e.Telefono).HasColumnName("telefono");
+            entity.Property(e => e.Telefono)
+             .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("telefono");
             entity.Property(e => e.TipoSange)
                 .HasMaxLength(25)
                 .IsUnicode(false)
@@ -291,6 +312,19 @@ public partial class ClinicaContext : DbContext
             entity.HasOne(d => d.IdUsuarioNavigation).WithMany(p => p.RolDetalles)
                 .HasForeignKey(d => d.IdUsuario)
                 .HasConstraintName("FK__Rol_detal__id_us__276EDEB3");
+        });
+
+        modelBuilder.Entity<Medicamento>(entity =>
+        {
+            entity.HasKey(e => e.IdMedicamento);
+
+            entity.Property(e => e.IdMedicamento)
+                .ValueGeneratedNever()
+                .HasColumnName("id_medicamento");
+            entity.Property(e => e.Nombre)
+                .HasMaxLength(00)
+                .IsUnicode(false)
+                .HasColumnName("nombre");
         });
 
         modelBuilder.Entity<Usuario>(entity =>

@@ -74,7 +74,7 @@
                 <p style="color: #2d8f77; font-weight: bold;">Historial</p>
             </button>
 
-            <button type="button" id="btnReceta" onclick="ShowReceta()" class="btn btn-mini" title="Receta">
+            <button type="button" id="btnReceta" onclick="ShowReceta('@Model.Receta.IdReceta')" class="btn btn-mini" title="Receta">
                 <i class="fa-solid fa-file-signature fa-bounce fa-xl" style="color: #2d8f77;"></i>
                 <p style="color: #2d8f77; font-weight: bold;">Receta</p>
             </button>
@@ -82,14 +82,15 @@
         <div class="card-body">
             <div class="row mt-2">
                 <div class="col col-sm col-md col-lg col-xl col-xxl">
-                    <label class="fw-bold" for="diagnostico">Diagnóstico: </label>
-                    <textarea class="form-control" id="diagnostico" name="Diagnostico">@Model.Consulta.Diagnostico</textarea>
+                    <label class="fw-bold" for="observaciones">Historia clínica: </label>
+                    <textarea class="form-control" id="observaciones" name="Observaciones">@Model.Consulta.Observaciones</textarea>
                 </div>
             </div>
+
             <div class="row mt-2">
                 <div class="col col-sm col-md col-lg col-xl col-xxl">
-                    <label class="fw-bold" for="observaciones">Observaciones: </label>
-                    <textarea class="form-control" id="observaciones" name="Observaciones">@Model.Consulta.Observaciones</textarea>
+                    <label class="fw-bold" for="diagnostico">Diagnóstico: </label>
+                    <textarea class="form-control" id="diagnostico" name="Diagnostico">@Model.Consulta.Diagnostico</textarea>
                 </div>
             </div>
 
@@ -114,11 +115,13 @@
     <script>
         var state = "@Model.Consulta.Terminada";
 
-        var urlReceta="@Url.Action("VistaPdf","ContinuarConsulta")?consultaId=";
+        var urlReceta="@Url.Action("DescargarPdf","ContinuarConsulta")?consultaId=";
+        var urlGetMedicamentos = "@Url.Action("GetMedicamentos","ContinuarConsulta")";
         if(state=='True'){
            
             SetReadOnly();
         }
+       
 
     </script>
 }

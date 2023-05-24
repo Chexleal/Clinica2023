@@ -1,0 +1,80 @@
+﻿@model clinicaWeb.Models.ReportesViewModel;
+
+<div class=" table-responsive ">
+    @{
+        if (Model.Paciente != null)
+        {
+            <h5>
+                Nombre: @Model.Paciente.Nombre Apellido: @Model.Paciente.Apellido Dpi: @Model.Paciente.Dpi No. Consultas: @Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date).ToList().Count Total: Q
+                @{
+                    decimal total = 0.0M;
+                    foreach (var consulta in Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date))
+                    {
+                        total += consulta.Total;
+                    }
+                }
+                @total
+                <br>
+                Del @Model.From.ToString("dd/MM/yyyy") Al @Model.To.ToString("dd/MM/yyyy")
+                <br>
+                <br>
+            </h5>
+        }
+    }
+    <table id="table" class="table table-striped ">
+        <thead class="table-dark">
+            <tr>
+                <th>Fecha</th>
+                <th>Duración</th>
+                <th>Motivo de consulta</th>
+                <th>Radiografías</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model.Paciente != null)
+                {
+                    foreach (var consulta in Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date))
+                    {
+                        <tr>
+                            <td>@consulta.Fecha</td>
+                            <td>@consulta.TiempoDuracion</td>
+                            <td>@consulta.MotivoConsulta</td>
+                            @if (consulta.Radiografias)
+                            {
+                                <td>Si</td>
+                            }
+                            else
+                            {
+                                <td>No</td>
+                            }
+                            <td>
+                                <div class="options d-flex ">
+                                    <a class="option" href="@Url.Action("Index","ContinuarConsulta",new{consultaId=consulta.IdConsulta})">Q @consulta.Total</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            }
+            @*@foreach (var paciente in Model.Pacientes)
+            {
+            foreach (var consulta in paciente.Consulta)
+            {
+            <tr>
+            <td>@consulta.Fecha</td>
+            <td>@consulta.PacienteInformacion.Nombre</td>
+            <td>@consulta.PacienteInformacion.Apellido</td>
+            <td>@consulta.MotivoConsulta</td>
+            <td>
+            <div class="options d-flex ">
+            <a class="option" href="@Url.Action("Index","ContinuarConsulta",new{consultaId=consulta.IdConsulta})">@consulta.Total</a>
+            </div>
+            </td>
+            </tr>
+            }
+            }*@
+        </tbody>
+    </table>
+</div>

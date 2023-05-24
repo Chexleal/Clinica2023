@@ -8,6 +8,12 @@
         $("#terminado").val(true);
         $("#formCST").submit();
     });
+
+
+    $('#Medicamento').select2({
+        dropdownParent: $('#modalReceta'),
+        tags: true
+    });
 });
 
 function ShowHistorialModal(consultas) {
@@ -31,9 +37,19 @@ function ShowHistorialModal(consultas) {
     $('#loading').hide();
 }
 
-function ShowReceta(/*detail,id*/) {
-
-    $("#modalReceta").modal('show');
+function ShowReceta(id) {
+    $.ajax({
+        url: urlGetMedicamentos,
+        type: 'GET',
+        data: { idReceta: id },
+        success: function (result) {
+            $('#tablaInfo').html(result);
+            $('#modalReceta').modal('show');
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
     //$('#descripcionReceta').val(detail);
     //$('#idConsulta').val(id);
 }
@@ -41,6 +57,37 @@ function ShowReceta(/*detail,id*/) {
 function SetReadOnly() {
     $('textarea').attr('readonly', true);
     $('input').attr('readonly', true);
+}
+
+function addMedicamento() {
+    var detalle = $("#agregarMedForm").serialize();
+    $.ajax({
+        url: '/ContinuarConsulta/AddDetalleReceta',
+        type: 'POST',
+        data: detalle,
+        success: function (result) {
+            $('#tablaInfo').html(result);
+        },
+        error: function (error) {
+            alert("no");
+            console.log(error);
+        }
+    });
+}
+
+function deleteDetalle(id) {
+    $.ajax({
+        url: '/ContinuarConsulta/DeleteMedicamentos',
+        type: 'POST',
+        data: { idDetalleReceta:id },
+        success: function (result) {
+            $('#tablaInfo').html(result);
+        },
+        error: function (error) {
+            alert("no");
+            console.log(error);
+        }
+    });
 }
 
 

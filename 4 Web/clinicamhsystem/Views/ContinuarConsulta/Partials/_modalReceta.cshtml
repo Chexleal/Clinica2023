@@ -12,21 +12,57 @@
     <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><a href="@Url.Action("DescargarPdf",new {consultaId=Model.Consulta.IdConsulta})" id="btnGuardar" class="btn btn-outline-dark mb-3">Descargar Pdf</a></h5>
+                <h5 class="modal-title"><button type="button" onclick="OpenReceta('@Model.Consulta.IdConsulta');" class="btn btn-outline-dark mb-3">Descargar</button></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div id="modalRecetaBody" class="modal-body">
+                <form id="agregarMedForm"  method="POST">
+                    <input hidden name="IdReceta" value="@Model.Receta.IdReceta"/>
+                <div class="row">
+                        <div class="col-3 col-sm-3 col-md-3 col-lg-3 col-xl-3 col-xxl-3">
+                        <label class="form-label fw-bold " >Medicamento: </label>
+                            <select name="Medicamento" id="Medicamento" class="form-select select2 d-block" style="width:100%;">
+                            @foreach (var item in Model.Medicamentos)
+                            {
+                                    <option value="@item.Nombre">@item.Nombre</option>
+                             }                           
+                        </select>
+                    </div>
+                    <div class="col-2 col-sm-2 col-md-2 col-lg-2 col-xl-2 col-xxl-2">
+                        <label class="fw-bold" for="observaciones">Durante(días): </label>
+                        <input name="DosisDias" type="number" id="DosisDias" class="form-control form-control-sm" />
+                    </div>
+                    <div class="col-2 col-sm-2 col-md-2 col-lg-2 col-xl-2 col-xxl-2">
+                        <label class="fw-bold" for="observaciones">Cada(horas): </label>
+                        <input name="DosisTiempo" type="number" id="DosisTiempo" class="form-control form-control-sm" />
+                    </div>
+                     <div class="col col-sm col-md col-lg col-xl col-xxl">
+                        <label class="fw-bold" for="observaciones">Instrucciones: </label>
+                        <input name="Instrucciones" id="Instrucciones" class="form-control form-control-sm" />
+                    </div>
+                    <div class="col col-sm col-md col-lg col-xl col-xxl">
+                        <label class="fw-bold" for="observaciones">Cantidad: </label>
+                        <input name="Cantidad" id="Cantidad" class="form-control form-control-sm" />
+                    </div>
+                    <div class="col-1 col-sm-1 col-md-1 col-lg-1 col-xl-1 col-xxl-1">
+                        <button class="btn btn-outline-info btn-sm mt-3" type="button" onclick="addMedicamento()">+</button>
+                    </div>
+                </div>
+                </form>
+                 <div id="tablaInfo">
+
+                 </div>
                 <form method="post" action="@Url.Action("GuardarReceta")">
-                    <div class="row mt-2">
+                    <div class="row mt-5">
                         <div class="col col-sm col-md col-lg col-xl col-xxl">
-                            <label class="fw-bold" for="observaciones">Descripción: </label>
+                            <label class="fw-bold" for="observaciones">Otras Observaciones: </label>
                             <textarea class="form-control" id="descripcionReceta" name="Descripcion">@Model.Receta.Descripcion</textarea>
                         </div>
                     </div>
                     <div class="row mt-5">
                         <div class="col col-sm col-md col-lg col-xl col-xxl">
                             <input hidden name="IdConsulta" value="@Model.Consulta.IdConsulta" />
-                            <button type="submit" id="btnGuardar" class="btn btn-dark mb-3">Guardar</button>
+                            <button type="submit" id="btnGuardarReceta" class="btn btn-dark mb-3">Guardar</button>
                         </div>
                     </div>
                 </form>

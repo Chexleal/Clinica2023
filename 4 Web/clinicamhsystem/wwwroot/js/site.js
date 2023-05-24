@@ -33,6 +33,6 @@ function parseDate(stringDate) {
 }
 
 function OpenReceta(id) {
-    window.open(urlReceta +id, '_blank');
-
+    window.open(urlReceta + id, '_blank');
+    location.reload(true);
 }

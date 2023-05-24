@@ -11,7 +11,7 @@ public partial class Receta
 
     public DateTime Fecha { get; set; }
 
-    public virtual ICollection<DetalleReceta> DetalleReceta { get; } = new List<DetalleReceta>();
+    //public virtual ICollection<DetalleReceta> DetalleReceta { get; } = new List<DetalleReceta>();
     public string Descripcion { get; set; }
 
     //public virtual Consulta IdConsultaNavigation { get; set; }

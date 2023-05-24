@@ -1,22 +1,28 @@
 $(document).ready(function () {
-    $('.btn-detalles').click(function () {
-        var consultaId = $(this).data('id');
-        $.ajax({
-            url: '/Pagos/Detalles',
-            type: 'POST',
-            data: { idconsulta: consultaId },
-            success: function (result) {
-                $('#pagarConsultaModal').find('.modal-body').html(result);
-                $('#pagarConsultaModal').modal('show');
-/*                agregar();*/
-            },
-            error: function (error) {
-                console.log(error);
-            }
-        });
-    });
 
-  
+
+
+});
+
+$('.btn-detalles').click(function () {
+    var consultaId = $(this).data('id');
+    $.ajax({
+        url: '/Pagos/Detalles',
+        type: 'POST',
+        data: { idconsulta: consultaId },
+        success: function (result) {
+            $('#pagarConsultaModal').find('.modal-body').html(result);
+            $('#pagarConsultaModal').modal('show');
+            /*                agregar();*/
+            $('#idMotivoCobro').select2({
+                dropdownParent: $('#pagarConsultaModal')
+            });
+
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
 });
 
 function addDetalle() {
@@ -29,7 +35,10 @@ function addDetalle() {
         //contentType: false,
         success: function (result) {
             $('#pagarConsultaModal').find('.modal-body').html(result);
-       
+            $('#idMotivoCobro').select2({
+                dropdownParent: $('#pagarConsultaModal')
+            });
+
 /*            $('#pagarConsultaModal').modal('show');*/
         },
         error: function (error) {
@@ -47,6 +56,9 @@ function deleteDetalle(id) {
         data: { id, idConsulta },
         success: function (result) {
             $('#pagarConsultaModal').find('.modal-body').html(result);
+            $('#idMotivoCobro').select2({
+                dropdownParent: $('#pagarConsultaModal')
+            });
 
             /*            $('#pagarConsultaModal').modal('show');*/
         },

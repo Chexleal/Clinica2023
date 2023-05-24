@@ -9,41 +9,41 @@
     <link rel="stylesheet" href="~/css/pages/Reportes.css" asp-append-version="true" />
 }
 
-<div class="card w-100 shadow-lg mt-5">
-    <div class="card-body">
-        <!-- Tabs -->
+    <div class="card w-100 shadow-lg mt-5">
+        <div class="card-body">
+            <!-- Tabs -->
 
-        <ul class="nav nav-tabs" id="myTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="tab1-tab" data-bs-toggle="tab" data-bs-target="#tab1" type="button" role="tab" aria-controls="tab1" aria-selected="true">Por Paciente</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tab2-tab" data-bs-toggle="tab" data-bs-target="#tab2" type="button" role="tab" aria-controls="tab2" aria-selected="false">Por Servicios</button>
-            </li>
-        </ul>
+            <ul class="nav nav-tabs" id="myTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="tab1-tab" data-bs-toggle="tab" data-bs-target="#tab1" type="button" role="tab" aria-controls="tab1" aria-selected="true">Por Paciente</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tab2-tab" data-bs-toggle="tab" data-bs-target="#tab2" type="button" role="tab" aria-controls="tab2" aria-selected="false">Por Servicios</button>
+                </li>
+            </ul>
 
-        <!-- Contenido de los tabs -->
-        <div class="tab-content" id="myTabsContent">
-            <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
-                <form id="paciente-search" method="POST" action="@Url.Action("Paciente","Reportes")">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label class="control-label">Del</label>
+            <!-- Contenido de los tabs -->
+            <div class="tab-content" id="myTabsContent">
+                <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
+                    <form id="paciente-search" method="POST" action="@Url.Action("Paciente","Reportes")">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="control-label">Del</label>
                                     <input class="form-control" type="date" name="from_dt" id="from" />
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label class="control-label">Al</label>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="control-label">Al</label>
                                     <input class="form-control" type="date" name="to_dt" id="to" />
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label class="control-label">Paciente</label>
-                                <select name="IdPaciente" id="idPaciente" class="form-control select2">
-                                    <option></option>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="control-label">Paciente</label>
+                                    <select name="IdPaciente" id="idPaciente" class="form-control select2">
+                                        <option></option>
                                     @foreach (var paciente in Model.Pacientes)
                                     {
                                         <option value="@paciente.IdPaciente">@paciente.Nombre @paciente.Apellido - @paciente.Dpi</option>
@@ -113,54 +113,58 @@
             @{
                 if (Model.Paciente != null)
                 {
-                    <h5 class="enc table-title encabezado fw-normal" id="tabla-encabezado">
-                        <span class="centered-span">Resumen de consultas<br /><br>
-                            Del &nbsp;&nbsp; @Model.From.ToString("dd/MM/yyyy") &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Al &nbsp;&nbsp; @Model.To.ToString("dd/MM/yyyy")
-                        </span>
-                    <br>
-                        <br>
-                        @{
+                        <h5 class="enc table-title encabezado fw-normal" id="tabla-encabezado">
+                            <span class="centered-span">
+                                Resumen de consultas<br /><br>
+                                Del &nbsp;&nbsp; @Model.From.ToString("dd/MM/yyyy") &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Al &nbsp;&nbsp; @Model.To.ToString("dd/MM/yyyy")
+                            </span>
+                            <br>
+                            <br>
+                            @{
                             decimal total = 0.0M;
                             foreach (var consulta in Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date))
                             {
                                 total += consulta.Total;
                             }
-                        }
-                        Paciente: <span class="fw-bold"> @Model.Paciente.Nombre @Model.Paciente.Apellido &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Dpi: <span class="fw-bold"> @Model.Paciente.Dpi </span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; No. Consultas: <span class="fw-bold"> @Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date).ToList().Count </span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Total: Q <span class="fw-bold">@total</span>
+                            }
+                            Paciente: <span class="fw-bold"> @Model.Paciente.Nombre @Model.Paciente.Apellido &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Dpi: <span class="fw-bold"> @Model.Paciente.Dpi </span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; No. Consultas: <span class="fw-bold"> @Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date).ToList().Count </span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Total: Q <span class="fw-bold">@total</span>
 
-                        <br>
-                        <br>
-                    </h5>
-                    <h5 class="visually-hidden table-title encabezado fw-normal hidden" id="tabla-encabezado2">
-                        <span class="centered-span">
-                            Resumen de consultas<br /><br>
-                            Del &nbsp;&nbsp; @Model.From.ToString("dd/MM/yyyy") &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Al &nbsp;&nbsp; @Model.To.ToString("dd/MM/yyyy")
-                        </span>
-                        <br>
-                        <br>
-                        Paciente: <span class="fw-bold">@Model.Paciente.Nombre @Model.Paciente.Apellido &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        </span> Dpi: <span class="fw-bold"> @Model.Paciente.Dpi
-                        </span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; No. Consultas: <span class="fw-bold">
-                            @Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date).ToList().Count
-                        </span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Total: Q
-                        <span class="fw-bold">
-                            @total
-                        </span>
+                            <br>
+                            <br>
+                        </h5>
+                        <h5 class="visually-hidden table-title encabezado fw-normal hidden" id="tabla-encabezado2">
+                            <span class="centered-span">
+                                Resumen de consultas<br /><br>
+                                Del &nbsp;&nbsp; @Model.From.ToString("dd/MM/yyyy") &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Al &nbsp;&nbsp; @Model.To.ToString("dd/MM/yyyy")
+                            </span>
+                            <br>
+                            <br>
+                            Paciente: <span class="fw-bold">
+                                @Model.Paciente.Nombre @Model.Paciente.Apellido &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            </span> Dpi: <span class="fw-bold">
+                                @Model.Paciente.Dpi
+                            </span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; No. Consultas: <span class="fw-bold">
+                                @Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date).ToList().Count
+                            </span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Total: Q
+                            <span class="fw-bold">
+                                @total
+                            </span>
 
-                        <br>
-                        <br>
-                    </h5>
-                } else if (Model.EsServicio)
+                            <br>
+                            <br>
+                        </h5>
+                }
+                else if (Model.EsServicio)
                 {
 
-                    <h5 class="enc table-title encabezado fw-normal" id="tabla-encabezado">
-                        <span class="centered-span">
-                            Resumen de ingresos por servicios<br /><br>
-                            Del &nbsp;&nbsp; @Model.From.ToString("dd/MM/yyyy") &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Al &nbsp;&nbsp; @Model.To.ToString("dd/MM/yyyy")
-                        </span>
-                        <br>
-                        <br>
-                    </h5>
+                        <h5 class="enc table-title encabezado fw-normal" id="tabla-encabezado">
+                            <span class="centered-span">
+                                Resumen de ingresos por servicios<br /><br>
+                                Del &nbsp;&nbsp; @Model.From.ToString("dd/MM/yyyy") &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Al &nbsp;&nbsp; @Model.To.ToString("dd/MM/yyyy")
+                            </span>
+                            <br>
+                            <br>
+                        </h5>
                 }
             }
 
@@ -169,97 +173,104 @@
                     @{
                         if (Model.EsServicio)
                         {
-                            <tr>
-                                <th>Descripción</th>
-                                <th>Cantidad</th>
-                                <th>Total</th>
-                            </tr>
-                            <script>
-                                var custom_file_name = "Resumen Servicios (@Model.From.ToString("dd-MM-yyyy") - @Model.To.ToString("dd-MM-yyyy"))"
-                                var num_columns = [0,1,2]
-                                var encabezado = document.getElementById("tabla-encabezado").textContent;
-                                var titulo = "Resumen de ingresos por servicios"
-                                var fechas = "Del  @Model.From.ToString("dd/MM/yyyy")       Al  @Model.To.ToString("dd/MM/yyyy")"
-                            </script>
+                                <tr>
+                                    <th>Descripción</th>
+                                    <th>Cantidad</th>
+                                    <th>Total</th>
+                                </tr>
+                                <script>
+                                    var custom_file_name = "Resumen Servicios (@Model.From.ToString("dd-MM-yyyy") - @Model.To.ToString("dd-MM-yyyy"))"
+                                    var num_columns = [0, 1, 2]
+                                    var encabezado = document.getElementById("tabla-encabezado").textContent;
+                                    var titulo = "Resumen de ingresos por servicios"
+                                    var fechas = "Del  @Model.From.ToString("dd/MM/yyyy")       Al  @Model.To.ToString("dd/MM/yyyy")"
+                                </script>
                         }
                         else if (Model.Paciente != null)
                         {
-                            <tr>
-                                <th>Fecha y hora</th>
-                                <th>Duración</th>
-                                <th>Motivo de consulta</th>
-                                <th>Radiografías</th>
-                                <th>Total</th>
-                            </tr>
-                            <script>
-                                var custom_file_name = "Consultas @Model.Paciente.Nombre @Model.Paciente.Apellido (@Model.From.ToString("dd-MM-yyyy") - @Model.To.ToString("dd-MM-yyyy"))"
-                                var num_columns = [0,1,2,3,4]
-                                var encabezado = document.getElementById("tabla-encabezado").textContent;
-                                var titulo = "Resumen de consultas"
-                                var fechas = "Del  @Model.From.ToString("dd/MM/yyyy")       Al  @Model.To.ToString("dd/MM/yyyy")"
+                                <tr>
+                                    <th>Fecha y hora</th>
+                                    <th>Duración</th>
+                                    <th>Motivo de consulta</th>
+                                    <th>Radiografías</th>
+                                    <th>Total</th>
+                                </tr>
+                                <script>
+                                    var custom_file_name = "Consultas @Model.Paciente.Nombre @Model.Paciente.Apellido (@Model.From.ToString("dd-MM-yyyy") - @Model.To.ToString("dd-MM-yyyy"))"
+                                    var num_columns = [0, 1, 2, 3, 4]
+                                    var encabezado = document.getElementById("tabla-encabezado").textContent;
+                                    var titulo = "Resumen de consultas"
+                                    var fechas = "Del  @Model.From.ToString("dd/MM/yyyy")       Al  @Model.To.ToString("dd/MM/yyyy")"
                                 </script>
                         }
                         else
                         {
-                            <tr><th></th></tr>
+                                <script>
+                                var custom_file_name = ""
+                                    var num_columns = []
+                                    var encabezado = ""
+                                    var titulo = ""
+                                    var fechas = ""
+                                </script>
+                                <tr><th></th></tr>
                         }
                     }
                 </thead>
                 <tbody>
-                        @{
-                            if (Model.Paciente != null)
+                    @{
+                        if (Model.Paciente != null)
+                        {
+                            foreach (var consulta in Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date))
                             {
-                                foreach (var consulta in Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date))
-                                {
                                     <tr>
-                                    <td>@consulta.Fecha</td>
-                                    <td>@consulta.TiempoDuracion</td>
-                                    <td>@consulta.MotivoConsulta</td>
-                                    @if (consulta.Radiografias)
+                                        <td>@consulta.Fecha</td>
+                                        <td>@consulta.TiempoDuracion</td>
+                                        <td>@consulta.MotivoConsulta</td>
+                                        @if (consulta.Radiografias)
                                     {
-                                        <td>Si</td>
+                                            <td>Si</td>
                                     }
                                     else
                                     {
-                                        <td>No</td>
+                                            <td>No</td>
                                     }
-                                    <td>
-                                        <div class="options d-flex ">
-                                            <button class="btn-total option" data-id="@consulta.IdConsulta">Q @consulta.Total</button>
-                                        </div>
-                                    </td>
+                                        <td>
+                                            <div class="options d-flex ">
+                                                <button class="btn-total option" data-id="@consulta.IdConsulta">Q @consulta.Total</button>
+                                            </div>
+                                        </td>
                                     </tr>
-                                }
-                            }
-                            else if (Model.EsServicio)
-                            {
-                                foreach (var servicio in Model.Servicios)
-                                {
-                                    <tr>
-                                    <td>@servicio.Descripcion</td>
-
-                                    @{
-                                    var cantidad = 0;
-                                    var total = 0.0M;
-                                    @foreach (var paciente in Model.Pacientes)
-                                    {
-                                        foreach (var consulta in paciente.Consulta.Where(x => x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date))
-                                        {
-                                            @foreach (var detalle in Model.Detalles.Where(x => x.IdMotivoCobro == servicio.IdMotivoCobro && x.IdConsulta == consulta.IdConsulta))
-                                            {
-                                                cantidad += detalle.Cantidad;
-                                                total += detalle.Subtotal;
-                                            }
-                                        }
-                                    }
-
-                                    <td>@cantidad</td>
-                                    <td>@total</td>
-                                    }
-                                    </tr>
-                                }
                             }
                         }
+                        else if (Model.EsServicio)
+                        {
+                            foreach (var servicio in Model.Servicios)
+                            {
+                                    <tr>
+                                        <td>@servicio.Descripcion</td>
+
+                                        @{
+                                        var cantidad = 0;
+                                        var total = 0.0M;
+                                                @foreach (var paciente in Model.Pacientes)
+                                        {
+                                            foreach (var consulta in paciente.Consulta.Where(x => x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date))
+                                            {
+                                                        @foreach (var detalle in Model.Detalles.Where(x => x.IdMotivoCobro == servicio.IdMotivoCobro && x.IdConsulta == consulta.IdConsulta))
+                                                {
+                                                    cantidad += detalle.Cantidad;
+                                                    total += detalle.Subtotal;
+                                                }
+                                            }
+                                        }
+
+                                                <td>@cantidad</td>
+                                                <td>@total</td>
+                                        }
+                                    </tr>
+                            }
+                        }
+                    }
                 </tbody>
             </table>
         </div>

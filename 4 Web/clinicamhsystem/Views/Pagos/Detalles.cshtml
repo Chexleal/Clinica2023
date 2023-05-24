@@ -51,7 +51,7 @@
         <div class="col-md-3">
             <div class="form-group">
                 <label for="Servicio">Servicio:</label>
-                <select class="form-control" id="IdMotivoCobro" name="IdMotivoCobro">
+                <select class="form-select select2" id="idMotivoCobro" name="IdMotivoCobro" style="width:100%;">
                     @foreach (var opcion in Model.Servicios)
                     {
                         <option value="@opcion.IdMotivoCobro">@opcion.Descripcion</option>

@@ -17,9 +17,7 @@ $(document).ready(function () {
         });
     });
 
-    $('#idPaciente').select2({
-        tags: true
-    });
+    $('#idPaciente').select2();
 });
 
 function CreateTable() {

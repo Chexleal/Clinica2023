@@ -35,6 +35,8 @@ public class ContinuarConsulta : Controller
     public ActionResult Index(Guid consultaId)
     {
         var consulta = _consultaServices.GetConsulta(consultaId);
+        consulta.PacienteInformacion ??= _pacienteServices.GetPacienteById(consulta.IdPaciente);
+        consulta.PacienteInformacion.Consulta = _consultaServices.GetAllByPacienteId(consulta.IdPaciente);
         var receta = _recetaServices.GetByConsulta(consultaId) ?? new();
         var medicamentos = _recetaServices.GetAllMedicamentos() ?? new();
         //var paciente = _pacienteServices.GetPacienteById(consulta.IdPaciente);
@@ -58,7 +60,7 @@ public class ContinuarConsulta : Controller
         consultaDb.Temperatura = consulta.Temperatura;
         consultaDb.Terminada = consulta.Terminada;
 
-        _consultaServices.UpdateConsulta(consulta);
+        _consultaServices.UpdateConsulta(consultaDb);
         if (consulta.Terminada) return RedirectToAction("Index", "Consultas");
         return RedirectToAction("Index", new { consultaId = consulta.IdConsulta });
     }
@@ -119,22 +121,22 @@ public class ContinuarConsulta : Controller
         return RedirectToAction("Editar", consultas);
     }
 
-    // POST: ConsultasController/Edit/5
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public ActionResult Edit(Consulta consulta)
-    {
-        try
-        {
-            _consultaServices.UpdateConsulta(consulta);
-            var consultas = _consultaServices.GetAll();
-            return RedirectToAction("Index", consultas);
-        }
-        catch
-        {
-            return View("Error");
-        }
-    }
+    //// POST: ConsultasController/Edit/5
+    //[HttpPost]
+    //[ValidateAntiForgeryToken]
+    //public ActionResult Edit(Consulta consulta)
+    //{
+    //    try
+    //    {
+    //        _consultaServices.UpdateConsulta(consulta);
+    //        var consultas = _consultaServices.GetAll();
+    //        return RedirectToAction("Index", consultas);
+    //    }
+    //    catch
+    //    {
+    //        return View("Error");
+    //    }
+    //}
 
     [HttpGet]
     public ActionResult GetMedicamentos(Guid idReceta)

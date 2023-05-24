@@ -43,9 +43,9 @@ public partial class Paciente
 
     public string NoRegistro { get; set; } 
 
-    public virtual ICollection<Cita> Cita { get; } = new List<Cita>();
+    public ICollection<Cita> Cita { get; set; } = new List<Cita>();
 
-    public virtual ICollection<Consulta> Consulta { get; } = new List<Consulta>();
+    public ICollection<Consulta> Consulta { get; set; } = new List<Consulta>();
 
     public void BeforeSaveChanges()
     {

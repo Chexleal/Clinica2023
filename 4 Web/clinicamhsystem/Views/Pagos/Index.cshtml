@@ -25,7 +25,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model.Consultas.Where(x => x.Terminada && !x.Pagada))
+                    @foreach (var item in Model.Consultas)
                     {
                         <tr>
                             <td>@item.Fecha.ToString("d")</td>

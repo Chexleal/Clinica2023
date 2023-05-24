@@ -19,12 +19,12 @@ public static class WebIocExtensions
         //Ejemplo:
         //services.AddSingleton<IExampleServices, ExampleServices>();         
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-        services.AddSingleton<IUserServices, UserServices>();
-        services.AddSingleton<IConsultaServices, ConsultaServices>();
-        services.AddSingleton<IPacienteServices, PacienteServices>();
-        services.AddSingleton<IServiciosServices, ServiciosServices>();
-        services.AddSingleton<IDetallesServices, DetalleServices>();
-        services.AddSingleton<IRecetaServices, RecetaServices>();
+        services.AddScoped<IUserServices, UserServices>();
+        services.AddScoped<IConsultaServices, ConsultaServices>();
+        services.AddScoped<IPacienteServices, PacienteServices>();
+        services.AddScoped<IServiciosServices, ServiciosServices>();
+        services.AddScoped<IDetallesServices, DetalleServices>();
+        services.AddScoped<IRecetaServices, RecetaServices>();
         #endregion
 
 

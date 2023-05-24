@@ -16,6 +16,10 @@ $(document).ready(function () {
             }
         });
     });
+
+    $('#idPaciente').select2({
+        tags: true
+    });
 });
 
 function CreateTable() {

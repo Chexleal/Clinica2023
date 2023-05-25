@@ -15,8 +15,5 @@ public partial class Cita
 
     public String Titulo {get; set; }
 
-    //public virtual Paciente IdPacienteNavigation { get; set; }
-
-    //public virtual Usuario IdUsuarioNavigation { get; set; }
 
 }

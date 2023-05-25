@@ -1,0 +1,12 @@
+﻿<script>
+    @if (TempData["notification"] != null)
+    {
+        @Html.Raw(TempData["notification"].ToString())
+        ;
+    }
+    else
+    {
+        string hi = "hola";
+        @Html.Raw(hi);
+    }
+</script>

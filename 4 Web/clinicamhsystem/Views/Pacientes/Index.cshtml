@@ -8,14 +8,13 @@
 }
 @section Links{
     <link rel="stylesheet" href="~/css/pages/Usuarios.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/limonte-sweetalert2/sweetalert2.min.css"/>
 }
-
+    <partial name="~/Views/Shared/_Notification.cshtml" />
     <partial name="~/Views/Shared/_modalEdit.cshtml" />
     <partial name="Partials/_modalCrear.cshtml" />
     <partial name="Partials/_modalCrearConsulta.cshtml" />
     <partial name="Partials/_modalHistorial.cshtml" />
-
-
 
 <div class="card shadow-lg mt-5">
     <div class="card-header bg-ligth">
@@ -78,7 +77,8 @@
 
                                     <button class="option btn btn-outline-info" onclick="ShowEditModal('@item.IdPaciente')">Ver Datos</button>
                                     <form asp-action="Eliminar" asp-route-id="@item.IdPaciente">
-                                        <button class="option btn btn-outline-info" type="submit">Eliminar</button>
+                                        <button class="option btn btn-outline-info" type="submit" onclick="alertaEliminar()">Eliminar</button>
+                                        @*<button class="option btn btn-outline-info" onclick="alertaEliminar()">Eliminar</button>*@
                                     </form>
                                 </div>
                             </td>
@@ -91,12 +91,45 @@
     </div>
 </div>
 
+
+
 @section Scripts{
     <script src="~/js/pages/pacientes.js" asp-append-version="true"></script>
+    <script src="~/lib/limonte-sweetalert2/sweetalert2.min.js"></script>
+
     <script>
+
+        function alertElminarPrevent(e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: '¿Esta seguro de eliminar este servicio?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Si',
+                cancelButtonText: 'No'
+            }).then((resultado) => {
+
+                if (resultado.isConfirmed) {
+                    const formulario = document.getElementById('eliminarForm');
+                    formulario.submit();
+                }
+
+            })
+        }
+        
+        function alertaEliminar(){
+            Swal.fire(
+                'Good job!',
+                'You clicked the button!',
+                'success'
+            )
+        }
+
+
         let urls = {
             getPaciente: "@Url.Action("GetPaciente", "Pacientes")",
         }
         
     </script>
-        }
+}

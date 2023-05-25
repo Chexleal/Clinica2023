@@ -1,6 +1,7 @@
 using ClinicaServices;
 using clinicaWeb.Extensions;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
+//using DinkToPdf;
+//using DinkToPdf.Contracts;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,11 +21,8 @@ builder.Services.AddDbContext<ClinicaContext>(options =>
 
 builder.Host.ConfigureServices(services =>
 {
-    services.AddSingleton<ITempDataProvider, CookieTempDataProvider>();
-    services.AddSession();
     services.AddRazorPages();
     services.AddRazorPages().AddRazorRuntimeCompilation();
-   
 });
 builder.Services.WebInjections();
 
@@ -42,8 +40,6 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
-app.UseSession();
 
 app.UseAuthorization();
 

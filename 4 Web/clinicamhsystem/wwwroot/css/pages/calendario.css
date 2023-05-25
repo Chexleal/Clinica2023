@@ -1,0 +1,38 @@
+﻿body {
+}
+
+.fc-event {
+    position: relative;
+}
+
+    .fc-event .fc-time {
+        display: inline-block;
+        margin-right: 10px;
+    }
+
+    .fc-event .delete-button {
+        position: absolute;
+        right: 0;
+        top: 0;
+        height: 50%;
+        //background-image: url(/img/trash.png);
+        //background-size: cover;
+        //background-position: center;
+        //background-repeat: no-repeat;
+        background-color:transparent;
+        border: none;
+        margin: 0px;
+    }
+
+.delete-button::before {
+    content: "\f014";
+    font-family: "Font Awesome 6 Free";
+    //font-weight: 900;
+    /* Otros estilos opcionales */
+    color: red;
+    font-size: 110%;
+}
+
+.card-body{
+
+}

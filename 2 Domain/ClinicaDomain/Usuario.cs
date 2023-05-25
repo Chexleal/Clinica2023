@@ -43,7 +43,7 @@ public partial class Usuario
 
     public string Password { get; set; }
 
-    public virtual ICollection<Cita> Cita { get; } = new List<Cita>();
+    //public virtual ICollection<Cita> Cita { get; } = new List<Cita>();
 
     public virtual ICollection<RolDetalle> RolDetalles { get; } = new List<RolDetalle>();
 

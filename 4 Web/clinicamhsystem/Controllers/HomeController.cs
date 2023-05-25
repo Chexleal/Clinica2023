@@ -29,8 +29,9 @@ public class HomeController : Controller
     public IActionResult LogInAsync(string password, string user)
     {
 
-        // var existingUser = _userServices.Authenticate(user, password);
-        Usuario existingUser = new() { Nombre = "Dev", Apellido = "Test"};
+        var existingUser = _userServices.Authenticate(user, password);
+        //Usuario existingUser = new() { Nombre = "Dev", Apellido = "Test"};
+        //existingUser.IdUsuario = new Guid();
         if (existingUser is not null)
         {
             string clave = "UserData";

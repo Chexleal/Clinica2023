@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace clinicaWeb.Controllers;
 [SecurityFilter("Citas")]
@@ -26,7 +27,16 @@ public class CitasController : Controller
     public ActionResult Index()
     {
         var pacientes = _pacienteServices.GetAll();
-        return View(new CitasViewModel { Pacientes = pacientes });
+        var citas = _citaServices.GetAll();
+
+        List<(string, Cita)> eventos = new List<(string, Cita)>();
+
+        foreach (var cita in citas)
+        {
+            eventos.Add((_pacienteServices.GetPacienteById(cita.IdPaciente).Nombre + " " + _pacienteServices.GetPacienteById(cita.IdPaciente).Apellido, cita));
+        }
+
+        return View(new CitasViewModel { Pacientes = pacientes, Citas = citas, Eventos = eventos });
     }
 
     [HttpPost]
@@ -44,16 +54,55 @@ public class CitasController : Controller
 
             Usuario userData = JsonConvert.DeserializeObject<Usuario>(jsonUserData);
 
+            Paciente paciente = _pacienteServices.GetPacienteById(IdPaciente);
+
             Cita cita = new Cita();
             cita.FechaHora = combinedDateTime;
             cita.IdPaciente = IdPaciente;
             cita.IdUsuario = userData.IdUsuario;
-
+            cita.Titulo = paciente.Nombre + " " + paciente.Apellido;
             _citaServices.Add(cita);
-
         }
         var pacientes = _pacienteServices.GetAll();
-        return RedirectToAction("Index",new CitasViewModel { Pacientes = pacientes });
+        var citas = _citaServices.GetAll();
+
+        List<(string, Cita)> eventos = new List<(string, Cita)>();
+
+        foreach (var cita in citas)
+        {
+            eventos.Add((_pacienteServices.GetPacienteById(cita.IdPaciente).Nombre + " " + _pacienteServices.GetPacienteById(cita.IdPaciente).Apellido, cita));
+        }
+
+        return RedirectToAction("Index",new CitasViewModel { Pacientes = pacientes, Citas = citas, Eventos = eventos });
     }
 
+
+    [HttpGet]
+    public List<Cita> Get()
+    {
+        return _citaServices.GetAll();
+    }
+
+
+    [HttpPost]
+    public ActionResult Eliminar(Guid id)
+    {
+        //Guid id_gui = new Guid(id.ToString());
+        try
+        {
+            _citaServices.Delete(id);
+        }
+        catch { }
+        var pacientes = _pacienteServices.GetAll();
+        var citas = _citaServices.GetAll();
+
+        List<(string, Cita)> eventos = new List<(string, Cita)>();
+
+        foreach (var cita in citas)
+        {
+            eventos.Add((_pacienteServices.GetPacienteById(cita.IdPaciente).Nombre + " " + _pacienteServices.GetPacienteById(cita.IdPaciente).Apellido, cita));
+        }
+
+        return RedirectToAction("Index", new CitasViewModel { Pacientes = pacientes, Citas = citas, Eventos = eventos });
+    }
 }

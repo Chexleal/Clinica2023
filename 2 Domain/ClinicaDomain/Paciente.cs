@@ -43,7 +43,7 @@ public partial class Paciente
 
     public string NoRegistro { get; set; } 
 
-    public ICollection<Cita> Cita { get; set; } = new List<Cita>();
+  //  public ICollection<Cita> Cita { get; set; } = new List<Cita>();
 
     public ICollection<Consulta> Consulta { get; set; } = new List<Consulta>();
 

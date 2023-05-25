@@ -5,6 +5,9 @@
 
 $(document).ready(function () {
     CreateTable();
+    $('#idPaciente').select2({
+        dropdownParent: $('#createModal'),
+    });
 });
 
 function CreateTable() {

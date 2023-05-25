@@ -70,11 +70,10 @@
                     <div class="row">
                         <div class="form-group">
                             <label class="control-label">Paciente</label>
-                            <select name="Paciente" class="form-control">
+                            <select name="IdPaciente" id="idPaciente" class="form-select select2">
                                 @foreach (var paciente in Model.Pacientes)
                                 {
                                     <option value="@paciente.IdPaciente">@paciente.Nombre @paciente.Apellido - @paciente.Dpi</option>
-                                    <input hidden id="IdPaciente" name="IdPaciente" value="@paciente.IdPaciente"/>
                                 }
                             </select>
                         </div>

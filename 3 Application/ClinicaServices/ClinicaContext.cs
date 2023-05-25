@@ -70,6 +70,10 @@ public partial class ClinicaContext : DbContext
                 .HasMaxLength(1000)
                 .IsUnicode(false)
                 .HasColumnName("diagnostico");
+            entity.Property(e => e.HistoriaClinica)
+               .HasMaxLength(1000)
+               .IsUnicode(false)
+               .HasColumnName("historia_clinica");
             entity.Property(e => e.Fecha)
                 .HasColumnName("fecha");
             entity.Property(e => e.IdPaciente).HasColumnName("id_paciente");

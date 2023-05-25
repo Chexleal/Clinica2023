@@ -39,7 +39,7 @@
                                     @*<button class="btn" onclick="ShowDetallesModal('@item.IdConsulta')">Pagar</button>*@
                                    @* <button class="option" onclick="ShowDetallesModal('@item.IdConsulta')">Pagar</button>*@
                                     <button class="btn-detalles option btn btn-outline-info" data-id="@item.IdConsulta">Pagar</button>
-                                    <a class="option btn btn-outline-info ms-2" href="@Url.Action("Receta","Consultas",new{consultaId=item.IdConsulta})">Descargar Receta</a>
+                                    <a class="option btn btn-outline-info ms-2" href="@Url.Action("DescargarPdf","ContinuarConsulta",new{consultaId=item.IdConsulta})" target="_blank">Imprimir Receta</a>
                                 </div>
                             </td>
                         </tr>

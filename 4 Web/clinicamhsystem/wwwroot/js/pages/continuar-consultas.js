@@ -24,6 +24,7 @@ function ShowHistorialModal(consultas) {
         $('#table > tbody:last-child').append(`<tr>
                                                 <td>${parseDate(c.Fecha) }</td>
                                                 <td>${c.MotivoConsulta}</td>
+                                                <td>${c.HistoriaClinica}</td>
                                                 <td>${c.Diagnostico}</td>
                                                 <td>${c.Observaciones}</td>
                                                 <td>

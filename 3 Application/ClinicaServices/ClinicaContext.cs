@@ -49,14 +49,15 @@ public partial class ClinicaContext : DbContext
                 .HasColumnName("fecha_hora");
             entity.Property(e => e.IdPaciente).HasColumnName("id_paciente");
             entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
+            entity.Property(e => e.Titulo).HasColumnName("titulo");
 
-            entity.HasOne(d => d.IdPacienteNavigation).WithMany(p => p.Cita)
-                .HasForeignKey(d => d.IdPaciente)
-                .HasConstraintName("FK__Cita__id_pacient__2C3393D0");
+            //entity.HasOne(d => d.IdPacienteNavigation).WithMany(p => p.Cita)
+            //    .HasForeignKey(d => d.IdPaciente)
+            //    .HasConstraintName("FK__Cita__id_pacient__2C3393D0");
 
-            entity.HasOne(d => d.IdUsuarioNavigation).WithMany(p => p.Cita)
-                .HasForeignKey(d => d.IdUsuario)
-                .HasConstraintName("FK__Cita__id_usuario__2D27B809");
+            //entity.HasOne(d => d.IdUsuarioNavigation).WithMany(p => p.Cita)
+            //    .HasForeignKey(d => d.IdUsuario)
+            //    .HasConstraintName("FK__Cita__id_usuario__2D27B809");
         });
 
         modelBuilder.Entity<Consulta>(entity =>
@@ -70,6 +71,10 @@ public partial class ClinicaContext : DbContext
                 .HasMaxLength(1000)
                 .IsUnicode(false)
                 .HasColumnName("diagnostico");
+            entity.Property(e => e.HistoriaClinica)
+               .HasMaxLength(1000)
+               .IsUnicode(false)
+               .HasColumnName("historia_clinica");
             entity.Property(e => e.Fecha)
                 .HasColumnName("fecha");
             entity.Property(e => e.IdPaciente).HasColumnName("id_paciente");

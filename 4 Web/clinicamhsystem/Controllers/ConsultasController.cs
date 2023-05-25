@@ -91,21 +91,21 @@ public class ConsultasController : Controller
     */
 
     // POST: ConsultasController/Edit/5
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public ActionResult Edit(Consulta consulta)
-    {
-        try
-        {
-            _consultaServices.UpdateConsulta(consulta);
-            var consultas = _consultaServices.GetAll();
-            return RedirectToAction("Index", consultas);
-        }
-        catch
-        {
-            return View("Error");
-        }
-    }
+    //[HttpPost]
+    //[ValidateAntiForgeryToken]
+    //public ActionResult Edit(Consulta consulta)
+    //{
+    //    try
+    //    {
+    //        _consultaServices.UpdateConsulta(consulta);
+    //        var consultas = _consultaServices.GetAll();
+    //        return RedirectToAction("Index", consultas);
+    //    }
+    //    catch
+    //    {
+    //        return View("Error");
+    //    }
+    //}
 
     // POST: ConsultasController/Delete/5
     [HttpPost]

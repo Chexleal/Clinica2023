@@ -15,11 +15,15 @@ namespace ClinicaServices
     {
         Consulta GetConsulta(Guid id);
         List<Consulta> GetAll();
+        List<Consulta> GetAllByPacienteId(Guid pacienteId);
+        List<Consulta> GetAllByPacienteId(Guid pacienteId, DateTime from, DateTime to);
+        List<Consulta> GetAllNotPaid();
         //List<Consulta> SearchConsulta(string input);
         void AddConsulta(Consulta consulta);
         void UpdateConsulta(Consulta consulta);
         void DeleteConsulta(Guid id);
         void createPdf(string inHtmlPath, string toPdfPath);
+
     }
     public class ConsultaServices : IConsultaServices
     {
@@ -40,6 +44,19 @@ namespace ClinicaServices
         public List<Consulta> GetAll()
         {
             return _dbContext.Consulta.ToList();
+        }
+        public List<Consulta> GetAllByPacienteId(Guid pacienteId)
+        {
+            return _dbContext.Consulta.Where(x=>x.IdPaciente== pacienteId).ToList();
+        }
+
+        public List<Consulta> GetAllByPacienteId(Guid pacienteId, DateTime from, DateTime to)
+        {
+            return _dbContext.Consulta.Where(x => x.IdPaciente == pacienteId && x.Fecha>=from && x.Fecha<=to).ToList();
+        }
+        public List<Consulta> GetAllNotPaid()
+        {
+            return _dbContext.Consulta.Where(x => x.Terminada && !x.Pagada).ToList();
         }
 
         public void DeleteConsulta(Guid id)

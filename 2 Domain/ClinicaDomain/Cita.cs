@@ -13,7 +13,10 @@ public partial class Cita
 
     public DateTime FechaHora { get; set; }
 
-    public virtual Paciente IdPacienteNavigation { get; set; }
+    public String Titulo {get; set; }
 
-    public virtual Usuario IdUsuarioNavigation { get; set; }
+    //public virtual Paciente IdPacienteNavigation { get; set; }
+
+    //public virtual Usuario IdUsuarioNavigation { get; set; }
+
 }

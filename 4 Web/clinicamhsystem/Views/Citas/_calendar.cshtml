@@ -1,0 +1,143 @@
+﻿@model clinicaWeb.Models.CitasViewModel;
+
+@section Links{
+    <link rel="stylesheet" href="~/css/pages/calendario.css" asp-append-version="true" />
+}
+
+<full-calendar shadow options='{
+    "headerToolbar": {
+      "left": "prev,next today",
+      "center": "title",
+      "right": "dayGridMonth,dayGridWeek,dayGridDay"
+    }
+  }' />
+<script>
+    var citasPacientes = @Html.Raw(Json.Serialize(Model.Citas.ToList())); // Convertir datos del modelo a JSON
+
+    var eventos = []; // Array para almacenar los eventos
+    // Iterar sobre cada elemento de la lista y crear eventos
+    citasPacientes.forEach(function (item) {
+        var evento = {
+            title: item.titulo,
+            start: item.fechaHora,
+            id: item.idCita,
+            customRender: true
+        };
+        eventos.push(evento);
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'es',
+            editable: false,
+            selectable: false,
+            fixedWeekCount: false,
+            //selectHelper: false,
+            //themeSystem: 'bootstrap5',
+            headerToolbar: {
+                left: 'prev, next, today',
+                center: 'title',
+                right: 'dayGridMonth, timeGridWeek, listWeek'
+            },
+            events: eventos,
+            dateClick: function (data) {
+                AddCita(data.dateStr);
+            },
+            eventClick: function (data) {
+                //console.log(data);
+            },
+            eventDidMount: function (info) {
+                var eventElement = info.el;
+                var deleteButton = document.createElement('button');
+                deleteButton.classList.add('delete-button');
+
+                deleteButton.addEventListener('click', function () {
+                    if (confirm('¿Estás seguro de eliminar este evento?')) {
+                        var eventId = info.event.id;
+
+                        $.ajax({
+                            url: '/Citas/Eliminar',
+                            type: 'POST',
+                            data: { id: eventId },
+                            success: function (result) {
+                                
+                            },
+                            error: function (error) {
+                                alert("no");
+                                console.log(error);
+                            }
+                        });
+                        calendar.getEventById(eventId).remove();
+                        calendar.render();
+                    }
+                });
+
+                eventElement.appendChild(deleteButton);
+            },
+
+            eventWillUnmount: function (info) {
+                var eventElement = info.el;
+                var deleteButton = eventElement.querySelector('.delete-button');
+                //deleteButton.removeEventListener('click');
+
+                deleteButton.remove();
+            }
+
+        });
+        calendar.render();
+    });
+
+    function AddCita(date) {
+        $('#addCitaModal').modal('show');
+        $('#Fecha').val(date);
+    }
+
+</script>
+
+<div id='calendar'></div>
+
+
+<!-- Modal Agregar Cita -->
+<div class="modal fade" id="addCitaModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="titulo">Agregar cita</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="cita-form" method="POST" action="@Url.Action("Add","Citas")">
+                    <div class="form-group">
+                        <label class="control-label">Paciente</label>
+                        <select name="IdPaciente" class="form-control">
+                            @foreach (var paciente in Model.Pacientes)
+                            {
+                                <option value="@paciente.IdPaciente">@paciente.Nombre @paciente.Apellido - @paciente.Dpi</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col col-sm col-md col-lg col-xl col-xxl">
+                            <div class="form-group mb-3">
+                                <label for="Fecha" class="form-label">Fecha</label>
+                                <input type="date" name="Fecha" id="Fecha" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col col-sm col-md col-lg col-xl col-xxl">
+                            <div class="form-group mb-3">
+                                <label for="Hora" class="form-label">Hora</label>
+                                <input type="time" name="Hora" id="Hora" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="submit" class="btn btn-primary" form="cita-form">Agendar</button>
+            </div>
+        </div>
+    </div>
+</div>

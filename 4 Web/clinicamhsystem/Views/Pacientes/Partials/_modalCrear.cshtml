@@ -5,9 +5,10 @@
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Crear Paciente</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button class="btn btn-primary" type="submit" onclick="alertAgregarPrevent(event)">Test</button>
                 </div>
                 <div class="modal-body">
-                    <form id="crear" asp-action="Create" method="POST">
+                <form id="crear" asp-action="Create" onsubmit="alertAgregarPrevent(event)" method="POST">
                         <div class="row mt-2">
                             <div class="col col-sm col-md col-lg col-xl col-xxl">
                                 <div class="form-group">
@@ -130,7 +131,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                    <button type="submit" class="btn btn-primary" form="crear">Agregar</button>
+                <button type="submit" class="btn btn-primary" form="crear">Agregar</button>
                 </div>
         </div>
     </div>

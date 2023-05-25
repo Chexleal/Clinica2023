@@ -75,9 +75,8 @@
                                     <button class="option btn btn-outline-info" onclick="ShowHistorialModal(@historiaJson)">Historial</button>
 
                                     <button class="option btn btn-outline-info" onclick="ShowEditModal('@item.IdPaciente')">Ver Datos</button>
-                                    <form asp-action="Eliminar" asp-route-id="@item.IdPaciente">
-                                        <button class="option btn btn-outline-info" type="submit" onclick="alertaEliminar()">Eliminar</button>
-                                        @*<button class="option btn btn-outline-info" onclick="alertaEliminar()">Eliminar</button>*@
+                                    <form id="eliminarForm" onsubmit="alertElminarPrevent(event)" asp-action="Eliminar" asp-route-id="@item.IdPaciente">
+                                        <button class="option btn btn-outline-info" type="submit">Eliminar</button>
                                     </form>
                                 </div>
                             </td>
@@ -102,7 +101,7 @@
             e.preventDefault();
 
             Swal.fire({
-                title: '¿Esta seguro de eliminar este servicio?',
+                title: '¿Esta seguro de eliminar a este paciente?',
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Si',
@@ -115,6 +114,29 @@
                 }
 
             })
+        }
+
+        function alertAgregarPrevent(e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: '¿Esta seguro de agregar a un nuevo paciente?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Si',
+                cancelButtonText: 'No'
+            }).then((resultado) => {
+
+                if (resultado.isConfirmed) {
+                    const formulario = document.getElementById('crear');
+                    formulario.submit();
+                }
+
+            })
+        }
+
+        function testAlert() {
+            Swal.fire('Any fool can use a computer');
         }
         
         function alertaEliminar(){

@@ -23,6 +23,7 @@ public partial class Consulta
 
     public string MotivoConsulta { get; set; }
 
+    public string HistoriaClinica { get; set; }
     public string Diagnostico { get; set; }
 
     public string Observaciones { get; set; }
@@ -47,5 +48,6 @@ public partial class Consulta
         MotivoConsulta ??= string.Empty;
         Diagnostico ??= string.Empty;
         Observaciones ??= string.Empty;
+        HistoriaClinica ??= string.Empty;
     }
 }

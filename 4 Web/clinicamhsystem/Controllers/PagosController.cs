@@ -13,30 +13,34 @@ public class PagosController : Controller
     private readonly IConsultaServices _consultaServices;
     private readonly IDetallesServices _detallesServices;
     private readonly IServiciosServices _serviciosServices;
+    private readonly IPacienteServices _pacientesServices;
 
-    public PagosController(IConsultaServices consultaServices, IDetallesServices detallesServices, IServiciosServices serviciosServices)
+    public PagosController(IConsultaServices consultaServices, IDetallesServices detallesServices, IServiciosServices serviciosServices, IPacienteServices pacientesServices)
     {
         _consultaServices = consultaServices;
         _detallesServices = detallesServices;
         _serviciosServices = serviciosServices;
+        _pacientesServices = pacientesServices;
     }
 
     // GET: PagosController
     public ActionResult Index()
     {
-        var consultas = _consultaServices.GetAll();
+        var consultas = _consultaServices.GetAllNotPaid();
+        foreach(var consulta in consultas)
+            consulta.PacienteInformacion ??= _pacientesServices.GetPacienteById(consulta.IdPaciente);
         var detalles = _detallesServices.GetAll();
         var servicios = _serviciosServices.GetAll();
         return View(new PagarConsultaViewModel { Consultas = consultas, Servicios = servicios });
     }
 
-    public ActionResult Modal()
-    {
-        var consultas = _consultaServices.GetAll();
-        var detalles = _detallesServices.GetAll();
-        var servicios = _serviciosServices.GetAll();
-        return View(new PagarConsultaViewModel { Consultas = consultas, Servicios = servicios });
-    }
+    //public ActionResult Modal()
+    //{
+    //    var consultas = _consultaServices.GetAll();
+    //    var detalles = _detallesServices.GetAll();
+    //    var servicios = _serviciosServices.GetAll();
+    //    return View(new PagarConsultaViewModel { Consultas = consultas, Servicios = servicios });
+    //}
 
     /*[HttpGet]
     public IActionResult GetConsulta(Guid consultaId)

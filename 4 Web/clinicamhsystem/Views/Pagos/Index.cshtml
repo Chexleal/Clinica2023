@@ -1,7 +1,5 @@
 ﻿@model PagarConsultaViewModel
 
-
-
 @{
     ViewData["Title"] = "Pagos";
 }
@@ -25,7 +23,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model.Consultas.Where(x => x.Terminada && !x.Pagada))
+                    @foreach (var item in Model.Consultas)
                     {
                         <tr>
                             <td>@item.Fecha.ToString("d")</td>
@@ -41,7 +39,7 @@
                                     @*<button class="btn" onclick="ShowDetallesModal('@item.IdConsulta')">Pagar</button>*@
                                    @* <button class="option" onclick="ShowDetallesModal('@item.IdConsulta')">Pagar</button>*@
                                     <button class="btn-detalles option btn btn-outline-info" data-id="@item.IdConsulta">Pagar</button>
-                                    <a class="option btn btn-outline-info ms-2" href="@Url.Action("Receta","Consultas",new{consultaId=item.IdConsulta})">Descargar Receta</a>
+                                    <a class="option btn btn-outline-info ms-2" href="@Url.Action("DescargarPdf","ContinuarConsulta",new{consultaId=item.IdConsulta})" target="_blank">Imprimir Receta</a>
                                 </div>
                             </td>
                         </tr>
@@ -69,6 +67,7 @@
 
 
 @section Scripts{
-    <script src="~/js/pages/consultas.js" asp-append-version="true"></script>
     <script src="~/js/pages/pagos.js" asp-append-version="true"></script>
+    <script src="~/js/pages/consultas.js" asp-append-version="true"></script>
+
 }

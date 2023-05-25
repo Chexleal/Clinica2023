@@ -5,6 +5,9 @@
 
 $(document).ready(function () {
     CreateTable();
+    $('#idPaciente').select2({
+        dropdownParent: $('#createModal'),
+    });
 });
 
 function CreateTable() {
@@ -45,7 +48,7 @@ function CreateTable() {
                 title: "Consultas",
                 filename: "Consultas",
                 exportOptions: {
-                    columns: [0,1,2,3,4,5,6,7],
+                    columns: [1,2,3,4],
                     page: 'all'
                 },
                 orientation: "landscape",
@@ -59,7 +62,7 @@ function CreateTable() {
                 title: "Consultas",
                 filename: "Consultas",
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5, 6, 7],
+                    columns: [1, 2, 3, 4],
                     modifier: {
                         page: 'all',
                         search: 'none'

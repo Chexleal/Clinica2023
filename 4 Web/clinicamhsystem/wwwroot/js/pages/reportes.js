@@ -16,18 +16,19 @@ $(document).ready(function () {
             }
         });
     });
+
+    $('#idPaciente').select2();
 });
 
 function CreateTable() {
     $('#table').DataTable({
         "ordering": true,
         "lengthChange": true,
-        searching: false,
         dom: '<"table-title">Bfrtip',
         buttons: ['copy', 'excel', 'pdf', 'print'],
         "pageLength": 20,
         "language": {
-            searchPlaceholder: 'Buscar consultas',
+            searchPlaceholder: '',
             sSearch: '',
             lengthMenu: 'MENU items/page',
             paginate: {
@@ -56,9 +57,9 @@ function CreateTable() {
                 messageTop: '',
                 className: "btn btn-outline-dark",
                 title: "Reporte",
-                filename: "Reporte",
+                filename: "Reporte por paciente",
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5, 6, 7],
+                    columns: [0, 1, 2, 3, 4],
                     page: 'all'
                 },
                 orientation: "landscape",
@@ -67,12 +68,18 @@ function CreateTable() {
             {
                 extend: 'excel',
                 text: '<i class="fas fa-file-excel"></i><strong>Excel </strong>',
+                customize: function (xlsx) {
+                    var sheet = xlsx.xl.worksheets['sheet1.xml'];
+                    $('row:first c', sheet).attr('s', '25');
+                    $('row:first c:nth-child(1) t', sheet).text('Contenido adicional 1');
+                    $('row:first c:nth-child(2) ', sheet).text('Contenido adicional 2');
+                },
                 messageTop: '',
                 className: "btn btn-outline-dark",
-                title: "Reporte",
-                filename: "Reporte",
+                title: encabezado,
+                filename: custom_file_name,
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5, 6, 7],
+                    columns: num_columns,
                     modifier: {
                         page: 'all',
                         search: 'none'
@@ -83,15 +90,20 @@ function CreateTable() {
             }, {
                 extend: 'pdf',
                 text: '<i class="fas fa-file-excel"></i><strong>PDf </strong>',
+                customize: function (doc) {
+                    doc.content[1].table.widths = Array(doc.content[1].table.body[0].length + 1).join('*').split('');
+                    doc.styles.tableBodyEven.alignment = 'center';
+                    doc.styles.tableBodyOdd.alignment = 'center';    
+                },
                 messageTop: '',
                 className: "btn btn-outline-dark",
-                title: "Reporte",
-                filename: "Reporte",
+                title: encabezado,
+                filename: custom_file_name,
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5, 6, 7],
+                    columns: num_columns,
                 },
                 orientation: "landscape",
                 pageSize: "LEGAL"
             }]
     });
-}
+}9

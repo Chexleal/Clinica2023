@@ -81,7 +81,7 @@ public class ContinuarConsulta : Controller
         else
         {
             updReceta.Descripcion = receta.Descripcion;
-            _recetaServices.Update(receta);
+            _recetaServices.Update(updReceta);
         }
 
         return RedirectToAction("Index", new { consultaId = receta.IdConsulta });

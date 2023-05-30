@@ -15,10 +15,6 @@
         right: 0;
         top: 0;
         height: 50%;
-        //background-image: url(/img/trash.png);
-        //background-size: cover;
-        //background-position: center;
-        //background-repeat: no-repeat;
         background-color:transparent;
         border: none;
         margin: 0px;
@@ -31,6 +27,10 @@
     /* Otros estilos opcionales */
     color: red;
     font-size: 110%;
+}
+
+.fc-view-container{
+    width: auto !important; 
 }
 
 .card-body{

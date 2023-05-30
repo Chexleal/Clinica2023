@@ -55,6 +55,26 @@ function ShowReceta(id) {
     //$('#idConsulta').val(id);
 }
 
+function ShowCalendario(id) {
+    $.ajax({
+        url: '/Citas/Calendar',
+        data: { pacienteId: id },
+        type: "POST",
+        success: function (res) {
+            //$('#modalCalendario').find('.modal-body').html(res);
+            //$('#modalCalendario').modal('show');
+
+            //$('#modalCalendario').on('shown.bs.modal', Loadcalendar);
+            //Loadcalendar()
+
+            //$('#modalCalendario').modal('show');
+            $('#modalCalendario').find('.modal-body').html(res);
+            $('#modalCalendario').modal('show');
+            $('#modalCalendario').on('shown.bs.modal', Loadcalendar);
+        }
+    });
+}
+
 function SetReadOnly() {
     $('textarea').attr('readonly', true);
     $('input').attr('readonly', true);

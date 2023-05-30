@@ -106,4 +106,21 @@ public class CitasController : Controller
 
         return RedirectToAction("Index", new CitasViewModel { Pacientes = pacientes, Citas = citas, Eventos = eventos });
     }
+
+    [HttpPost]
+    public IActionResult Calendar(Guid pacienteId)
+    {
+        var pacientes = _pacienteServices.GetAll();
+        var paciente = pacientes.FirstOrDefault(x => x.IdPaciente == pacienteId);
+        var citas = _citaServices.GetAll();
+
+        List<(string, Cita)> eventos = new List<(string, Cita)>();
+
+        foreach (var cita in citas)
+        {
+            eventos.Add((_pacienteServices.GetPacienteById(cita.IdPaciente).Nombre + " " + _pacienteServices.GetPacienteById(cita.IdPaciente).Apellido, cita));
+        }
+
+        return PartialView("_calendar", new CitasViewModel { Pacientes = pacientes, Citas = citas, Eventos = eventos, Paciente = paciente });
+    }
 }

@@ -20,26 +20,29 @@
         var evento = {
             title: item.titulo,
             start: item.fechaHora,
+            end: item.fechaHora,
             id: item.idCita,
             customRender: true
         };
         eventos.push(evento);
     });
-
-    document.addEventListener('DOMContentLoaded', function () {
+    
+    function Loadcalendar () {
+    //$('#modalCalendario').on('shown.bs.modal', function () {
+    //document.addEventListener('DOMContentLoaded', function () {
         var calendarEl = document.getElementById('calendar');
         var calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
+            height: 'auto',
+            //contentHeight: 'auto',
             locale: 'es',
             editable: false,
             selectable: false,
             fixedWeekCount: false,
-            //selectHelper: false,
-            //themeSystem: 'bootstrap5',
             headerToolbar: {
-                left: 'prev, next, today',
+                left: 'prev next today',
                 center: 'title',
-                right: 'dayGridMonth, timeGridWeek, listWeek'
+                right: 'dayGridMonth timeGridWeek listWeek'
             },
             events: eventos,
             dateClick: function (data) {
@@ -84,10 +87,11 @@
 
                 deleteButton.remove();
             }
-
         });
+
         calendar.render();
-    });
+        calendar.setOption('aspectRatio', 1.8);
+    }
 
     function AddCita(date) {
         $('#addCitaModal').modal('show');
@@ -96,7 +100,10 @@
 
 </script>
 
-<div id='calendar'></div>
+<div class="container">
+<div id='calendar'>
+</div>
+</div>
 
 
 <!-- Modal Agregar Cita -->
@@ -110,13 +117,20 @@
             <div class="modal-body">
                 <form id="cita-form" method="POST" action="@Url.Action("Add","Citas")">
                     <div class="form-group">
-                        <label class="control-label">Paciente</label>
-                        <select name="IdPaciente" class="form-control">
-                            @foreach (var paciente in Model.Pacientes)
-                            {
-                                <option value="@paciente.IdPaciente">@paciente.Nombre @paciente.Apellido - @paciente.Dpi</option>
-                            }
-                        </select>
+                        @if (Model.Paciente == null)
+                        {
+                            <label class="control-label">Paciente</label>
+                            <select name="IdPaciente" class="form-control">
+                                @foreach (var paciente in Model.Pacientes)
+                                {
+                                    <option value="@paciente.IdPaciente">@paciente.Nombre @paciente.Apellido - @paciente.Dpi</option>
+                                }
+                            </select>
+                        } else
+                        {
+                            <label class="control-label">Paciente: @Model.Paciente.Nombre @Model.Paciente.Apellido</label>
+                            <input hidden name="IdPaciente" class="form-control" value="@Model.Paciente.IdPaciente"/>
+                        }               
                     </div>
                     <div class="row mt-2">
                         <div class="col col-sm col-md col-lg col-xl col-xxl">
@@ -128,7 +142,7 @@
                         <div class="col col-sm col-md col-lg col-xl col-xxl">
                             <div class="form-group mb-3">
                                 <label for="Hora" class="form-label">Hora</label>
-                                <input type="time" name="Hora" id="Hora" class="form-control" />
+                                <input required type="time" min="00:00" max="22:59" name="Hora" id="Hora" class="form-control" />
                             </div>
                         </div>
                     </div>

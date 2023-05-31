@@ -21,13 +21,15 @@ public class ContinuarConsulta : Controller
     private readonly IConsultaServices _consultaServices;
     private readonly IRecetaServices _recetaServices;
     private readonly IPacienteServices _pacienteServices;
+    private readonly ICitaServices _citasServices;
     //private readonly IConverter _converter;
 
-    public ContinuarConsulta(IConsultaServices consultaServices, IPacienteServices pacienteServices, IRecetaServices recetaServices/*, IConverter converter*/)
+    public ContinuarConsulta(IConsultaServices consultaServices, IPacienteServices pacienteServices, IRecetaServices recetaServices,ICitaServices citaServices/*, IConverter converter*/)
     {
         _consultaServices = consultaServices;
         _pacienteServices = pacienteServices;
         _recetaServices = recetaServices;
+        _citasServices = citaServices;
         //_converter = converter;
     }
 
@@ -52,6 +54,7 @@ public class ContinuarConsulta : Controller
         var consultaDb = _consultaServices.GetConsulta(consulta.IdConsulta);
 
         consultaDb.Diagnostico = consulta.Diagnostico;
+        consultaDb.HistoriaClinica = consulta.HistoriaClinica;
         consultaDb.MotivoConsulta = consulta.MotivoConsulta;
         consultaDb.Observaciones = consulta.Observaciones;
         consultaDb.Peso = consulta.Peso;
@@ -87,31 +90,22 @@ public class ContinuarConsulta : Controller
         return RedirectToAction("Index", new { consultaId = receta.IdConsulta });
     }
 
-        [HttpGet]
-        public ActionResult Descargar(Guid consultaId)
-        {
+
+
+    public ActionResult DescargarPdf(Guid consultaId)
+    {
             var receta = _recetaServices.GetByConsulta(consultaId);
-            if (receta is null)
-            {
-                //eturn new Rotativa.ViewAsPdf("Index", consultaId);
-                return null;
-            }
-            else
-                return null;
-        }
+            var consulta = _consultaServices.GetConsulta(consultaId);
+            var pacienteInfo = _pacienteServices.GetPacienteById(consulta.IdPaciente);
+            var proximaCita = _citasServices.GetNextCita(consulta.Fecha, consulta.IdPaciente);
 
-        public ActionResult DescargarPdf(Guid consultaId)
-        {
-                var receta = _recetaServices.GetByConsulta(consultaId);
-                var consulta = _consultaServices.GetConsulta(consultaId);
-                var pacienteInfo = _pacienteServices.GetPacienteById(consulta.IdPaciente);
-                ViewData["Paciente"] = pacienteInfo.Nombre + " " + pacienteInfo.Apellido;
-                ViewData["fecha"] = receta.Fecha.ToString("dd/MM/yyyy");
-                ViewData["observacionesReceta"] = receta.Descripcion.ToString();
-                ViewData["detalleReceta"] = _recetaServices.GetAllDetalles(receta.IdReceta);
-
-                return View("ConsultaPdf");
-        }
+            ViewData["Paciente"] = pacienteInfo.Nombre + " " + pacienteInfo.Apellido;
+            ViewData["fecha"] = receta.Fecha.ToString("dd/MM/yyyy");
+            ViewData["observacionesReceta"] = receta.Descripcion.ToString();
+            ViewData["detalleReceta"] = _recetaServices.GetAllDetalles(receta.IdReceta);
+            ViewData["CitaProx"] = proximaCita;
+        return View("ConsultaPdf");
+    }
 
 
     // GET: ConsultasController/Edit/5

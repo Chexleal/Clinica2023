@@ -71,3 +71,32 @@ body {
     width: 100%;
     height: 80%;
 }
+
+.circle-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.circle-label {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid #000;
+    color: #000;
+    font-size: 13px;
+    margin-right: 10px;
+}
+
+h5 {
+    margin: 0;
+}
+
+.line {
+    border: none;
+    border-top: 1px solid #000;
+    margin: 10px 0;
+}

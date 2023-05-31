@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 
 namespace ClinicaServices
 {
@@ -13,6 +14,7 @@ namespace ClinicaServices
         List<Cita> GetAll();
         void Add(Cita cita);
         void Delete(Guid id);
+        DateTime GetNextCita(DateTime fecha, Guid idPaciente);
     }
     public class CitaServices : ICitaServices
     {
@@ -44,6 +46,13 @@ namespace ClinicaServices
                 _dbContext.Cita.Remove(cita);
                 _dbContext.SaveChanges();
             }
+        }
+
+        public DateTime GetNextCita(DateTime fecha, Guid idPaciente)
+        {
+            Cita cita = _dbContext.Cita.FirstOrDefault(p => p.IdPaciente == idPaciente && p.FechaHora>= fecha);
+
+            return cita is null ? new DateTime() : cita.FechaHora;
         }
     }
 }

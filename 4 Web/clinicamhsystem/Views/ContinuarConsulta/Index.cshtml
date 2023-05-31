@@ -5,6 +5,9 @@
 @{
     ViewData["Title"] = "Continuar Consultas";
 }
+@section Links{
+    <link rel="stylesheet" href="~/css/pages/calendario.css" asp-append-version="true" />
+}
 
 <partial name="Partials/_historialTabla.cshtml" />
 <partial name="Partials/_modalReceta.cshtml" />
@@ -78,6 +81,10 @@
                 <i class="fa-solid fa-file-signature fa-bounce fa-xl" style="color: #2d8f77;"></i>
                 <p style="color: #2d8f77; font-weight: bold;">Receta</p>
             </button>
+            <button type="button" id="btnCalendario" onclick="ShowCalendario('@Model.Consulta.IdPaciente')" class="btn btn-mini" title="Historia">
+                <i class="fa-solid fa-calendar fa-bounce fa-xl" style="color: #2d8f77;"></i>
+                <p style="color: #2d8f77; font-weight: bold;">Calendario</p>
+            </button>
         </div>
         <div class="card-body">
             <div class="row mt-2">
@@ -116,6 +123,23 @@
     </div>
 </form>
 
+<div class="modal fade" id="modalCalendario" tabindex="-1" role="dialog" aria-labelledby="modalCalendario" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="height:100%; width:100%;">
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
 
 @section Scripts{
     <script src="~/js/pages/continuar-consultas.js" asp-append-version="true"></script>
@@ -124,6 +148,7 @@
 
         var urlReceta="@Url.Action("DescargarPdf","ContinuarConsulta")?consultaId=";
         var urlGetMedicamentos = "@Url.Action("GetMedicamentos","ContinuarConsulta")";
+        var urlSaveReceta = "@Url.Action("GuardarReceta","ContinuarConsulta")";
         if(state=='True'){
            
             SetReadOnly();

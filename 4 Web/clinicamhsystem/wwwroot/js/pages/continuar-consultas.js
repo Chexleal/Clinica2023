@@ -91,4 +91,22 @@ function deleteDetalle(id) {
     });
 }
 
+$('#recetaForm').submit(function (e) {
+    // Detiene el envío del formulario normal
+    e.preventDefault();
 
+    // Obtén los datos del formulario
+    var datos = $(this).serialize();
+
+    // Envía la solicitud AJAX
+    $.ajax({
+        type: 'POST',
+        url: urlSaveReceta,  // Reemplaza 'archivo.php' con la URL de tu archivo de servidor que procesará los datos
+        data: datos,
+        success: function (response) {
+            // Maneja la respuesta del servidor
+     /*       $('#modalReceta,.modal, .modal-overlay').hide();*/
+            $('#modalReceta').modal('toggle');
+        }
+    });
+});

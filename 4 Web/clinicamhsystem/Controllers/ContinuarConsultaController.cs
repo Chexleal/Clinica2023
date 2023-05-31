@@ -52,6 +52,7 @@ public class ContinuarConsulta : Controller
         var consultaDb = _consultaServices.GetConsulta(consulta.IdConsulta);
 
         consultaDb.Diagnostico = consulta.Diagnostico;
+        consultaDb.HistoriaClinica = consulta.HistoriaClinica;
         consultaDb.MotivoConsulta = consulta.MotivoConsulta;
         consultaDb.Observaciones = consulta.Observaciones;
         consultaDb.Peso = consulta.Peso;

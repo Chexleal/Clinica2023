@@ -41,7 +41,7 @@ public class CitasController : Controller
     }
 
     [HttpPost]
-    public ActionResult Add(Guid IdPaciente)
+    public ActionResult Add(Guid IdPaciente, string destiny)
     {
 
         if (_cache.TryGetValue("UserData", out string jsonUserData))
@@ -64,17 +64,8 @@ public class CitasController : Controller
             cita.Titulo = paciente.Nombre + " " + paciente.Apellido;
             _citaServices.Add(cita);
         }
-        //var pacientes = _pacienteServices.GetAll();
-        //var citas = _citaServices.GetAll();
 
-        //List<(string, Cita)> eventos = new List<(string, Cita)>();
-
-        //foreach (var cita in citas)
-        //{
-        //    eventos.Add((_pacienteServices.GetPacienteById(cita.IdPaciente).Nombre + " " + _pacienteServices.GetPacienteById(cita.IdPaciente).Apellido, cita));
-        //}
-
-        return RedirectToAction("Index"/*,new CitasViewModel { Pacientes = pacientes, Citas = citas, Eventos = eventos }*/);
+        return RedirectToAction("Index");
     }
 
 
@@ -94,17 +85,17 @@ public class CitasController : Controller
             _citaServices.Delete(id);
         }
         catch { }
-        var pacientes = _pacienteServices.GetAll();
-        var citas = _citaServices.GetAll();
+        //var pacientes = _pacienteServices.GetAll();
+        //var citas = _citaServices.GetAll();
 
-        List<(string, Cita)> eventos = new List<(string, Cita)>();
+        //List<(string, Cita)> eventos = new List<(string, Cita)>();
 
-        foreach (var cita in citas)
-        {
-            eventos.Add((_pacienteServices.GetPacienteById(cita.IdPaciente).Nombre + " " + _pacienteServices.GetPacienteById(cita.IdPaciente).Apellido, cita));
-        }
+        //foreach (var cita in citas)
+        //{
+        //    eventos.Add((_pacienteServices.GetPacienteById(cita.IdPaciente).Nombre + " " + _pacienteServices.GetPacienteById(cita.IdPaciente).Apellido, cita));
+        //}
 
-        return RedirectToAction("Index", new CitasViewModel { Pacientes = pacientes, Citas = citas, Eventos = eventos });
+        return RedirectToAction("Index");
     }
 
     [HttpPost]
@@ -112,13 +103,15 @@ public class CitasController : Controller
     {
         var pacientes = _pacienteServices.GetAll();
         var paciente = pacientes.FirstOrDefault(x => x.IdPaciente == pacienteId);
+
         var citas = _citaServices.GetAll();
 
         List<(string, Cita)> eventos = new List<(string, Cita)>();
 
         foreach (var cita in citas)
         {
-            eventos.Add((_pacienteServices.GetPacienteById(cita.IdPaciente).Nombre + " " + _pacienteServices.GetPacienteById(cita.IdPaciente).Apellido, cita));
+            var pacienteInfo = pacientes.FirstOrDefault(x => x.IdPaciente == cita.IdPaciente);
+            eventos.Add((pacienteInfo.Nombre + " " + pacienteInfo.Apellido, cita));
         }
 
         return PartialView("_calendar", new CitasViewModel { Pacientes = pacientes, Citas = citas, Eventos = eventos, Paciente = paciente });

@@ -71,6 +71,30 @@ function ShowCalendario(id) {
             $('#modalCalendario').find('.modal-body').html(res);
             $('#modalCalendario').modal('show');
             $('#modalCalendario').on('shown.bs.modal', Loadcalendar);
+            $("#Destiny").val("consultas");
+
+
+            $('#cita-form').submit(function (e) {
+                // Detiene el envío del formulario normal
+                e.preventDefault();
+
+                // Obtén los datos del formulario
+                var datos = $(this).serialize();
+
+                // Envía la solicitud AJAX
+                $.ajax({
+                    type: 'POST',
+                    url: "Citas/Add",  
+                    data: datos,
+                    success: function (response) {
+                        // Maneja la respuesta del servidor
+                        $('#addCitaModal').modal('toggle');
+                        $('#modalCalendario').modal('toggle');
+                        $("#modalCalendario").find('.modal-body').html("");
+                    }
+                });
+            });
+
         }
     });
 }
@@ -110,5 +134,4 @@ function deleteDetalle(id) {
         }
     });
 }
-
 

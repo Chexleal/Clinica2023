@@ -26,12 +26,12 @@
         };
         eventos.push(evento);
     });
-    
+   var calendar;
     function Loadcalendar () {
     //$('#modalCalendario').on('shown.bs.modal', function () {
     //document.addEventListener('DOMContentLoaded', function () {
         var calendarEl = document.getElementById('calendar');
-        var calendar = new FullCalendar.Calendar(calendarEl, {
+        calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             height: 'auto',
             //contentHeight: 'auto',
@@ -72,8 +72,14 @@
                                 console.log(error);
                             }
                         });
+                        if($("#Destiny").val()=="citas"){
                         calendar.getEventById(eventId).remove();
                         calendar.render();
+                        }else{
+                           
+                                $('#modalCalendario').modal('toggle');
+                                $("#modalCalendario").find('.modal-body').html("");
+                        }
                     }
                 });
 
@@ -115,7 +121,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
-                <form id="cita-form" method="POST" action="@Url.Action("Add","Citas")">
+                    <form id="cita-form" method="POST" >
+                        <input hidden name="destiny" id="Destiny" />
                     <div class="form-group">
                         @if (Model.Paciente == null)
                         {

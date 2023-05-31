@@ -1,6 +1,8 @@
 $(document).ready(function () {
     Loadcalendar()
-
+    $('#selectPaciente').select2({
+        dropdownParent: $('#addCitaModal'),
+    });
     $("#Destiny").val("citas");
 
     $('#cita-form').submit(function (e) {

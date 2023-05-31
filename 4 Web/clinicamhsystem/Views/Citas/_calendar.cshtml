@@ -127,7 +127,7 @@
                         @if (Model.Paciente == null)
                         {
                             <label class="control-label">Paciente</label>
-                            <select name="IdPaciente" class="form-control">
+                            <select name="IdPaciente" class="form-control select2" id="selectPaciente">
                                 @foreach (var paciente in Model.Pacientes)
                                 {
                                     <option value="@paciente.IdPaciente">@paciente.Nombre @paciente.Apellido - @paciente.Dpi</option>

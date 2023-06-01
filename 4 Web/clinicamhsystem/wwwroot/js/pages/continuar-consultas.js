@@ -55,6 +55,50 @@ function ShowReceta(id) {
     //$('#idConsulta').val(id);
 }
 
+function ShowCalendario(id) {
+    $.ajax({
+        url: '/Citas/Calendar',
+        data: { pacienteId: id },
+        type: "POST",
+        success: function (res) {
+            //$('#modalCalendario').find('.modal-body').html(res);
+            //$('#modalCalendario').modal('show');
+
+            //$('#modalCalendario').on('shown.bs.modal', Loadcalendar);
+            //Loadcalendar()
+
+            //$('#modalCalendario').modal('show');
+            $('#modalCalendario').find('.modal-body').html(res);
+            $('#modalCalendario').modal('show');
+            $('#modalCalendario').on('shown.bs.modal', Loadcalendar);
+            $("#Destiny").val("consultas");
+
+
+            $('#cita-form').submit(function (e) {
+                // Detiene el envío del formulario normal
+                e.preventDefault();
+
+                // Obtén los datos del formulario
+                var datos = $(this).serialize();
+
+                // Envía la solicitud AJAX
+                $.ajax({
+                    type: 'POST',
+                    url: "Citas/Add",  
+                    data: datos,
+                    success: function (response) {
+                        // Maneja la respuesta del servidor
+                        $('#addCitaModal').modal('toggle');
+                        $('#modalCalendario').modal('toggle');
+                        $("#modalCalendario").find('.modal-body').html("");
+                    }
+                });
+            });
+
+        }
+    });
+}
+
 function SetReadOnly() {
     $('textarea').attr('readonly', true);
     $('input').attr('readonly', true);
@@ -91,4 +135,22 @@ function deleteDetalle(id) {
     });
 }
 
+$('#recetaForm').submit(function (e) {
+    // Detiene el envío del formulario normal
+    e.preventDefault();
 
+    // Obtén los datos del formulario
+    var datos = $(this).serialize();
+
+    // Envía la solicitud AJAX
+    $.ajax({
+        type: 'POST',
+        url: urlSaveReceta,  // Reemplaza 'archivo.php' con la URL de tu archivo de servidor que procesará los datos
+        data: datos,
+        success: function (response) {
+            // Maneja la respuesta del servidor
+     /*       $('#modalReceta,.modal, .modal-overlay').hide();*/
+            $('#modalReceta').modal('toggle');
+        }
+    });
+});

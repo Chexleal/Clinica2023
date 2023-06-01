@@ -6,6 +6,7 @@ namespace clinicaWeb.Models
     {
         public List<Paciente> Pacientes { get; set; }
         public List<Cita> Citas { get; set; }
+        public Paciente? Paciente { get; set; }
 
         public List<(string, Cita)> Eventos = new List<(string, Cita)>();
 

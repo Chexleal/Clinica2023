@@ -25,7 +25,7 @@
                 <i class="fa-solid fa-plus fa-bounce"></i> Agregar Servicio
             </button>         
         </p>
-        <div class=" table-responsive ">
+        <div class="table-responsive ">
             <table id="table" class="table table-striped ">
                 <thead class="table-dark">
                     <tr>
@@ -40,7 +40,7 @@
                             <td>@item.Descripcion</td>
                             <td>
                                 <div class="options d-flex ">
-                                    <form id="eliminarForm" onsubmit="alertElminarPrevent(event)" asp-action="Eliminar" asp-route-id="@item.IdMotivoCobro">
+                                    <form id="eliminarForm" onsubmit="alertElminarPrevents(event)" asp-action="Eliminar" asp-route-id="@item.IdMotivoCobro">
                                         <button class="option" type="submit">Eliminar</button>
                                     </form>
                                                                     
@@ -85,22 +85,35 @@
 @section Scripts{
     <script>
 
-        function alertElminarPrevent(e){
+        function alertElminarPrevents(e) {
             e.preventDefault();
 
             Swal.fire({
                 title: '¿Esta seguro de eliminar este servicio?',
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonText:'Si',
+                confirmButtonText: 'Si',
                 cancelButtonText: 'No'
-            }).then((resultado)=> {
+            }).then((resultado) => {
 
-                if(resultado.isConfirmed){
-                    const formulario = document.getElementById('eliminarForm');   
-                    formulario.submit();                   
+                if (resultado.isConfirmed) {
+                    successWithTimer('eliminarForm');
                 }
 
+            })
+        }
+
+        function successWithTimer(formName) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Cambios guardados',
+                showConfirmButton: false,
+                timer: 1500
+            }).then((result) => {
+                if (result.dismiss === Swal.DismissReason.timer) {
+                    const formulario = document.getElementById(formName);
+                    formulario.submit();
+                }
             })
         }
     </script>

@@ -43,21 +43,21 @@
                             <div class="options d-flex ">
                                 <a class="option" href="/Usuarios/Detalles/@item.IdUsuario">Ver</a>
                                 <a class="option" href="@Url.Action("Editar","Usuarios",new{id=item.IdUsuario}) ">Editar</a>
-                                <form asp-action="Eliminar" asp-route-id="@item.IdUsuario">
-                                    <button class="option" type="submit">Eliminar</button>
+                                <form id="eliminarUserForm" asp-action="Eliminar" asp-route-id="@item.IdUsuario">
+                                    <button class="option" type="submit" onclick="alertEliminarUsuario(event)">Eliminar</button>
                                 </form>
                                 @if (item.UsuarioActivo == true)
                                 {
-                                    <form asp-action="Activate" asp-route-id="@item.IdUsuario">
+                                    <form id="desactivarUserForm" asp-action="Activate" asp-route-id="@item.IdUsuario">
                                         <input type="hidden" value="false" name="state" />
-                                        <button class="option" type="submit">Desactivar</button>
+                                        <button class="option" type="submit" onclick="alertDesactivarUsuario(event)">Desactivar</button>
                                     </form>
                                 }
                                 else
                                 {
-                                    <form asp-action="Activate" asp-route-id="@item.IdUsuario">
+                                    <form id="activarUserForm"asp-action="Activate" asp-route-id="@item.IdUsuario">
                                         <input type="hidden" value="true" name="state" />
-                                        <button class="option" type="submit">Activar</button>
+                                        <button class="option" type="submit" onclick="usuarioActivadoAlert(event)">Activar</button>
                                     </form>
                                 }
                             </div>
@@ -174,4 +174,69 @@
 
 @section Scripts{
     <script src="~/js/pages/usuarios.js" asp-append-version="true"></script>
+
+    <script>
+        function alertEliminarUsuario(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: '¿Esta seguro de eliminar a este usuario?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Si',
+                cancelButtonText: 'No'
+            }).then((resultado) => {
+
+                if (resultado.isConfirmed) {
+                    successWithTimer('eliminarUserForm');
+                }
+
+            })
+        }
+
+        function alertDesactivarUsuario(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: '¿Esta seguro de desactivar a este usuario?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Si',
+                cancelButtonText: 'No'
+            }).then((resultado) => {
+
+                if (resultado.isConfirmed) {
+                    successWithTimer('desactivarUserForm');
+                }
+
+            })
+        }
+
+        function usuarioActivadoAlert(e) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'success',
+                title: 'Usuario activado',
+                showConfirmButton: false,
+                timer: 1500
+            }).then((result) => {
+                if (result.dismiss === Swal.DismissReason.timer) {
+                    const formulario = document.getElementById('activarUserForm');
+                    formulario.submit();
+                }
+            })
+        }
+
+        function successWithTimer(formName) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Cambios guardados',
+                showConfirmButton: false,
+                timer: 1500
+            }).then((result) => {
+                if (result.dismiss === Swal.DismissReason.timer) {
+                    const formulario = document.getElementById(formName);
+                    formulario.submit();
+                }
+            })
+        }
+    </script>
 }

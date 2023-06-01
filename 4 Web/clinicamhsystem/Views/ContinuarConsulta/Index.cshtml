@@ -106,8 +106,10 @@
                     <input hidden id="terminado" name="Terminada" value="@Model.Consulta.IdPaciente" />
                     @if (!Model.Consulta.Terminada)
                     {
-                        <button type="submit" id="btnGuardar" class="btn btn-outline-dark mb-3">Guardar Cambios</button>
-                        <button type="submit" id="btnTerminar" class="btn btn-dark mb-3">Terminar Consulta</button>
+                       @* <button type="submit" id="btnGuardar" class="btn btn-outline-dark mb-3" onclick="guardadoAlert()">Guardar Cambios</button>*@
+                        <button type="submit" class="btn btn-outline-dark mb-3" onclick="guardadoAlert(event)">Guardar Cambios</button>
+                        @*<button type="submit" id="btnTerminar" class="btn btn-dark mb-3">Terminar Consulta</button>*@
+                        <button type="submit" class="btn btn-dark mb-3" onclick="alertTerminarConsulta(event)">Terminar Consulta</button>
                     }
                 </div>
             </div>
@@ -120,6 +122,40 @@
 @section Scripts{
     <script src="~/js/pages/continuar-consultas.js" asp-append-version="true"></script>
     <script>
+
+        function alertTerminarConsulta(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: '¿Esta seguro de terminar esta consulta?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Si',
+                cancelButtonText: 'No'
+            }).then((resultado) => {
+
+                if (resultado.isConfirmed) {
+                    const formulario = document.getElementById('formCST');
+                    formulario.submit();
+                }
+
+            })
+        }
+
+        function guardadoAlert(e) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'success',
+                title: 'Cambios guardados',
+                showConfirmButton: false,
+                timer: 1500
+            }).then((result)=>{
+                if (result.dismiss === Swal.DismissReason.timer) {
+                    const formulario = document.getElementById('formCST');
+                    formulario.submit();
+                }
+            })
+        }
+
         var state = "@Model.Consulta.Terminada";
 
         var urlReceta="@Url.Action("DescargarPdf","ContinuarConsulta")?consultaId=";

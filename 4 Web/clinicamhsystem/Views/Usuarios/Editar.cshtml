@@ -9,7 +9,7 @@
 <h4>Usuario</h4>
 <hr />
 <div class="row">
-    <form asp-action="Editar" method="post">
+    <form id="editUserForm" asp-action="Editar" method="post">
         <input hidden name="IdUsuario" value="@Model.IdUsuario" />
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <div class="form-group">
@@ -93,12 +93,75 @@
             <span asp-validation-for="Password" class="text-danger"></span>
         </div>
         <div class="form-group">
-            <input type="submit" value="Guardar" class="btn btn-primary" />
+            <input type="submit" onclick="guardadoAlert(event)" value="Guardar" class="btn btn-primary" />
         </div>
     </form>
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index">Regresar</a>
 </div>
+
+@section Scripts{
+    <script>
+
+        function guardadoAlert(e) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'success',
+                title: 'Cambios guardados',
+                showConfirmButton: false,
+                timer: 1500
+            }).then((result) => {
+                if (result.dismiss === Swal.DismissReason.timer) {
+                    const formulario = document.getElementById('editUserForm');
+                    formulario.submit();
+                }
+            })
+        }
+
+        function alertTerminarConsulta(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: '¿Esta seguro de terminar esta consulta?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Si',
+                cancelButtonText: 'No'
+            }).then((resultado) => {
+
+                if (resultado.isConfirmed) {
+                    const formulario = document.getElementById('editUserForm');
+                    formulario.submit();
+                }
+
+            })
+        }
+
+        function alertElminarPrevent(e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: '¿Esta seguro de eliminar este servicio?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Si',
+                cancelButtonText: 'No'
+            }).then((resultado) => {
+
+                if (resultado.isConfirmed) {
+                    Swal.fire(
+                        'Good job!',
+                        'You clicked the button!',
+                        'success'
+                    );
+                    const formulario = document.getElementById('eliminarForm');
+                    formulario.submit();
+                }
+
+            })
+        }
+    </script>
+    <script src="~/js/pages/consultas.js" asp-append-version="true"></script>
+}
 

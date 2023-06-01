@@ -52,7 +52,7 @@
                  <div id="tablaInfo">
 
                  </div>
-                <form method="post" action="@Url.Action("GuardarReceta")">
+                <form id="guardarReceta" onclick="guardarRecetaAlert(event)" method="post" action="@Url.Action("GuardarReceta")">
                     <div class="row mt-5">
                         <div class="col col-sm col-md col-lg col-xl col-xxl">
                             <label class="fw-bold" for="observaciones">Otras Observaciones: </label>
@@ -62,7 +62,8 @@
                     <div class="row mt-5">
                         <div class="col col-sm col-md col-lg col-xl col-xxl">
                             <input hidden name="IdConsulta" value="@Model.Consulta.IdConsulta" />
-                            <button type="submit" id="btnGuardarReceta" class="btn btn-dark mb-3">Guardar</button>
+                            @*<button type="submit" id="btnGuardarReceta" class="btn btn-dark mb-3">Guardar</button>*@
+                            <button type="submit" class="btn btn-dark mb-3">Guardar</button>
                         </div>
                     </div>
                 </form>
@@ -70,3 +71,24 @@
         </div>
     </div>
 </div>
+
+
+@section Scripts{
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <script>
+        function guardarRecetaAlert(e) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'success',
+                title: 'Cambios guardados',
+                showConfirmButton: false,
+                timer: 1500
+            }).then((result) => {
+                if (result.dismiss === Swal.DismissReason.timer) {
+                    const formulario = document.getElementById('guardarReceta');
+                    formulario.submit();
+                }
+            })
+        }
+    </script>
+}

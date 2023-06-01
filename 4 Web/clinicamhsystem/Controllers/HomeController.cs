@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
+using ServiceStack.Script;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
@@ -67,7 +68,8 @@ public class HomeController : Controller
 
             ViewData["emailCensored"] = userEmailCesored.ToString();
 
-            return View("RecoverAccount"); //retorna la vista para recuperar cuenta       
+            return View("RecoverAccount", userName); //retorna la vista para recuperar cuenta       
+            //return RedirectToAction("RecoverAccount", new { userName });
         }
         else
         {
@@ -76,23 +78,24 @@ public class HomeController : Controller
 
     }
 
-    public IActionResult CheckAnswer(string userName,string answer)
+    public IActionResult CheckAnswer(string hiddenUsername, string answer)
     {
         string? preguntaSegCheck = _userServices.CheckAnswer(answer);
         if (preguntaSegCheck != null)
-            // return View("NewPassword"); // Si la respuesta es correcta
-            return Content($"alert('Respuesta correcta');", "application/javascript");
+            // return RedirectToAction("NuevaClave", new { hiddenUsername }); // Si la respuesta es correcta
+            // return Content($"alert('Respuesta correcta');", "application/javascript");
+            return View("NewPassword", hiddenUsername);
         else
-            return Content("alert('Respuesta Incorrecta');", "application/javascript"); // Si la respuesta es incorrecta
+            return Content($"alert('Respuesta Incorrecta {hiddenUsername}');", "application/javascript"); // Si la respuesta es incorrecta
 
     }
 
-    public IActionResult CheckEmails(string email, string emailConfirmed)
+    public IActionResult CheckEmails(string email, string emailConfirmed, string hiddenUsername)
     {
 
-        bool emailCheck = _userServices.CheckEmails(email, emailConfirmed);
+        bool emailCheck = _userServices.CheckEmails(email, emailConfirmed, hiddenUsername);
         if (emailCheck)
-            return Content("alert('Email Correcto');", "application/javascript"); // Si la respuesta es correcta
+            return Content($"alert('Email Correcto del compa {hiddenUsername} correo enviado ');", "application/javascript"); // Si la respuesta es correcta
         else
             return Content("alert('Email Incorrecto');", "application/javascript"); // Si la respuesta es incorrecta
 
@@ -100,12 +103,14 @@ public class HomeController : Controller
 
     public IActionResult RecuperarCuenta()
     {
+
         return View("CheckUser");
     }
 
     public IActionResult NuevaClave(string userName)
     {
-        return View("NewPassword");
+        ViewData["username"] = userName;
+        return View("NewPassword", userName);
     }
 
     public IActionResult CrearNuevaClave(string newPassword, string newPasswordConfirmed)
@@ -121,6 +126,7 @@ public class HomeController : Controller
 
     public IActionResult RecuperarCuentaEmail(string userName)
     {
+        ViewData["username"] = userName;
         return View("RecoverAccountEmail");
     }
 

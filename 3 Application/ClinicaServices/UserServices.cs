@@ -20,7 +20,7 @@ public interface IUserServices
     List<Usuario> SearchUser(string input);
     Usuario? GetUser(Guid id);
     Usuario? GetUserByName(string userName);
-    bool CheckEmails(string email, string emailConfirmed);
+    bool CheckEmails(string email, string emailConfirmed, string username);
     bool CheckNewPassword(string newPassword, string newPasswordConfirmed, string userName);
     void DeleteUser(Guid id);
     void UpdateUser(Usuario user);
@@ -139,9 +139,9 @@ public class UserServices : IUserServices
         return null;
     }
 
-    public bool CheckEmails(string email, string emailConfirmed)
+    public bool CheckEmails(string email, string emailConfirmed, string username)
     {
-        var emailOnData = _dbContext.Usuarios.FirstOrDefault(x => x.Correo == email);
+        var emailOnData = _dbContext.Usuarios.FirstOrDefault(x =>x.NombreUsuario == username && x.Correo == email);
         var userName = _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == emailOnData.NombreUsuario);
 
         if (emailOnData != null)

@@ -307,10 +307,6 @@ public partial class ClinicaContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("permiso");
-
-            entity.HasOne(d => d.IdUsuarioNavigation).WithMany(p => p.RolDetalles)
-                .HasForeignKey(d => d.IdUsuario)
-                .HasConstraintName("FK__Rol_detal__id_us__276EDEB3");
         });
 
         modelBuilder.Entity<Medicamento>(entity =>

@@ -30,7 +30,7 @@ namespace clinicaWeb.Security
 
                     Usuario userData = JsonConvert.DeserializeObject<Usuario>(jsonUserData);
                     // var accountData = JsonConvert.DeserializeObject<Usuario>(filterContext.HttpContext.Session.GetString($"UserData({country + "|" + accountcode})"));
-                    if (!ContainFuncionality(userData.RolDetalles.ToList() ?? new(), (RequiredClaim)))
+                    if (!ContainFuncionality(userData.Permisos.ToList() ?? new(), (RequiredClaim)))
                         throw new UnauthorizedAccessException();
                 }
             }
@@ -53,10 +53,12 @@ namespace clinicaWeb.Security
         public static bool ContainFuncionality(List<RolDetalle> functionalities, string funcionalityName)
         {
             return true;
+            //if (functionalities.Exists(x=>x.Permiso=="SuperAdmin"))
+            //    return true;
             //if (string.IsNullOrEmpty(funcionalityName))
             //    return false;
 
-            //if (functionalities.Exists(x=>x.Permiso==funcionalityName))
+            //if (functionalities.Exists(x => x.Permiso == funcionalityName))
             //    return true;
 
             //return false;

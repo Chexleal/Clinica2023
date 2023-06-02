@@ -13,5 +13,4 @@ public partial class RolDetalle
 
     public string Descripcion { get; set; }
 
-    public virtual Usuario IdUsuarioNavigation { get; set; }
 }

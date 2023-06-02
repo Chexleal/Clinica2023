@@ -52,11 +52,11 @@ public class UsuariosController : Controller
     // POST: UsuariosController/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public ActionResult Create(Usuario usuario)
+    public ActionResult Create(Usuario usuario, List<string> permissionsList)
     {
         try
         {             
-            _userServices.AddUser(usuario);
+            _userServices.AddUser(usuario, permissionsList);
 
         }
         catch

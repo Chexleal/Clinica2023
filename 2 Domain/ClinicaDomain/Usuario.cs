@@ -45,7 +45,7 @@ public partial class Usuario
 
     //public virtual ICollection<Cita> Cita { get; } = new List<Cita>();
 
-    public virtual ICollection<RolDetalle> RolDetalles { get; } = new List<RolDetalle>();
+    public  List<RolDetalle> Permisos { get; set; } = new List<RolDetalle>();
 
     public void BeforeChanges()
     {

@@ -26,7 +26,10 @@ public class ConsultasController : Controller
     {
         var pacientes = _pacienteServices.GetAll();
         var consultas = _consultaServices.GetAll();
-        
+        foreach(var consulta in consultas)
+        {
+            consulta.PacienteInformacion = pacientes.FirstOrDefault(x => x.IdPaciente == consulta.IdPaciente);
+        }
         //ConsultasModel modelo = new ConsultasModel();
 
         //modelo.Paciente = pacientes;

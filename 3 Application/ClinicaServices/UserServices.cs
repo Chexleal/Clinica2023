@@ -50,7 +50,7 @@ public class UserServices : IUserServices
             RolDetalle rolDetalle = new()
             {
                 IdRolDetalle = Guid.NewGuid(),
-                IdUsuario = user.IdUsuario,
+                UsuarioId = user.IdUsuario,
                 Permiso = permission,
                 Descripcion = permission
             };
@@ -302,7 +302,7 @@ public class UserServices : IUserServices
 
     public List<RolDetalle> GetPermissions(Guid idUser)
     {
-        var permissions = _dbContext.RolDetalles.Where(x => x.IdUsuario==idUser).ToList();
+        var permissions = _dbContext.RolDetalles.Where(x => x.UsuarioId==idUser).ToList();
         return permissions;
     }
 }

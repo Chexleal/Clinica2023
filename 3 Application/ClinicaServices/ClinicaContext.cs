@@ -302,7 +302,7 @@ public partial class ClinicaContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("descripcion");
-            entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
+            entity.Property(e => e.UsuarioId).HasColumnName("id_usuario");
             entity.Property(e => e.Permiso)
                 .HasMaxLength(50)
                 .IsUnicode(false)

@@ -51,6 +51,13 @@ public class ContinuarConsulta : Controller
     [HttpPost]
     public ActionResult Guardar(Consulta consulta)
     {
+        //DateTime fechaActual = DateTime.Now.ToLocalTime();
+        //DateTime fechaConsulta = consulta.Fecha.ToLocalTime(); // Convertir a la zona horaria local
+
+        //TimeSpan duracion = fechaActual.Subtract(fechaConsulta);
+        ////TimeSpan duracion = DateTime.Now.Subtract(consulta.Fecha);
+        //string duracionSQL = duracion.ToString(@"hh\:mm\:ss");
+
         var consultaDb = _consultaServices.GetConsulta(consulta.IdConsulta);
 
         consultaDb.Diagnostico = consulta.Diagnostico;
@@ -62,6 +69,7 @@ public class ContinuarConsulta : Controller
         consultaDb.Radiografias = consulta.Radiografias;
         consultaDb.Temperatura = consulta.Temperatura;
         consultaDb.Terminada = consulta.Terminada;
+        //consultaDb.TiempoDuracion = duracion;
 
         _consultaServices.UpdateConsulta(consultaDb);
         if (consulta.Terminada) return RedirectToAction("Index", "Consultas");

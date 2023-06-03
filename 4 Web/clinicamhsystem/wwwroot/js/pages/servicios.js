@@ -1,21 +1,17 @@
-﻿// Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
-
-// Write your JavaScript code.
-
 $(document).ready(function () {
     CreateTable();
 });
 
 function CreateTable() {
-    $('#tableUser').DataTable({
-        "autoWidth": true,
+    $('#table').DataTable({
+
+        "responsive": true,
         "ordering": true,
         "lengthChange": true,
         dom: 'Bfrtip',
         "pageLength": 20,
         "language": {
-            searchPlaceholder:'Buscar Usuario',
+            searchPlaceholder: 'Buscar servicio',
             sSearch: '',
             lengthMenu: 'MENU items/page',
             paginate: {
@@ -43,10 +39,10 @@ function CreateTable() {
                 text: '<i class="fas fa-clone"></i><strong>Copiar</strong>',
                 messageTop: '',
                 className: "btn btn-outline-dark",
-                title: "Usuarios",
-                filename: "Usuarios",
+                title: "Pacientes",
+                filename: "Pacientes",
                 exportOptions: {
-                    columns: [0,1,2,3,4,5,6,7],
+                    columns: [0, 1],
                     page: 'all'
                 },
                 orientation: "landscape",
@@ -57,8 +53,8 @@ function CreateTable() {
                 text: '<i class="fas fa-file-excel"></i><strong>Excel </strong>',
                 messageTop: '',
                 className: "btn btn-outline-dark",
-                title: "Usuarios",
-                filename: "Usuarios",
+                title: "Servicios",
+                filename: "Servicios",
                 exportOptions: {
                     columns: [0, 1, 2, 3, 4, 5, 6, 7],
                     modifier: {
@@ -68,20 +64,18 @@ function CreateTable() {
                 },
                 orientation: "landscape",
                 pageSize: "LEGAL"
+            }, {
+                extend: 'pdf',
+                text: '<i class="fas fa-file-excel"></i><strong>PDf </strong>',
+                messageTop: '',
+                className: "btn btn-outline-dark",
+                title: "Servicios",
+                filename: "Servicios",
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7],
+                },
+                orientation: "landscape",
+                pageSize: "LEGAL"
             }]
-    });
-}
-
-function ShowEditModal(id) {
-    $('#modalEdit').modal('show');
-    $.ajax({
-        url: '/Usuarios/GetUsuario',
-        data: { usuarioId: id },
-        async: true,
-        type: "GET",
-        atType: 'html',
-        success: function (res) {
-            $('#modalEditBody').html(res);
-        }
     });
 }

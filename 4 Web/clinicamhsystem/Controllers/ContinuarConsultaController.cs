@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using ServiceStack;
+using System.Globalization;
 using System.Security.Policy;
 using System.Text;
 //using System.Web;
@@ -51,14 +52,9 @@ public class ContinuarConsulta : Controller
     [HttpPost]
     public ActionResult Guardar(Consulta consulta)
     {
-        //DateTime fechaActual = DateTime.Now.ToLocalTime();
-        //DateTime fechaConsulta = consulta.Fecha.ToLocalTime(); // Convertir a la zona horaria local
-
-        //TimeSpan duracion = fechaActual.Subtract(fechaConsulta);
-        ////TimeSpan duracion = DateTime.Now.Subtract(consulta.Fecha);
-        //string duracionSQL = duracion.ToString(@"hh\:mm\:ss");
-
         var consultaDb = _consultaServices.GetConsulta(consulta.IdConsulta);
+
+        TimeSpan duracion = DateTime.Now.Subtract(consultaDb.Fecha);
 
         consultaDb.Diagnostico = consulta.Diagnostico;
         consultaDb.HistoriaClinica = consulta.HistoriaClinica;
@@ -69,7 +65,7 @@ public class ContinuarConsulta : Controller
         consultaDb.Radiografias = consulta.Radiografias;
         consultaDb.Temperatura = consulta.Temperatura;
         consultaDb.Terminada = consulta.Terminada;
-        //consultaDb.TiempoDuracion = duracion;
+        consultaDb.TiempoDuracion = duracion;
 
         _consultaServices.UpdateConsulta(consultaDb);
         if (consulta.Terminada) return RedirectToAction("Index", "Consultas");

@@ -1,5 +1,22 @@
-.select2{
-    width:100% !important;
+.saludo{
+    color:black;
+}
+
+.saludo:hover{
+    color:black;
+}
+
+.menu-cuenta {
+    background-color: #f2f2f2;
+}
+
+.conf-option:hover {
+    background-color: deepskyblue;
+    color: white;
+}
+
+.select2 {
+    width: 100% !important;
 }
 
 .select2-selection {

@@ -111,7 +111,6 @@
             <div class="row mt-5">
                 <div class="col col-sm col-md col-lg col-xl col-xxl">
                     <input hidden id="terminado" name="Terminada" value="@Model.Consulta.IdPaciente" />
-                    <input hidden id="fecha" name="fecha" value="@Model.Consulta.Fecha" />
                     @if (!Model.Consulta.Terminada)
                     {
                        @* <button type="submit" id="btnGuardar" class="btn btn-outline-dark mb-3" onclick="guardadoAlert()">Guardar Cambios</button>*@
@@ -160,6 +159,7 @@
 
                 if (resultado.isConfirmed) {
                     const formulario = document.getElementById('formCST');
+                    $("#terminado").val(true);
                     formulario.submit();
                 }
 

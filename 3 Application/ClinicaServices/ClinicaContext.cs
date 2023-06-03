@@ -130,14 +130,18 @@ public partial class ClinicaContext : DbContext
             entity.Property(e => e.Cantidad)
                 .HasColumnType("numeric(18, 0)")
                 .HasColumnName("cantidad");
+            entity.Property(e => e.NombreServicio)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("nombre_servicio");
 
             //entity.HasOne(d => d.IdConsultaNavigation).WithMany(p => p.DetalleCobros)
             //    .HasForeignKey(d => d.IdConsulta)
             //    .HasConstraintName("FK__Detalle_c__id_co__34C8D9D1");
 
-            entity.HasOne(d => d.IdMotivoCobroNavigation).WithMany(p => p.DetalleCobros)
-                .HasForeignKey(d => d.IdMotivoCobro)
-                .HasConstraintName("FK__Detalle_c__id_mo__35BCFE0A");
+            //entity.HasOne(d => d.IdMotivoCobroNavigation).WithMany(p => p.DetalleCobros)
+            //    .HasForeignKey(d => d.IdMotivoCobro)
+            //    .HasConstraintName("FK__Detalle_c__id_mo__35BCFE0A");
         });
 
         modelBuilder.Entity<DetalleReceta>(entity =>
@@ -242,9 +246,8 @@ public partial class ClinicaContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("nacionalidad");
             entity.Property(e => e.NoRegistro)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("no_registro");
+              .ValueGeneratedOnAdd()
+              .HasColumnName("no_registro");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(50)
                 .IsUnicode(false)

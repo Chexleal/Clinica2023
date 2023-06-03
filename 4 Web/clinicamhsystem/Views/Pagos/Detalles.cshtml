@@ -20,7 +20,7 @@
         @foreach (var opcion in Model.Detalles.Where(x => x.IdConsulta == Model.consulta.IdConsulta))
         {
             <tr>
-                <td>@Model.Servicios.FirstOrDefault(p => p.IdMotivoCobro == opcion.IdMotivoCobro).Descripcion</td>
+                <td>@opcion.NombreServicio</td>
                 <td>@opcion.Producto</td>
                 <td>@opcion.Valor</td>
                 <td>@opcion.Cantidad</td>

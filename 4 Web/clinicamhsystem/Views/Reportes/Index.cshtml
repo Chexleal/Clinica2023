@@ -127,7 +127,7 @@
                                 total += consulta.Total;
                             }
                             }
-                            Paciente: <span class="fw-bold"> @Model.Paciente.Nombre @Model.Paciente.Apellido &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Dpi: <span class="fw-bold"> @Model.Paciente.Dpi </span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; No. Consultas: <span class="fw-bold"> @Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date).ToList().Count </span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Total: Q <span class="fw-bold">@total</span>
+                            Paciente: <span class="fw-bold"> @Model.Paciente.Nombre @Model.Paciente.Apellido &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> DPI: <span class="fw-bold"> @Model.Paciente.Dpi </span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; No. Consultas: <span class="fw-bold"> @Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date).ToList().Count </span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Total: Q <span class="fw-bold">@total</span>
 
                             <br>
                             <br>

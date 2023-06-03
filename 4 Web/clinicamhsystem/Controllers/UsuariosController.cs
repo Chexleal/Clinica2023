@@ -116,4 +116,11 @@ public class UsuariosController : Controller
         var users = _userServices.GetAll();
         return RedirectToAction("Index", users);
     }
+
+    [HttpGet]
+    public IActionResult GetUsuario(Guid usuarioId)
+    {
+        var usuario = _userServices.GetUser(usuarioId);
+        return PartialView("Editar", usuario);
+    }
 }

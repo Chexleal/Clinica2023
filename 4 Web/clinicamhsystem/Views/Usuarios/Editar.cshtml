@@ -4,14 +4,12 @@
     ViewData["Title"] = "Editar";
 }
 
-<h1>Editar</h1>
-
-<h4>Usuario</h4>
-<hr />
 <div class="row">
     <form id="editUserForm" asp-action="Editar" method="post">
         <input hidden name="IdUsuario" value="@Model.IdUsuario" />
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="row">
+        <div class="col-md-6">
         <div class="form-group">
             <label asp-for="NombreUsuario" class="control-label">Usuario</label>
             <input asp-for="NombreUsuario" class="form-control" />
@@ -28,7 +26,7 @@
             <span asp-validation-for="RespuestaSeg" class="text-danger"></span>
         </div>
         <div class="form-group">
-            <label asp-for="Dpi" class="control-label"></label>
+            <label asp-for="Dpi" class="control-label">DPI</label>
             <input asp-for="Dpi" class="form-control" />
             <span asp-validation-for="Dpi" class="text-danger"></span>
         </div>
@@ -48,19 +46,16 @@
             <span asp-validation-for="FechaNacimiento" class="text-danger"></span>
         </div>
         <div class="form-group">
-            <label asp-for="Telefono" class="control-label"></label>
+            <label asp-for="Telefono" class="control-label">Teléfono</label>
             <input asp-for="Telefono" class="form-control" />
             <span asp-validation-for="Telefono" class="text-danger"></span>
         </div>
+        </div>
+            <div class="col-md-6">
         <div class="form-group">
             <label asp-for="Correo" class="control-label"></label>
             <input asp-for="Correo" class="form-control" />
             <span asp-validation-for="Correo" class="text-danger"></span>
-        </div>
-        <div class="form-group form-check">
-            <label class="form-check-label">
-                <input class="form-check-input" asp-for="UsuarioActivo" /> Activo
-            </label>
         </div>
         <div class="form-group">
             <label asp-for="EstadoCivil" class="control-label">Estado Civil</label>
@@ -68,7 +63,7 @@
             <span asp-validation-for="EstadoCivil" class="text-danger"></span>
         </div>
         <div class="form-group">
-            <label asp-for="Profesion" class="control-label"></label>
+            <label asp-for="Profesion" class="control-label">Profesión</label>
             <input asp-for="Profesion" class="form-control" />
             <span asp-validation-for="Profesion" class="text-danger"></span>
         </div>
@@ -92,14 +87,13 @@
             <input asp-for="Password" class="form-control" />
             <span asp-validation-for="Password" class="text-danger"></span>
         </div>
+        </div>
+            <br>
         <div class="form-group">
             <input type="submit" onclick="guardadoAlert(event)" value="Guardar" class="btn btn-primary" />
         </div>
+        </div>
     </form>
-</div>
-
-<div>
-    <a asp-action="Index">Regresar</a>
 </div>
 
 @section Scripts{

@@ -1,4 +1,5 @@
-﻿@model IEnumerable<ClinicaDomain.Usuario>
+﻿@using clinicaWeb.Models;
+@model UsuariosViewModel;
 
 
 @{
@@ -33,7 +34,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in Model)
+                @foreach (var item in Model.Usuarios)
                 {
                     <tr>
                         <td>@item.NombreUsuario</td>
@@ -169,16 +170,11 @@
 
                      <div class="form-group">
                         <label class="control-label">Permisos</label>
-                        <select class="form-select select2" multiple name="permissionsList">
-                            <option value="SuperAdmin">SuperAdmin</option>
-                            <option value="Usuarios">Usuarios</option>
-                            <option value="Citas">Citas</option>
-                            <option value="Consultas">Consultas</option>
-                            <option value="ContinuarConsulta">ContinuarConsulta</option>
-                            <option value="Pacientes">Pacientes</option>
-                            <option value="Pagos">Pagos</option>
-                            <option value="Reportes">Reportes</option>
-                            <option value="Servicios">Servicios</option>
+                                <select multiple class="form-control select2" id="permissionsList" name="permissionsList">
+                           @foreach (var item in Model.Permisos)
+                           {
+                               <option value="@item">@item</option>
+                           }
                         </select>
                      </div>
                      </div>

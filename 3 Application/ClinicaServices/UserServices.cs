@@ -23,7 +23,7 @@ public interface IUserServices
     bool CheckEmails(string email, string emailConfirmed, string username);
     bool CheckNewPassword(string newPassword, string newPasswordConfirmed, string userName);
     void DeleteUser(Guid id);
-    void UpdateUser(Usuario user);
+    void UpdateUser(Usuario user, List<string> permissionsListEdit);
     void SetActive(Guid id, bool state);
 
     List<RolDetalle> GetPermissions(Guid idUser);
@@ -206,7 +206,7 @@ public class UserServices : IUserServices
         return _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario.ToLower().Trim() == userName.ToLower().Trim());
     }
 
-    public void UpdateUser(Usuario user)
+    public void UpdateUser(Usuario user, List<string> permissionsListEdit)
     {
         var userDB = GetUser(user.IdUsuario);
         if (userDB is not null)
@@ -227,6 +227,21 @@ public class UserServices : IUserServices
             userDB.TipoSange = user.TipoSange;
 
             userDB.BeforeChanges();
+            _dbContext.SaveChanges();
+
+            var permisionsOld = _dbContext.RolDetalles.Where(x => x.UsuarioId == userDB.IdUsuario);
+            _dbContext.RolDetalles.RemoveRange(permisionsOld);
+            foreach (var permission in permissionsListEdit)
+            {
+                RolDetalle rolDetalle = new()
+                {
+                    IdRolDetalle = Guid.NewGuid(),
+                    UsuarioId = user.IdUsuario,
+                    Permiso = permission,
+                    Descripcion = permission
+                };
+                _dbContext.RolDetalles.Add(rolDetalle);
+            }
             _dbContext.SaveChanges();
         }
     }

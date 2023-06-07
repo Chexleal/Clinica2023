@@ -1,5 +1,6 @@
 ﻿using ClinicaDomain;
 using ClinicaServices;
+using clinicaWeb.Models;
 using clinicaWeb.Security;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,6 +9,18 @@ namespace clinicaWeb.Controllers;
 public class UsuariosController : Controller
 {
     private readonly IUserServices _userServices;
+    private static List<string> permisos = new()
+    {
+        "SuperAdmin",
+        "Usuarios",
+        "Citas",
+        "Consultas",
+        "ContinuarConsulta",
+        "Pacientes",
+        "Pagos",
+        "Reportes",
+        "Servicios"
+    };
 
     public UsuariosController(IUserServices userServices)
     {
@@ -18,7 +31,7 @@ public class UsuariosController : Controller
     public ActionResult Index()
     {
         var users = _userServices.GetAll();
-        return View(users);
+        return View(new UsuariosViewModel { Usuarios= users,Permisos=permisos } );
     }
 
     //GET: Usuarios/Search?input=t
@@ -75,11 +88,11 @@ public class UsuariosController : Controller
     // POST: UsuariosController/Editar/fj33-4ra4r
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public ActionResult Editar(Usuario usuario)
+    public ActionResult Editar(Usuario usuario, List<string> permissionsListEdit)
     {
         try
         {
-            _userServices.UpdateUser(usuario);
+            _userServices.UpdateUser(usuario, permissionsListEdit);
             var users = _userServices.GetAll();
             return RedirectToAction("Index", users);
         }
@@ -121,6 +134,6 @@ public class UsuariosController : Controller
     public IActionResult GetUsuario(Guid usuarioId)
     {
         var usuario = _userServices.GetUser(usuarioId);
-        return PartialView("Editar", usuario);
+        return PartialView("Editar", new UsuariosViewModel { Usuario = usuario, Permisos = permisos }  );
     }
 }

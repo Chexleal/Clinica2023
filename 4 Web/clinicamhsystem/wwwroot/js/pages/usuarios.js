@@ -5,6 +5,9 @@
 
 $(document).ready(function () {
     CreateTable();
+    $('#permissionsList').select2({
+        dropdownParent: $('#createModal'),
+    });
 });
 
 function CreateTable() {
@@ -82,6 +85,9 @@ function ShowEditModal(id) {
         atType: 'html',
         success: function (res) {
             $('#modalEditBody').html(res);
+            $('#permissionsListEdit').select2({
+                dropdownParent: $('#modalEdit'),
+            });
         }
     });
 }

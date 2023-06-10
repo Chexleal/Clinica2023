@@ -29,14 +29,14 @@ public class CitasController : Controller
         var pacientes = _pacienteServices.GetAll();
         var citas = _citaServices.GetAll();
 
-        List<(string, Cita)> eventos = new List<(string, Cita)>();
+        //List<(string, Cita)> eventos = new List<(string, Cita)>();
 
-        foreach (var cita in citas)
-        {
-            eventos.Add((cita.Titulo, cita));
-        }
+        //foreach (var cita in citas)
+        //{
+        //    eventos.Add((cita.Titulo, cita));
+        //}
 
-        return View(new CitasViewModel { Pacientes = pacientes, Citas = citas, Eventos = eventos });
+        return View(new CitasViewModel { Pacientes = pacientes, Citas = citas});
     }
 
     [HttpPost]
@@ -113,6 +113,6 @@ public class CitasController : Controller
             eventos.Add((pacienteInfo.Nombre + " " + pacienteInfo.Apellido, cita));
         }
 
-        return PartialView("_calendar", new CitasViewModel { Pacientes = pacientes, Citas = citas, Eventos = eventos, Paciente = paciente });
+        return PartialView("_calendar", new CitasViewModel { Pacientes = pacientes, Citas = citas, Paciente = paciente });
     }
 }

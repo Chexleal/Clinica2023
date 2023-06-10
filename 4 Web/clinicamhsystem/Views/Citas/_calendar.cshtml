@@ -1,4 +1,7 @@
-﻿@model clinicaWeb.Models.CitasViewModel;
+﻿@using ClinicaDomain;
+@using Microsoft.Extensions.Caching.Memory;
+@using Newtonsoft.Json;
+@model clinicaWeb.Models.CitasViewModel;
 
 @section Links{
     <link rel="stylesheet" href="~/css/pages/calendario.css" asp-append-version="true" />
@@ -123,11 +126,12 @@
             <div class="modal-body">
                     <form id="cita-form" method="POST" >
                         <input hidden name="destiny" id="Destiny" />
+                        
                     <div class="form-group">
                         @if (Model.Paciente == null)
                         {
                             <label class="control-label">Paciente</label>
-                            <select name="IdPaciente" class="form-control select2" id="selectPaciente">
+                            <select required name="IdPaciente" class="form-control select2" id="selectPaciente">
                                 @foreach (var paciente in Model.Pacientes)
                                 {
                                     <option value="@paciente.IdPaciente">@paciente.Nombre @paciente.Apellido - @paciente.Dpi</option>
@@ -143,7 +147,7 @@
                         <div class="col col-sm col-md col-lg col-xl col-xxl">
                             <div class="form-group mb-3">
                                 <label for="Fecha" class="form-label">Fecha</label>
-                                <input type="date" name="Fecha" id="Fecha" class="form-control" />
+                                <input required type="date" name="Fecha" id="Fecha" class="form-control" />
                             </div>
                         </div>
                         <div class="col col-sm col-md col-lg col-xl col-xxl">

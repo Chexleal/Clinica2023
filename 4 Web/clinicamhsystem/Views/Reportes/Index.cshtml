@@ -30,19 +30,19 @@
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="control-label">Del</label>
-                                    <input class="form-control" type="date" name="from_dt" id="from" />
+                                <input required class="form-control" type="date" name="from_dt" id="from" />
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="control-label">Al</label>
-                                    <input class="form-control" type="date" name="to_dt" id="to" />
+                                <input required class="form-control" type="date" name="to_dt" id="to" />
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label class="control-label">Paciente</label>
-                                    <select name="IdPaciente" id="idPaciente" class="form-control select2">
+                                <select required name="IdPaciente" id="idPaciente" class="form-control select2">
                                         <option></option>
                                     @foreach (var paciente in Model.Pacientes)
                                     {
@@ -66,13 +66,13 @@
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label class="control-label">Del</label>
-                                <input class="form-control" type="date" name="from_dt" id="from" />
+                                <input required class="form-control" type="date" name="from_dt" id="from" />
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label class="control-label">Al</label>
-                                <input class="form-control" type="date" name="to_dt" id="to" />
+                                <input required class="form-control" type="date" name="to_dt" id="to" />
                             </div>
                         </div>
                         @*<div class="col-md-3">

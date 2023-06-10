@@ -28,9 +28,9 @@
             <b class="saludo nav-link dropdown-toggle" data-bs-toggle="dropdown">
                 Hola <label id="nombreUsuario"></label>
             </b>
-            <ul class="menu-cuenta dropdown-menu">
-                <li><a href="#" class="conf-option dropdown-item">Cambiar Contraseña</a></li>
-                <li><a href="#" class="conf-option dropdown-item">Cerrar Sesión</a></li>
+            <ul class="menu-cuenta dropdown-menu dropdown-menu-end">
+                <li><button onclick="ShowChangePWModal('')" onclick="changePW" class="conf-option dropdown-item">Cambiar Contraseña</button></li>
+                <li><button onclick="logout" class="conf-option dropdown-item">Cerrar Sesión</button></li>
             </ul>
             <hr>
             <div class="botones btn-group-vertical  mt-2">
@@ -74,11 +74,6 @@
     <script src="~/js/es.global.js"></script>
     <script src="~/js/select2.min.js"></script>
     <script src="https://kit.fontawesome.com/eb80a36c7c.js" crossorigin="anonymous"></script>
-@*    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.7/index.global.min.js'></script>
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar/web-component@6.1.7/index.global.min.js'></script>
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar/core@6.1.7/index.global.min.js'></script>
-*@
 
 
     <script src="~/js/site.js" asp-append-version="true"></script>

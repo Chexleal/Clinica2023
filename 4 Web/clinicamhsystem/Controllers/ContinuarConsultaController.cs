@@ -65,7 +65,7 @@ public class ContinuarConsulta : Controller
         consultaDb.Radiografias = consulta.Radiografias;
         consultaDb.Temperatura = consulta.Temperatura;
         consultaDb.Terminada = consulta.Terminada;
-        consultaDb.TiempoDuracion = duracion;
+        consultaDb.TiempoDuracion = duracion.ToString();
 
         _consultaServices.UpdateConsulta(consultaDb);
         if (consulta.Terminada) return RedirectToAction("Index", "Consultas");

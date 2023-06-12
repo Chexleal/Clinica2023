@@ -95,7 +95,8 @@ public partial class ClinicaContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("temperatura");
             entity.Property(e => e.Terminada).HasColumnName("terminada");
-            entity.Property(e => e.TiempoDuracion).HasColumnName("tiempo_duracion");
+            entity.Property(e => e.TiempoDuracion).HasMaxLength(25)
+                .IsUnicode(false).HasColumnName("tiempo_duracion");
             entity.Property(e => e.Total)
                 .HasColumnType("decimal(15, 2)")
                 .HasColumnName("total");

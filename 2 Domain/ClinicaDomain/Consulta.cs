@@ -13,7 +13,7 @@ public partial class Consulta
 
     public string Peso { get; set; }
 
-    public TimeSpan TiempoDuracion { get; set; }
+    public string TiempoDuracion { get; set; }
 
     public bool Radiografias { get; set; }
 
@@ -49,5 +49,6 @@ public partial class Consulta
         Diagnostico ??= string.Empty;
         Observaciones ??= string.Empty;
         HistoriaClinica ??= string.Empty;
+        TiempoDuracion ??= string.Empty;
     }
 }

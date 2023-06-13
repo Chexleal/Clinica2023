@@ -33,8 +33,7 @@ public class CitasController : Controller
 
         foreach (var cita in citas)
         {
-            var pacienteInfo = pacientes.FirstOrDefault(x=>x.IdPaciente==cita.IdPaciente);
-            eventos.Add((pacienteInfo.Nombre + " " + pacienteInfo.Apellido, cita));
+            eventos.Add((cita.Titulo, cita));
         }
 
         return View(new CitasViewModel { Pacientes = pacientes, Citas = citas, Eventos = eventos });

@@ -41,8 +41,8 @@
                         <tr>
                             <td><a class="option" href="@Url.Action("Index","ContinuarConsulta",new{consultaId=item.IdConsulta})">Continuar</a></td>
                             <td>@item.Fecha</td>
-                            <td>@item.PacienteInformacion.Nombre</td>
-                            <td>@item.PacienteInformacion.Apellido</td>
+                            <td>@item.PacienteInformacion?.Nombre</td>
+                            <td>@item.PacienteInformacion?.Apellido</td>
                             <td>@item.MotivoConsulta</td>
                             <td>
                                     <form asp-action="Eliminar" asp-route-id="@item.IdConsulta">

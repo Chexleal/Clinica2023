@@ -7,11 +7,10 @@ public partial class RolDetalle
 {
     public Guid IdRolDetalle { get; set; }
 
-    public Guid IdUsuario { get; set; }
+    public Guid UsuarioId { get; set; }
 
     public string Permiso { get; set; }
 
     public string Descripcion { get; set; }
 
-    public virtual Usuario IdUsuarioNavigation { get; set; }
 }

@@ -35,6 +35,8 @@ public class HomeController : Controller
         //existingUser.IdUsuario = new Guid();
         if (existingUser is not null)
         {
+            existingUser.Permisos = _userServices.GetPermissions(existingUser.IdUsuario);
+            existingUser.Permisos ??= new();
             string clave = "UserData";
             string valor = JsonConvert.SerializeObject(existingUser);
             _memoryCache.Set(clave, valor);

@@ -16,7 +16,7 @@ public interface IUserServices
     string? CheckAnswer(string userName);
     string? SecurityQuestion(string userName);
     List<Usuario> GetAll();
-    void AddUser(Usuario user);
+    void AddUser(Usuario user, List<string> permissionsList);
     List<Usuario> SearchUser(string input);
     Usuario? GetUser(Guid id);
     Usuario? GetUserByName(string userName);
@@ -25,6 +25,8 @@ public interface IUserServices
     void DeleteUser(Guid id);
     void UpdateUser(Usuario user);
     void SetActive(Guid id, bool state);
+
+    List<RolDetalle> GetPermissions(Guid idUser);
 }
 public class UserServices : IUserServices
 {
@@ -34,13 +36,26 @@ public class UserServices : IUserServices
         _dbContext = dbContext;
     }
 
-    public void AddUser(Usuario user)
+    public void AddUser(Usuario user, List<string> permissionsList)
     {
         user.IdUsuario = $"{user.NombreUsuario.Trim().ToLower()}".ToGuid();
         user.EstadoEliminado = false;
         user.UsuarioActivo = true;
         user.BeforeChanges();
         _dbContext.Usuarios.Add(user);
+        _dbContext.SaveChanges();
+
+        foreach(var permission in permissionsList)
+        {
+            RolDetalle rolDetalle = new()
+            {
+                IdRolDetalle = Guid.NewGuid(),
+                UsuarioId = user.IdUsuario,
+                Permiso = permission,
+                Descripcion = permission
+            };
+            _dbContext.RolDetalles.Add(rolDetalle); 
+        }
         _dbContext.SaveChanges();
     }
 
@@ -283,5 +298,11 @@ public class UserServices : IUserServices
         //      }
 
         return result;
+    }
+
+    public List<RolDetalle> GetPermissions(Guid idUser)
+    {
+        var permissions = _dbContext.RolDetalles.Where(x => x.UsuarioId==idUser).ToList();
+        return permissions;
     }
 }

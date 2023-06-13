@@ -8,7 +8,8 @@ namespace clinicaWeb.Models
         public List<Cita> Citas { get; set; }
         public Paciente? Paciente { get; set; }
 
-        public List<(string, Cita)> Eventos = new List<(string, Cita)>();
+        public Usuario? Usuario { get; set; }
+        //public List<(string, Cita)> Eventos = new List<(string, Cita)>();
 
         //string[,] arreglo_enteros = new string[3, 3];
         //public List<>

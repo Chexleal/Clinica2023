@@ -40,8 +40,9 @@
                             <td>@item.Descripcion</td>
                             <td>
                                 <div class="options d-flex ">
-                                    <form id="eliminarForm" onsubmit="alertElminarPrevents(event)" asp-action="Eliminar" asp-route-id="@item.IdMotivoCobro">
-                                        <button class="option" type="submit">Eliminar</button>
+                                    <form id="eliminarForm" onsubmit="alertElminarPrevents(event)" asp-action="Eliminar">
+                                        <button class="option" type="button" onclick="alertElminarPrevents('@item.IdMotivoCobro')">Eliminar</button>
+                                        <input hidden id="idServicio" name="idServicio" value="@item.IdMotivoCobro" />
                                     </form>
                                                                     
                                 </div>
@@ -67,13 +68,13 @@
                     <div class="row">
                         <div class="form-group">
                             <label class="control-label">Tipo de servicio</label>
-                            <input name="Descripcion" id="Descripcion" class="form-control" />
+                            <input required name="Descripcion" id="Descripcion" class="form-control" />
                         </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                 <button type="submit" class="btn btn-primary" form="crear">Agregar</button>
             </div>
 
@@ -85,9 +86,7 @@
 @section Scripts{
     <script>
 
-        function alertElminarPrevents(e) {
-            e.preventDefault();
-
+        function alertElminarPrevents(id) {
             Swal.fire({
                 title: '¿Esta seguro de eliminar este servicio?',
                 icon: 'question',
@@ -97,13 +96,25 @@
             }).then((resultado) => {
 
                 if (resultado.isConfirmed) {
-                    successWithTimer('eliminarForm');
+                    $.ajax({
+                        url: '/Servicios/Eliminar',
+                        type: 'POST',
+                        data: {id : id},
+                        success: function (result) {
+                            successWithTimer()
+                        },
+                        error: function (error) {
+                            alert("no");
+                            console.log(error);
+                        }
+                    });
+                    //successWithTimer('eliminarForm');
                 }
 
             })
         }
 
-        function successWithTimer(formName) {
+        function successWithTimer() {
             Swal.fire({
                 icon: 'success',
                 title: 'Cambios guardados',
@@ -111,11 +122,9 @@
                 timer: 1500
             }).then((result) => {
                 if (result.dismiss === Swal.DismissReason.timer) {
-                    const formulario = document.getElementById(formName);
-                    formulario.submit();
                 }
             })
         }
     </script>
-    <script src="~/js/pages/consultas.js" asp-append-version="true"></script>
+    <script src="~/js/pages/servicios.js" asp-append-version="true"></script>
 }

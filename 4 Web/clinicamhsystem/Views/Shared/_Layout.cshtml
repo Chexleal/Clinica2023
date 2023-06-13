@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.css" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css" rel="stylesheet" />
     @await RenderSectionAsync("Links", required: false)
-
+    <script src="https://kit.fontawesome.com/184a85cc88.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -25,9 +25,13 @@
                 <img src="~/img/Logo.png" alt="Logo" style="width:80%" class="">
             </div>
             <hr class="mt-4">
-            <b>
+            <b class="saludo nav-link dropdown-toggle" data-bs-toggle="dropdown">
                 Hola <label id="nombreUsuario"></label>
             </b>
+            <ul class="menu-cuenta dropdown-menu dropdown-menu-end">
+                <li><button data-bs-toggle="modal" data-bs-target="#changePWModal" class="conf-option dropdown-item">Cambiar Contraseña</button></li>
+                <li><button onclick="logout()" class="conf-option dropdown-item">Cerrar Sesión</button></li>
+            </ul>
             <hr>
             <div class="botones btn-group-vertical  mt-2">
                 <a class="menu_bt @((ViewContext.RouteData.Values["controller"].ToString() == "Pacientes") ? "active" : "")" href="/Pacientes"> <i class="fa-solid fa-user-injured fa-xl menu_icon"></i> Pacientes</a>
@@ -37,8 +41,6 @@
                 <a class="menu_bt @((ViewContext.RouteData.Values["controller"].ToString() == "Reportes") ? "active" : "")" href="/Reportes"><i class="fa-regular fa-file-lines fa-xl menu_icon"></i>Reportes</a>
                 <a class="menu_bt @((ViewContext.RouteData.Values["controller"].ToString() == "Servicios") ? "active" : "")" href="/Servicios"><i class="fa-solid fa-hand-holding-medical fa-xl menu_icon"></i>Servicios</a>
                 <a class="menu_bt @((ViewContext.RouteData.Values["controller"].ToString() == "Usuarios") ? "active" : "")" href="/Usuarios"><i class="fa-solid fa-users fa-xl menu_icon"></i>Usuarios</a>
-                <a class="menu_bt @((ViewContext.RouteData.Values["controller"].ToString() == "Configuración") ? "active" : "")" href="/Config"><i class="fa-solid fa-gears fa-xl menu_icon"></i>Configuración</a>
-                <a class="menu_bt logout " href="/"><i class="fa-solid fa-right-from-bracket fa-xl menu_icon"></i>Cerrar Sesión</a>
             </div>
         </nav>
         <script>
@@ -69,12 +71,7 @@
     <script src="~/js/index.global.min.js"></script>
     <script src="~/js/es.global.js"></script>
     <script src="~/js/select2.min.js"></script>
-    <script src="https://kit.fontawesome.com/eb80a36c7c.js" crossorigin="anonymous"></script>
-@*    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.7/index.global.min.js'></script>
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar/web-component@6.1.7/index.global.min.js'></script>
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar/core@6.1.7/index.global.min.js'></script>
-*@
+
 
 
     <script src="~/js/site.js" asp-append-version="true"></script>
@@ -85,3 +82,35 @@
 
 </body>
 </html>
+
+
+
+<!-- Modal Cambiar Constraseña-->
+<div class="modal fade" id="changePWModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Cambiar Contraseña</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <form id="changePWForm" asp-action="ChangePassWord" asp-controller="Home" method="post">
+                        <div class="row">
+                            <div class="form-group">
+                                <label class="control-label">Contraseña</label>
+                                <input required name="Password" id="Password" class="form-control" />
+                            </div>
+                            <br>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary" form="changePWForm">Guardar</button>
+            </div>
+
+        </div>
+    </div>
+</div>

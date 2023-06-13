@@ -84,7 +84,6 @@ public class ServiciosController : Controller
 
     // POST: ServiciosControler/Delete/5
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public ActionResult Eliminar(Guid id)
     {
         try
@@ -92,22 +91,6 @@ public class ServiciosController : Controller
             _services.DeleteServicio(id);
         }
         catch { }
-        var servicios = _services.GetAll();
         return RedirectToAction("Index");
-    }
-
-    // POST: ServiciosController/Delete/5
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public ActionResult Delete(int id, IFormCollection collection)
-    {
-        try
-        {
-            return RedirectToAction(nameof(Index));
-        }
-        catch
-        {
-            return View();
-        }
     }
 }

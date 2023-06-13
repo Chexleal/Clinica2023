@@ -1,6 +1,7 @@
 ﻿using ClinicaDomain;
 using clinicamhsystem.Models;
 using ClinicaServices;
+using clinicaWeb.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -13,7 +14,7 @@ namespace clinicamhsystem.Controllers;
 public class HomeController : Controller
 {
     private readonly IUserServices _userServices;
-    private readonly IMemoryCache _memoryCache; 
+    private readonly IMemoryCache _memoryCache;
 
     public HomeController(IUserServices userServices, IMemoryCache memoryCache)
     {
@@ -29,7 +30,7 @@ public class HomeController : Controller
 
     public IActionResult LogInAsync(string password, string user)
     {
-        bool usuarioEntra;
+
         var existingUser = _userServices.Authenticate(user, password);
         //Usuario existingUser = new() { Nombre = "Dev", Apellido = "Test"};
         //existingUser.IdUsuario = new Guid();
@@ -52,7 +53,6 @@ public class HomeController : Controller
 
     public IActionResult UsuarioExistente(string userName)
     {
-
         var existingUser = _userServices.CheckUserExist(userName);
         if (existingUser)
         {
@@ -131,9 +131,55 @@ public class HomeController : Controller
         return View("RecoverAccountEmail");
     }
 
-    public IActionResult Privacy()
+    [HttpGet]
+    public IActionResult ChangePassWord()
     {
-        return View();
+        return PartialView("_ChangePassword");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public ActionResult ChangePassWord(String Password)
+    {
+        try
+        {
+            if (_memoryCache.TryGetValue("UserData", out string jsonUserData))
+            {
+                Usuario userData = JsonConvert.DeserializeObject<Usuario>(jsonUserData);
+
+                _userServices.ChangePassword(userData.IdUsuario, Password);
+                var users = _userServices.GetAll();
+            }
+            return RedirectToAction("Index");
+        }
+        catch
+        {
+            return View("Error");
+        }
+    }
+
+    [HttpPost]
+    public ActionResult CerrarSesion()
+    {
+        try
+        {
+            string clave = "UserData";
+            string valor = null;
+            _memoryCache.Set(clave, valor);
+            TempData["UsuarioNombre"] = null;
+            TempData["IdUsuario"] = null;
+            return RedirectToAction("Index");
+        }
+        catch
+        {
+            return View("Error");
+        }
+    }
+
+    public ActionResult Editar(Guid id)
+    {
+        var user = _userServices.GetUser(id);
+        return View("Editar", user);
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

@@ -1,105 +1,102 @@
-﻿@model ClinicaDomain.Usuario
-
+﻿@model clinicaWeb.Models.UsuariosViewModel;
 @{
     ViewData["Title"] = "Editar";
 }
 
-<h1>Editar</h1>
-
-<h4>Usuario</h4>
-<hr />
 <div class="row">
-    <form id="editUserForm" asp-action="Editar" method="post">
-        <input hidden name="IdUsuario" value="@Model.IdUsuario" />
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <div class="form-group">
-            <label asp-for="NombreUsuario" class="control-label">Usuario</label>
-            <input asp-for="NombreUsuario" class="form-control" />
-            <span asp-validation-for="NombreUsuario" class="text-danger"></span>
-        </div>
-        <div class="form-group">
-            <label asp-for="PreguntaSeg" class="control-label">Pregunta de seguridad</label>
-            <input asp-for="PreguntaSeg" class="form-control" />
-            <span asp-validation-for="PreguntaSeg" class="text-danger"></span>
-        </div>
-        <div class="form-group">
-            <label asp-for="RespuestaSeg" class="control-label">Respuesta de seguridad</label>
-            <input asp-for="RespuestaSeg" class="form-control" />
-            <span asp-validation-for="RespuestaSeg" class="text-danger"></span>
-        </div>
-        <div class="form-group">
-            <label asp-for="Dpi" class="control-label"></label>
-            <input asp-for="Dpi" class="form-control" />
-            <span asp-validation-for="Dpi" class="text-danger"></span>
-        </div>
-        <div class="form-group">
-            <label asp-for="Nombre" class="control-label"></label>
-            <input asp-for="Nombre" class="form-control" />
-            <span asp-validation-for="Nombre" class="text-danger"></span>
-        </div>
-        <div class="form-group">
-            <label asp-for="Apellido" class="control-label"></label>
-            <input asp-for="Apellido" class="form-control" />
-            <span asp-validation-for="Apellido" class="text-danger"></span>
-        </div>
-        <div class="form-group">
-            <label asp-for="FechaNacimiento" class="control-label">Fecha de nacimiento</label>
-            <input asp-for="FechaNacimiento" type="date" class="form-control" />
-            <span asp-validation-for="FechaNacimiento" class="text-danger"></span>
-        </div>
-        <div class="form-group">
-            <label asp-for="Telefono" class="control-label"></label>
-            <input asp-for="Telefono" class="form-control" />
-            <span asp-validation-for="Telefono" class="text-danger"></span>
-        </div>
-        <div class="form-group">
-            <label asp-for="Correo" class="control-label"></label>
-            <input asp-for="Correo" class="form-control" />
-            <span asp-validation-for="Correo" class="text-danger"></span>
-        </div>
-        <div class="form-group form-check">
-            <label class="form-check-label">
-                <input class="form-check-input" asp-for="UsuarioActivo" /> Activo
-            </label>
-        </div>
-        <div class="form-group">
-            <label asp-for="EstadoCivil" class="control-label">Estado Civil</label>
-            <input asp-for="EstadoCivil" class="form-control" />
-            <span asp-validation-for="EstadoCivil" class="text-danger"></span>
-        </div>
-        <div class="form-group">
-            <label asp-for="Profesion" class="control-label"></label>
-            <input asp-for="Profesion" class="form-control" />
-            <span asp-validation-for="Profesion" class="text-danger"></span>
-        </div>
-        <div class="form-group">
-            <label asp-for="Nacionalidad" class="control-label">Nacionalidad</label>
-            <input asp-for="Nacionalidad" class="form-control" />
-            <span asp-validation-for="Nacionalidad" class="text-danger"></span>
-        </div>
-        <div class="form-group">
-            <label asp-for="Antecedentes" class="control-label">Antecedentes</label>
-            <input asp-for="Antecedentes" class="form-control" />
-            <span asp-validation-for="Antecedentes" class="text-danger"></span>
-        </div>
-        <div class="form-group">
-            <label asp-for="TipoSange" class="control-label">Tipo de sangre</label>
-            <input asp-for="TipoSange" class="form-control" />
-            <span asp-validation-for="TipoSange" class="text-danger"></span>
-        </div>
-        <div class="form-group">
-            <label asp-for="Password" class="control-label">Contraseña</label>
-            <input asp-for="Password" class="form-control" />
-            <span asp-validation-for="Password" class="text-danger"></span>
-        </div>
-        <div class="form-group">
-            <input type="submit" onclick="guardadoAlert(event)" value="Guardar" class="btn btn-primary" />
+    <form id="editUserForm" action="@Url.Action("Editar")" method="post">
+        <input hidden name="IdUsuario" value="@Model.Usuario.IdUsuario" />
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="NombreUsuario" class="control-label">Usuario</label>
+                    <input name="NombreUsuario" class="form-control" value="@Model.Usuario.NombreUsuario" />
+                </div>
+                <div class="form-group">
+                    <label for="PreguntaSeg" class="control-label">Pregunta de seguridad</label>
+                    <input name="PreguntaSeg" class="form-control"  value="@Model.Usuario.PreguntaSeg" />
+                </div>
+                <div class="form-group">
+                    <label for="RespuestaSeg" class="control-label">Respuesta de seguridad</label>
+                    <input name="RespuestaSeg" class="form-control" value="@Model.Usuario.RespuestaSeg"  />
+                </div>
+                <div class="form-group">
+                    <label for="Dpi" class="control-label">DPI</label>
+                    <input name="Dpi" class="form-control" value="@Model.Usuario.Dpi"  />
+                </div>
+                <div class="form-group">
+                    <label for="Nombre" class="control-label">Nombre</label>
+                    <input name="Nombre" class="form-control"  value="@Model.Usuario.Nombre" />
+                </div>
+                <div class="form-group">
+                    <label for="Apellido" class="control-label">Apellido</label>
+                    <input name="Apellido" class="form-control"  value="@Model.Usuario.Apellido" />
+                </div>
+                <div class="form-group">
+                    <label for="FechaNacimiento" class="control-label">Fecha de nacimiento</label>
+                    <input name="FechaNacimiento" type="date" class="form-control"  value="@Model.Usuario.FechaNacimiento" />
+                </div>
+                <div class="form-group">
+                    <label for="Telefono" class="control-label">Teléfono</label>
+                    <input name="Telefono" class="form-control" value="@Model.Usuario.Telefono" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="Correo" class="control-label">Correo</label>
+                    <input name="Correo" class="form-control"  value="@Model.Usuario.Correo" />
+
+                </div>
+                <div class="form-group">
+                    <label for="EstadoCivil" class="control-label">Estado Civil</label>
+                    <input name="EstadoCivil" class="form-control"  value="@Model.Usuario.EstadoCivil" />
+                </div>
+                <div class="form-group">
+                    <label for="Profesion" class="control-label">Profesión</label>
+                    <input name="Profesion" class="form-control"  value="@Model.Usuario.Profesion" />
+                </div>
+                <div class="form-group">
+                    <label for="Nacionalidad" class="control-label">Nacionalidad</label>
+                    <input name="Nacionalidad" class="form-control" value="@Model.Usuario.Nacionalidad"  />
+                </div>
+                <div class="form-group">
+                    <label for="Antecedentes" class="control-label">Antecedentes</label>
+                    <input name="Antecedentes" class="form-control"  value="@Model.Usuario.Antecedentes" />
+                </div>
+                <div class="form-group">
+                    <label for="TipoSange" class="control-label">Tipo de sangre</label>
+                    <input name="TipoSange" class="form-control"  value="@Model.Usuario.TipoSange" />
+                </div>
+                <div class="form-group">
+                    <label for="Password" class="control-label">Contraseña</label>
+                    <input name="Password" class="form-control" value="@Model.Usuario.Password"  />
+                </div>
+                <div class="form-group">
+                    <div class="form-group">
+                        <label class="control-label">Permisos</label>
+                        <select class="form-select select2" multiple id="permissionsListEdit" name="permissionsListEdit">
+                            @foreach (var item in Model.Permisos)
+                            {
+                                if (Model.Usuario.Permisos.Exists(x => x.Descripcion == item))
+                                {
+                                    <option selected value="@item">@item</option>
+                                }
+                                else
+                                {
+                                    <option value="@item">@item</option>
+                                }
+
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <div class="form-group">
+                <input type="submit" onclick="guardadoAlert(event)" value="Guardar" class="btn btn-primary" />
+            </div>
         </div>
     </form>
-</div>
-
-<div>
-    <a asp-action="Index">Regresar</a>
 </div>
 
 @section Scripts{
@@ -162,6 +159,6 @@
             })
         }
     </script>
-    <script src="~/js/pages/consultas.js" asp-append-version="true"></script>
+    <script src="~/js/pages/usuarios.js" asp-append-version="true"></script>
 }
 

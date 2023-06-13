@@ -32,7 +32,7 @@ namespace ClinicaServices
 
         public List<MotivoCobro>? GetAll()
         {
-            return _dbContext.MotivoCobros.ToList();
+            return _dbContext.MotivoCobros.Where(x => !x.EstadoEliminado).ToList();
         }
 
         public void AddServicio(MotivoCobro servicio)
@@ -43,6 +43,7 @@ namespace ClinicaServices
             //var servicioExistente = _dbContext.MotivoCobros.FirstOrDefault(x=>x.Descripcion.Trim().ToLower().Replace(" ", "") == "");
 
                 servicio.IdMotivoCobro = Guid.NewGuid();
+                servicio.EstadoEliminado = false;
                 servicio.BeforeSaveChanges();
                 _dbContext.MotivoCobros.Add(servicio);
                 _dbContext.SaveChanges();
@@ -54,7 +55,7 @@ namespace ClinicaServices
             var servicio = GetServicio(id);
             if (servicio is not null)
             {
-                _dbContext.MotivoCobros.Remove(servicio);
+                servicio.EstadoEliminado = true;
                 _dbContext.SaveChanges();
             }
         }

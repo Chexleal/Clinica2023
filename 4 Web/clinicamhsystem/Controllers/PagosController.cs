@@ -29,25 +29,11 @@ public class PagosController : Controller
         var consultas = _consultaServices.GetAllNotPaid();
         foreach(var consulta in consultas)
             consulta.PacienteInformacion ??= _pacientesServices.GetPacienteById(consulta.IdPaciente);
-        var detalles = _detallesServices.GetAll();
+        //var detalles = _detallesServices.GetAll();
         var servicios = _serviciosServices.GetAll();
         return View(new PagarConsultaViewModel { Consultas = consultas, Servicios = servicios });
     }
 
-    //public ActionResult Modal()
-    //{
-    //    var consultas = _consultaServices.GetAll();
-    //    var detalles = _detallesServices.GetAll();
-    //    var servicios = _serviciosServices.GetAll();
-    //    return View(new PagarConsultaViewModel { Consultas = consultas, Servicios = servicios });
-    //}
-
-    /*[HttpGet]
-    public IActionResult GetConsulta(Guid consultaId)
-    {
-        var consulta = _consultaServices.GetConsulta(consultaId);
-        return PartialView("Editar", consulta);
-    }*/
 
     [HttpPost]
     public IActionResult Detalles(Guid idconsulta)

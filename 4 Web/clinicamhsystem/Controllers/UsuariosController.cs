@@ -1,5 +1,6 @@
 ﻿using ClinicaDomain;
 using ClinicaServices;
+using clinicaWeb.Models;
 using clinicaWeb.Security;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,6 +9,18 @@ namespace clinicaWeb.Controllers;
 public class UsuariosController : Controller
 {
     private readonly IUserServices _userServices;
+    private static List<string> permisos = new()
+    {
+        "SuperAdmin",
+        "Usuarios",
+        "Citas",
+        "Consultas",
+        "ContinuarConsulta",
+        "Pacientes",
+        "Pagos",
+        "Reportes",
+        "Servicios"
+    };
 
     public UsuariosController(IUserServices userServices)
     {
@@ -18,29 +31,7 @@ public class UsuariosController : Controller
     public ActionResult Index()
     {
         var users = _userServices.GetAll();
-        return View(users);
-    }
-
-    //GET: Usuarios/Search?input=t
-    public ActionResult Search(string input)
-    {
-        if (String.IsNullOrEmpty(input))
-        {
-            var users = _userServices.GetAll();
-            return RedirectToAction("Index", users);
-        }
-        else
-        {
-            var idResult = _userServices.SearchUser(input);
-            return RedirectToAction("Search", idResult);
-        }
-    }
-
-    // GET: UsuariosController/Detalles/fj33-4ra4r
-    public ActionResult Detalles(Guid id)
-    {
-        var user = _userServices.GetUser(id);
-        return View("Detalles", user);
+        return View(new UsuariosViewModel { Usuarios= users,Permisos=permisos } );
     }
 
     // GET: UsuariosController/Create
@@ -65,21 +56,13 @@ public class UsuariosController : Controller
         return RedirectToAction("Index");
     }
 
-    // GET: UsuariosController/Editar/fj33-4ra4r
-    public ActionResult Editar(Guid id)
-    {
-        var user = _userServices.GetUser(id);
-        return View("Editar", user);
-    }
-
     // POST: UsuariosController/Editar/fj33-4ra4r
     [HttpPost]
-    [ValidateAntiForgeryToken]
-    public ActionResult Editar(Usuario usuario)
+    public ActionResult Editar(Usuario usuario, List<string> permissionsListEdit)
     {
         try
         {
-            _userServices.UpdateUser(usuario);
+            _userServices.UpdateUser(usuario, permissionsListEdit);
             var users = _userServices.GetAll();
             return RedirectToAction("Index", users);
         }
@@ -115,5 +98,13 @@ public class UsuariosController : Controller
         catch { }
         var users = _userServices.GetAll();
         return RedirectToAction("Index", users);
+    }
+
+    [HttpGet]
+    public IActionResult GetUsuario(Guid usuarioId)
+    {
+        var usuario = _userServices.GetUser(usuarioId);
+        usuario.Permisos = _userServices.GetPermissions(usuario.IdUsuario);
+        return PartialView("Editar", new UsuariosViewModel { Usuario = usuario, Permisos = permisos }  );
     }
 }

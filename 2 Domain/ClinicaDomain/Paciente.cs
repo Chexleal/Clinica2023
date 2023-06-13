@@ -41,9 +41,9 @@ public partial class Paciente
 
     public bool EstadoEliminado { get; set; }
 
-    public string NoRegistro { get; set; } 
+    public int NoRegistro { get; set; }
 
-  //  public ICollection<Cita> Cita { get; set; } = new List<Cita>();
+    //  public ICollection<Cita> Cita { get; set; } = new List<Cita>();
 
     public ICollection<Consulta> Consulta { get; set; } = new List<Consulta>();
 
@@ -62,7 +62,6 @@ public partial class Paciente
         Remitido ??= string.Empty;
         Antecedentes ??= string.Empty;
         TipoSange ??= string.Empty;
-        NoRegistro ??= string.Empty;
         Telefono??=string.Empty;
     }
 }

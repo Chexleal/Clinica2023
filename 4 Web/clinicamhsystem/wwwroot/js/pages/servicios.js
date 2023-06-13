@@ -1,23 +1,17 @@
-﻿// Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
-
-// Write your JavaScript code.
-
 $(document).ready(function () {
     CreateTable();
-    $('#idPaciente').select2({
-        dropdownParent: $('#createModal'),
-    });
 });
 
 function CreateTable() {
     $('#table').DataTable({
+
+        "responsive": true,
         "ordering": true,
         "lengthChange": true,
         dom: 'Bfrtip',
         "pageLength": 20,
         "language": {
-            searchPlaceholder: 'Buscar consulta',
+            searchPlaceholder: 'Buscar servicio',
             sSearch: '',
             lengthMenu: 'MENU items/page',
             paginate: {
@@ -45,10 +39,10 @@ function CreateTable() {
                 text: '<i class="fas fa-clone"></i><strong>Copiar</strong>',
                 messageTop: '',
                 className: "btn btn-outline-dark",
-                title: "Consultas",
-                filename: "Consultas",
+                title: "Pacientes",
+                filename: "Pacientes",
                 exportOptions: {
-                    columns: [1, 2, 3, 4],
+                    columns: [0, 1],
                     page: 'all'
                 },
                 orientation: "landscape",
@@ -59,10 +53,10 @@ function CreateTable() {
                 text: '<i class="fas fa-file-excel"></i><strong>Excel </strong>',
                 messageTop: '',
                 className: "btn btn-outline-dark",
-                title: "Consultas",
-                filename: "Consultas",
+                title: "Servicios",
+                filename: "Servicios",
                 exportOptions: {
-                    columns: [1, 2, 3, 4],
+                    columns: [0, 1],
                     modifier: {
                         page: 'all',
                         search: 'none'
@@ -70,17 +64,18 @@ function CreateTable() {
                 },
                 orientation: "landscape",
                 pageSize: "LEGAL"
-            }],
-        columnDefs: [
-            {
-                targets: [4], // Índice de la columna que deseas truncar
-                render: function (data, type, row) {
-                    if (type === 'display' && data.length > 30) {
-                        return '<span title="' + data + '">' + data.substr(0, 30) + '...</span>';
-                    }
-                    return data;
-                }
-            }
-        ]
+            }, {
+                extend: 'pdf',
+                text: '<i class="fas fa-file-excel"></i><strong>PDf </strong>',
+                messageTop: '',
+                className: "btn btn-outline-dark",
+                title: "Servicios",
+                filename: "Servicios",
+                exportOptions: {
+                    columns: [0, 1],
+                },
+                orientation: "landscape",
+                pageSize: "LEGAL"
+            }]
     });
 }

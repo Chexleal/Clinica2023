@@ -4,6 +4,9 @@
     ViewData["Title"] = "Pagos";
 }
 
+@section Links{
+    <link rel="stylesheet" href="~/css/pages/Consultas.css" asp-append-version="true" />
+}
 
 <div class="card w-100 shadow-lg mt-5">
     <div class="card-header bg-ligth">
@@ -14,34 +17,34 @@
             <table id="table" class="table table-striped ">
                 <thead class="table-dark">
                     <tr>
+                        <th>Acciones</th>
                         <th>Fecha</th>
                         <th>Nombre</th>
                         <th>Apellido</th>
                         <th>Motivo de consulta</th>
                         <th>Diagnostico</th>
-                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var item in Model.Consultas)
                     {
                         <tr>
-                            <td>@item.Fecha.ToString("d")</td>
-                            <td>@item.PacienteInformacion.Nombre</td>
-                            <td>@item.PacienteInformacion.Apellido</td>
-                            <td>@item.MotivoConsulta</td>
-                            <td>@item.Diagnostico</td>
                             <td>
                                 <div class="options d-flex ">
                                     @*<a class="option" href="@Url.Action("Detalles","Pagos",new{consultaId=item.IdConsulta})">Pagar</a>*@
                                     @*<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#pagarConsultaModal" data-idconsulta="@item.IdConsulta">Pagar</button>*@
                                     @*<button class="btn-detalles" data-id="@item.IdConsulta">Pagar</button>*@
                                     @*<button class="btn" onclick="ShowDetallesModal('@item.IdConsulta')">Pagar</button>*@
-                                   @* <button class="option" onclick="ShowDetallesModal('@item.IdConsulta')">Pagar</button>*@
+                                    @* <button class="option" onclick="ShowDetallesModal('@item.IdConsulta')">Pagar</button>*@
                                     <button class="btn-detalles option btn btn-outline-info" data-id="@item.IdConsulta">Pagar</button>
                                     <a class="option btn btn-outline-info ms-2" href="@Url.Action("DescargarPdf","ContinuarConsulta",new{consultaId=item.IdConsulta})" target="_blank">Imprimir Receta</a>
                                 </div>
                             </td>
+                            <td>@item.Fecha.ToString("d")</td>
+                            <td>@item.PacienteInformacion.Nombre</td>
+                            <td>@item.PacienteInformacion.Apellido</td>
+                            <td>@item.MotivoConsulta</td>
+                            <td>@item.Diagnostico</td>          
                         </tr>
                     }
                 </tbody>
@@ -68,6 +71,5 @@
 
 @section Scripts{
     <script src="~/js/pages/pagos.js" asp-append-version="true"></script>
-    <script src="~/js/pages/consultas.js" asp-append-version="true"></script>
 
 }

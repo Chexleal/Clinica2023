@@ -5,6 +5,9 @@
 
 $(document).ready(function () {
     CreateTable();
+    $('#permissionsList').select2({
+        dropdownParent: $('#createModal'),
+    });
 });
 
 function CreateTable() {
@@ -46,7 +49,7 @@ function CreateTable() {
                 title: "Usuarios",
                 filename: "Usuarios",
                 exportOptions: {
-                    columns: [0,1,2,3,4,5,6,7],
+                    columns: [0,1,2,3,4],
                     page: 'all'
                 },
                 orientation: "landscape",
@@ -60,7 +63,7 @@ function CreateTable() {
                 title: "Usuarios",
                 filename: "Usuarios",
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5, 6, 7],
+                    columns: [0, 1, 2, 3, 4],
                     modifier: {
                         page: 'all',
                         search: 'none'
@@ -69,5 +72,22 @@ function CreateTable() {
                 orientation: "landscape",
                 pageSize: "LEGAL"
             }]
+    });
+}
+
+function ShowEditModal(id) {
+    $('#modalEdit').modal('show');
+    $.ajax({
+        url: '/Usuarios/GetUsuario',
+        data: { usuarioId: id },
+        async: true,
+        type: "GET",
+        atType: 'html',
+        success: function (res) {
+            $('#modalEditBody').html(res);
+            $('#permissionsListEdit').select2({
+                dropdownParent: $('#modalEdit'),
+            });
+        }
     });
 }

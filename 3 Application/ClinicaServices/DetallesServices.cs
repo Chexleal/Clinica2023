@@ -52,9 +52,10 @@ namespace ClinicaServices
         {
             detalle.IdDetalleCobro = Guid.NewGuid();
             detalle.Subtotal = detalle.Cantidad * detalle.Valor;
+            detalle.NombreServicio = _dbContext.MotivoCobros.FirstOrDefault(x => x.IdMotivoCobro == detalle.IdMotivoCobro).Descripcion;
             Consulta consulta = _dbContext.Consulta.FirstOrDefault(p => p.IdConsulta == detalle.IdConsulta);
             consulta.Total += detalle.Subtotal;
-
+            
             //var consulta = _dbContext.Consulta.FirstOrDefault(x => x.IdConsulta == detalle.IdConsulta);
             _dbContext.DetalleCobros.Add(detalle);
             _dbContext.SaveChanges();

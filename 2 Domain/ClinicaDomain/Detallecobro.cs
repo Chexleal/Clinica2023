@@ -19,7 +19,9 @@ public partial class DetalleCobro
 
     public int Cantidad { get; set; }
 
+    public string NombreServicio { get; set; }
+
     //public virtual Consulta IdConsultaNavigation { get; set; }
 
-    public virtual MotivoCobro IdMotivoCobroNavigation { get; set; }
+    //public virtual MotivoCobro IdMotivoCobroNavigation { get; set; }
 }

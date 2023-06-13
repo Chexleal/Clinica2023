@@ -51,8 +51,8 @@ public class PacientesController: Controller
         }
         catch
         {
-            //LO QUE SEA QUE VAYAMOS A HACER ACA 
-       
+            return View("Error");
+
         }
         return RedirectToAction("Index");
     }
@@ -82,14 +82,15 @@ public class PacientesController: Controller
 
     // POST: UsuariosController/Eliminar/5
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public ActionResult Eliminar(Guid id)
     {
         try
         {
             _pacienteServices.DeletePaciente(id);
         }
-        catch { }
+        catch {
+            return View("Error");
+        }
         var pacientes = _pacienteServices.GetAll();
         return RedirectToAction("Index", pacientes);
     }

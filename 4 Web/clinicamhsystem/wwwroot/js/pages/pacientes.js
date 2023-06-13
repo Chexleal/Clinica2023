@@ -47,7 +47,7 @@ function CreateTable() {
                 title: "Pacientes",
                 filename: "Pacientes",
                 exportOptions: {
-                    columns: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                    columns: [1, 2, 3, 4, 5, 6, 7],
                     page: 'all'
                 },
                 orientation: "landscape",
@@ -61,7 +61,7 @@ function CreateTable() {
                 title: "Pacientes",
                 filename: "Pacientes",
                 exportOptions: {
-                    columns: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                    columns: [1, 2, 3, 4, 5, 6, 7],
                     modifier: {
                         page: 'all',
                         search: 'none'
@@ -77,7 +77,7 @@ function CreateTable() {
                 title: "Pacientes",
                 filename: "Pacientes",
                 exportOptions: {
-                    columns: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                    columns: [1, 2, 3, 4, 5, 6, 7],
                 },
                 orientation: "landscape",
                 pageSize: "LEGAL"

@@ -152,7 +152,7 @@
 
                             <div class="form-group">
                                 <label class="control-label">Permisos</label>
-                                <select multiple class="form-control select2" id="permissionsList" name="permissionsList">
+                                <select multiple required class="form-control select2" id="permissionsList" name="permissionsList">
                                     @foreach (var item in Model.Permisos)
                                     {
                                         <option value="@item">@item</option>

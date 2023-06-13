@@ -52,16 +52,16 @@ namespace clinicaWeb.Security
 
         public static bool ContainFuncionality(List<RolDetalle> functionalities, string funcionalityName)
         {
-            return true;
-            //if (functionalities.Exists(x=>x.Permiso=="SuperAdmin"))
-            //    return true;
-            //if (string.IsNullOrEmpty(funcionalityName))
-            //    return false;
+            //return true;
+            if (functionalities.Exists(x => x.Permiso == "SuperAdmin"))
+                return true;
+            if (string.IsNullOrEmpty(funcionalityName))
+                return false;
 
-            //if (functionalities.Exists(x => x.Permiso == funcionalityName))
-            //    return true;
+            if (functionalities.Exists(x => x.Permiso == funcionalityName))
+                return true;
 
-            //return false;
+            return false;
         }
     }
 }

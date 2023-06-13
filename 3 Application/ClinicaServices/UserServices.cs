@@ -5,6 +5,7 @@ using System.Net;
 using PaaS.Framework.Utils.Extensions;
 using ServiceStack;
 using ServiceStack.Html;
+using Microsoft.EntityFrameworkCore;
 
 namespace ClinicaServices;
 
@@ -227,9 +228,7 @@ public class UserServices : IUserServices
             userDB.TipoSange = user.TipoSange;
 
             userDB.BeforeChanges();
-            _dbContext.SaveChanges();
-
-            var permisionsOld = _dbContext.RolDetalles.Where(x => x.UsuarioId == userDB.IdUsuario);
+            var permisionsOld =  _dbContext.RolDetalles.Where(x => x.UsuarioId == userDB.IdUsuario).ToList();
             _dbContext.RolDetalles.RemoveRange(permisionsOld);
             foreach (var permission in permissionsListEdit)
             {

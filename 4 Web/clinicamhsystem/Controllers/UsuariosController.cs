@@ -78,16 +78,8 @@ public class UsuariosController : Controller
         return RedirectToAction("Index");
     }
 
-    // GET: UsuariosController/Editar/fj33-4ra4r
-    public ActionResult Editar(Guid id)
-    {
-        var user = _userServices.GetUser(id);
-        return View("Editar", user);
-    }
-
     // POST: UsuariosController/Editar/fj33-4ra4r
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public ActionResult Editar(Usuario usuario, List<string> permissionsListEdit)
     {
         try
@@ -134,6 +126,7 @@ public class UsuariosController : Controller
     public IActionResult GetUsuario(Guid usuarioId)
     {
         var usuario = _userServices.GetUser(usuarioId);
+        usuario.Permisos = _userServices.GetPermissions(usuario.IdUsuario);
         return PartialView("Editar", new UsuariosViewModel { Usuario = usuario, Permisos = permisos }  );
     }
 }

@@ -40,7 +40,11 @@
                             <div class="col col-sm col-md col-lg col-xl col-xxl">
                                 <div class="form-group">
                                     <label class="control-label">Género</label>
-                                    <input name="Genero" class="form-control" />
+                                <select required name="Genero" id="Genero" class="form-select select2">
+                                    <option value=""></option>
+                                    <option value="Femenino">Femenino</option>
+                                    <option value="Masculino">Masculino</option>
+                                </select>
                                 </div>
                             </div>
                             <div class="col col-sm col-md col-lg col-xl col-xxl">
@@ -109,12 +113,6 @@
                             </div>
                         </div>
                     <div class="row mt-2">
-                        <div class="col col-sm col-md col-lg col-xl col-xxl">
-                            <div class="form-group">
-                                <label class="control-label">No. Registro</label>
-                                <input name="NoRegistro" class="form-control" />
-                            </div>
-                        </div>
                         <div class="col col-sm col-md col-lg col-xl col-xxl">
                         </div>
                     </div>

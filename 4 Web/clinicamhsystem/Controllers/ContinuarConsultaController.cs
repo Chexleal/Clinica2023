@@ -54,7 +54,7 @@ public class ContinuarConsulta : Controller
     {
         var consultaDb = _consultaServices.GetConsulta(consulta.IdConsulta);
 
-        TimeSpan duracion = DateTime.Now.Subtract(consultaDb.Fecha);
+        String duracion = DateTime.Now.Subtract(consultaDb.Fecha).Minutes.ToString();
 
         consultaDb.Diagnostico = consulta.Diagnostico;
         consultaDb.HistoriaClinica = consulta.HistoriaClinica;

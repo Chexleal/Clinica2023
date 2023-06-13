@@ -34,28 +34,6 @@ public class UsuariosController : Controller
         return View(new UsuariosViewModel { Usuarios= users,Permisos=permisos } );
     }
 
-    //GET: Usuarios/Search?input=t
-    public ActionResult Search(string input)
-    {
-        if (String.IsNullOrEmpty(input))
-        {
-            var users = _userServices.GetAll();
-            return RedirectToAction("Index", users);
-        }
-        else
-        {
-            var idResult = _userServices.SearchUser(input);
-            return RedirectToAction("Search", idResult);
-        }
-    }
-
-    // GET: UsuariosController/Detalles/fj33-4ra4r
-    public ActionResult Detalles(Guid id)
-    {
-        var user = _userServices.GetUser(id);
-        return View("Detalles", user);
-    }
-
     // GET: UsuariosController/Create
     public ActionResult Create()
     {

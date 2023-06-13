@@ -82,6 +82,7 @@ public class UserServices : IUserServices
         string fromAddress = "traumah_recovery@outlook.com";
         string fromPassword = "thrtohajbvykrmvy";
         string toAddress = userEmail;
+        string domain = "clinicamh.azurewebsites.net"; //localhost:7070
         string subject = "Password reset for your account";
         string body = "<html>" +
                  "<body>" +
@@ -89,14 +90,14 @@ public class UserServices : IUserServices
                  "<p>Estimado usuario,</p>" +
                  "<p>Hemos recibido una solicitud para restablecer la contraseña de su cuenta.</p>" +
                  "<p>Para continuar con el proceso de restablecimiento de contraseña, haga clic en el siguiente enlace:</p>" +
-                 $"<a href=\"https://localhost:7070/Home/CheckAnswer?answer={respuestaSeg}&hiddenUsername={userName}\">Cambiar Contraseña</a>" +
+                 $"<a href=\"https://{domain}/Home/CheckAnswer?answer={respuestaSeg}&hiddenUsername={userName}\">Cambiar Contraseña</a>" +
                  "<p>Si no ha solicitado el restablecimiento de contraseña, puede ignorar este correo electrónico.</p>" +
                  "<p>Atentamente,</p>" +
                  "<p>El equipo de Traumah</p>" +
                  "</body>" +
                "</html>";
 
-
+        //clinicamh.azurewebsites.net
         // Configuración del cliente SMTP
         var smtpClient = new SmtpClient("smtp-mail.outlook.com")
         {

@@ -15,7 +15,7 @@
 <body>
     <div class="container vh-100 d-flex justify-content-center align-items-center">
         <div class="mb-md-1 mt-md-1">
-            <h4 id="tittle" class="text-center">Introduce tu email @username</h4>
+            <h4 id="tittle" class="text-center">Introduce tu email</h4>
             <div class="mx-auto my-auto">
                 <form action="@Url.Action("CheckEmails")" class="form text-center">
                     <h1>Ingresar el email registrado</h1>
@@ -26,5 +26,12 @@
                     <button type="submit">Aceptar</button>
                 </form>
             </div> </div> </div>
+    
+    <div id="sweetAlertContainer"></div>
+    <div id="errorMessage" style="display:none;">@TempData["Error"]</div>
+    <div id="successMessage" style="display:none;">@TempData["Success"]</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <script src="~/js/pages/login.js"></script>
 </body>
 </html>

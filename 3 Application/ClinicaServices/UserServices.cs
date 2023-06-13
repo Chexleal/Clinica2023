@@ -6,6 +6,7 @@ using PaaS.Framework.Utils.Extensions;
 using ServiceStack;
 using ServiceStack.Html;
 using Microsoft.EntityFrameworkCore;
+using static System.Net.WebRequestMethods;
 
 namespace ClinicaServices;
 
@@ -21,7 +22,7 @@ public interface IUserServices
     Usuario? GetUser(Guid id);
     Usuario? GetUserByName(string userName);
     bool CheckEmails(string email, string emailConfirmed, string username);
-    bool CheckNewPassword(string newPassword, string newPasswordConfirmed, string userName);
+    bool CheckNewPassword(string newPassword, string newPasswordConfirmed, Guid idUsuario);
     void DeleteUser(Guid id);
     void UpdateUser(Usuario user, List<string> permissionsListEdit);
     void SetActive(Guid id, bool state);
@@ -75,21 +76,25 @@ public class UserServices : IUserServices
         //return _dbContext.Usuarios.ToList();
     }
 
-    public bool RecoverAccount(string userEmail, string userName)
+    public bool RecoverAccount(string userEmail, string userName,string respuestaSeg)
     {
         string secPass = "pwqyxudymqccltdr";
-        // Send an email to the user with instructions to reset their password
         string fromAddress = "traumah_recovery@outlook.com";
         string fromPassword = "thrtohajbvykrmvy";
         string toAddress = userEmail;
         string subject = "Password reset for your account";
         string body = "<html>" +
-                         "<body>" +
-                         "<h1>Hello world!</h1>" +
-                         "<p>This is an HTML email.</p>" +
-                         $"<a href=\"https://localhost:7070/Home/NuevaClave/?userName={userName}\">link text</a>" +
-                         "</body>" +
-                       "</html>";
+                 "<body>" +
+                 "<h1>Cambio de contraseña</h1>" +
+                 "<p>Estimado usuario,</p>" +
+                 "<p>Hemos recibido una solicitud para restablecer la contraseña de su cuenta.</p>" +
+                 "<p>Para continuar con el proceso de restablecimiento de contraseña, haga clic en el siguiente enlace:</p>" +
+                 $"<a href=\"https://localhost:7070/Home/CheckAnswer?answer={respuestaSeg}&hiddenUsername={userName}\">Cambiar Contraseña</a>" +
+                 "<p>Si no ha solicitado el restablecimiento de contraseña, puede ignorar este correo electrónico.</p>" +
+                 "<p>Atentamente,</p>" +
+                 "<p>El equipo de Traumah</p>" +
+                 "</body>" +
+               "</html>";
 
 
         // Configuración del cliente SMTP
@@ -126,8 +131,6 @@ public class UserServices : IUserServices
 
     public bool CheckUserExist(string userName)
     {
-        // Check if the email is registered in the database
-        // Return true if it exists, false otherwise
         var userItem = _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == userName);
         if (userItem == null) return false;
         return true;
@@ -159,13 +162,14 @@ public class UserServices : IUserServices
     {
         var emailOnData = _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == username && x.Correo == email);
         var userName = _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == emailOnData.NombreUsuario);
+        var answer = userName.RespuestaSeg.ToString();
 
         if (emailOnData != null)
         {
             bool checkedEmail = email.Equals(emailConfirmed);
             if (checkedEmail)
             {
-                RecoverAccount(email, userName.NombreUsuario.ToString());
+                RecoverAccount(email, userName.NombreUsuario.ToString(), answer);
                 return true;
             }
             else { return false; }
@@ -185,12 +189,14 @@ public class UserServices : IUserServices
 
     }
 
-    public bool CheckNewPassword(string newPassword, string newPasswordConfirmed, string userName)
+    public bool CheckNewPassword(string newPassword, string newPasswordConfirmed, Guid idUsuario)
     {
         bool checkedPassword = newPassword.Equals(newPasswordConfirmed);
-        var user = _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == userName);
+        var user = _dbContext.Usuarios.FirstOrDefault(x => x.IdUsuario == idUsuario);
+        
         if (checkedPassword && user != null)
         {
+            ChangePassword(user.IdUsuario, newPassword);
             return true;
         }
         else { return false; }
@@ -198,7 +204,6 @@ public class UserServices : IUserServices
 
     public Usuario? GetUser(Guid id)
     {
-        //return _dbContext.Usuarios.Find(id);
         return _dbContext.Usuarios.FirstOrDefault(p => p.IdUsuario == id);
     }
 

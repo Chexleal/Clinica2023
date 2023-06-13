@@ -18,3 +18,15 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    var sucessMessage = document.getElementById("successMessage").innerText;
+    if (sucessMessage) {
+        Swal.fire({
+            title: "Exito",
+            text: sucessMessage,
+            icon: "Sucess",
+            confirmButtonText: "Aceptar"
+        });
+    }
+});

@@ -56,19 +56,23 @@ public class HomeController : Controller
         var existingUser = _userServices.CheckUserExist(userName);
         if (existingUser)
         {
+            var userSecureQuestion = ViewData["securityQuestion"];
+            var userEmail = ViewData["userEmail"];
+
             Usuario? userInfo = _userServices.GetUserByName(userName);
             ViewData["username"] = userInfo.NombreUsuario.ToString();
-            ViewData["securityQuestion"] = userInfo.PreguntaSeg.ToString(); // usa el servicio para recuperar la pregunta de seguridad del usuario, y se la asigna a un ViewData
-            ViewData["userEmail"] = userInfo.Correo.ToString();
+            userSecureQuestion = userInfo.PreguntaSeg.ToString(); // usa el servicio para recuperar la pregunta de seguridad del usuario, y se la asigna a un ViewData
+            userEmail= userInfo.Correo.ToString();
 
             string[] emailSplited = userInfo.Correo.ToString().Split('@');
             string beforeArroba = emailSplited[0];
             var emailCensored = string.Concat(Enumerable.Repeat("*", 3)) + beforeArroba.Substring(3);
             var userEmailCesored = emailCensored.ToString() + "@" + emailSplited[1].ToString();
 
-            ViewData["emailCensored"] = userEmailCesored.ToString();
+            //List<object> userInformation = new List<object> { userName, userSecureQuestion, userEmail };
+            object[] userInformation = { userName, userSecureQuestion, userEmailCesored };
 
-            return View("RecoverAccount", userName); //retorna la vista para recuperar cuenta       
+            return View("RecoverAccount", userInformation); //retorna la vista para recuperar cuenta       
             //return RedirectToAction("RecoverAccount", new { userName });
         }
         else
@@ -83,12 +87,19 @@ public class HomeController : Controller
     {
         string? preguntaSegCheck = _userServices.CheckAnswer(answer);
         if (preguntaSegCheck != null)
-            // return RedirectToAction("NuevaClave", new { hiddenUsername }); // Si la respuesta es correcta
-            // return Content($"alert('Respuesta correcta');", "application/javascript");
+        {
+            TempData["Success"] = "Respuesta Correcta";
             return View("NewPassword", hiddenUsername);
-        else
+        }else
+        {
             TempData["Error"] = "Respuesta Incorrecta";
-            return View("RecoverAccount", hiddenUsername);
+            Usuario? userInfo = _userServices.GetUserByName(hiddenUsername);  
+            var userSecureQuestion = userInfo.PreguntaSeg.ToString(); // usa el servicio para recuperar la pregunta de seguridad del usuario, y se la asigna a un ViewData
+            var userEmail = userInfo.Correo.ToString();
+            object[] userInformation = { hiddenUsername, userSecureQuestion, userEmail };
+            return View("RecoverAccount", userInformation);
+        }
+            
     }
 
     public IActionResult CheckEmails(string email, string emailConfirmed, string hiddenUsername)
@@ -96,9 +107,15 @@ public class HomeController : Controller
 
         bool emailCheck = _userServices.CheckEmails(email, emailConfirmed, hiddenUsername);
         if (emailCheck)
-            return Content($"alert('Email Correcto del compa {hiddenUsername} correo enviado ');", "application/javascript"); // Si la respuesta es correcta
+        {
+            TempData["Success"] = "Correo enviado";
+            return View("Index");
+        }
         else
-            return Content("alert('Email Incorrecto');", "application/javascript"); // Si la respuesta es incorrecta
+        {
+            TempData["Error"] = "Email Incorrecto";
+            return View("Index");
+        }
 
     }
 
@@ -114,15 +131,21 @@ public class HomeController : Controller
         return View("NewPassword", userName);
     }
 
-    public IActionResult CrearNuevaClave(string newPassword, string newPasswordConfirmed)
+    public IActionResult CrearNuevaClave(string newPassword, string newPasswordConfirmed, string usModel)
     {
-        ViewData["userName"] = Request.Query["userName"];
-        string? userName = ViewData["userName"].ToString();
-        bool checkPassword = _userServices.CheckNewPassword(newPassword, newPasswordConfirmed, userName);
-        if (checkPassword)
-            return Content("alert('Contrase;a igual y existe usuario');", "application/javascript"); // Si la respuesta es correcta
+        string hiddenUsername = Request.Query["hiddenUsername"];
+        Usuario? userInfo = _userServices.GetUserByName(usModel);
+        bool checkPassword = _userServices.CheckNewPassword(newPassword, newPasswordConfirmed, userInfo.IdUsuario);
+        if (checkPassword == true)
+        {
+            TempData["Success"] = "Has cambiado tu contraseña";
+            return View("Index");
+        }
         else
-            return Content($"alert('contrase;a distinta' usuario: {userName.ToString()});", "application/javascript"); // Si la respuesta es incorrecta
+        {
+            TempData["Error"] = "Las contraseñas no coinciden";
+            return View("NewPassword", usModel);
+        }
     }
 
     public IActionResult RecuperarCuentaEmail(string userName)

@@ -1,10 +1,11 @@
-﻿@model string
+﻿@model object[]
 
 @{
     Layout = null; 
-    var securityQuestion = ViewData["securityQuestion"]; 
-    var emailCensored = ViewData["emailCensored"];
-    var userName = @Model.ToString();
+    var userName = @Model[0].ToString();
+    var securityQuestion = @Model[1].ToString(); 
+    var emailCensored = @Model[2].ToString();
+   
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -15,11 +16,11 @@
 </head>
 <body>
     <div class="container vh-100 d-flex justify-content-center align-items-center"> 
-        <div class="mb-md-1 mt-md-1"> 
-            <h4 id="tittle" class="text-center">Pregunta de seguridad @userName</h4> 
+        <div class="mb-md-1 mt-md-1">    
+            <h4 id="tittle" class="text-center">Pregunta de seguridad</h4>
             <div class="mx-auto my-auto"> 
                 <form action="@Url.Action("CheckAnswer")" class="form text-center"> 
-                    <h1>@securityQuestion</h1>
+                    <h1 id="tittle" class="text-center" style="font-size: 80%">@securityQuestion</h1>
                     <input type="text" id="answer" class="mb-3" placeholder="Respuesta" name="answer" /> 
                     <input type="hidden" name="hiddenUsername" value="@userName" />
                     <a class="forgot" href="@Url.Action("RecuperarCuentaEmail" , new {userName})" class="mb-4">Recuperar via email: @emailCensored</a>
@@ -30,6 +31,7 @@
     </div>
 
     <div id="sweetAlertContainer"></div>
+    <div id="successMessage" style="display:none;">@TempData["Success"]</div>
     <div id="errorMessage" style="display:none;">@TempData["Error"]</div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>

@@ -326,6 +326,10 @@ hr {
     /* Estilos */
 }
 
+.dataTables_filter input {
+    width: 300%;
+}
+
 .dataTables_wrapper .dataTables_filter input {
     border: none;
     border-bottom: 2px solid #999;
@@ -352,6 +356,13 @@ hr {
 }
 
 .active {
+    background-color: #0077c0;
+    color: white;
+}
+
+
+/*estandares de botones*/
+.btn-primary {
     background-color: #0077c0;
     color: white;
 }

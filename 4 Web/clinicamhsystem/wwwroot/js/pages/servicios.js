@@ -56,7 +56,7 @@ function CreateTable() {
                 title: "Servicios",
                 filename: "Servicios",
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5, 6, 7],
+                    columns: [0, 1],
                     modifier: {
                         page: 'all',
                         search: 'none'
@@ -72,7 +72,7 @@ function CreateTable() {
                 title: "Servicios",
                 filename: "Servicios",
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5, 6, 7],
+                    columns: [0, 1],
                 },
                 orientation: "landscape",
                 pageSize: "LEGAL"

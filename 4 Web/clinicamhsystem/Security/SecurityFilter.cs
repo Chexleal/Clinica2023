@@ -37,6 +37,7 @@ namespace clinicaWeb.Security
             catch (Exception e)
             {
                 throw new UnauthorizedAccessException();
+
             }
         }
         

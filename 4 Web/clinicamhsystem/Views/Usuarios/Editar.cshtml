@@ -1,5 +1,4 @@
-﻿@using clinicaWeb.Models;
-@model UsuariosViewModel;
+﻿@model clinicaWeb.Models.UsuariosViewModel;
 @{
     ViewData["Title"] = "Editar";
 }
@@ -26,11 +25,11 @@
                     <input name="Dpi" class="form-control" value="@Model.Usuario.Dpi"  />
                 </div>
                 <div class="form-group">
-                    <label for="Nombre" class="control-label"></label>
+                    <label for="Nombre" class="control-label">Nombre</label>
                     <input name="Nombre" class="form-control"  value="@Model.Usuario.Nombre" />
                 </div>
                 <div class="form-group">
-                    <label for="Apellido" class="control-label"></label>
+                    <label for="Apellido" class="control-label">Apellido</label>
                     <input name="Apellido" class="form-control"  value="@Model.Usuario.Apellido" />
                 </div>
                 <div class="form-group">
@@ -44,7 +43,7 @@
             </div>
             <div class="col-md-6">
                 <div class="form-group">
-                    <label for="Correo" class="control-label"></label>
+                    <label for="Correo" class="control-label">Correo</label>
                     <input name="Correo" class="form-control"  value="@Model.Usuario.Correo" />
 
                 </div>
@@ -160,7 +159,6 @@
             })
         }
     </script>
-    <script src="~/js/pages/consultas.js" asp-append-version="true"></script>
+    <script src="~/js/pages/usuarios.js" asp-append-version="true"></script>
 }
 
-5

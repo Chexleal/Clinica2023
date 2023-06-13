@@ -43,6 +43,7 @@ public partial class Consulta
     public void BeforeSaveChanges()
     {
         Peso ??= string.Empty;
+        TiempoDuracion ??= string.Empty;
         PresionArterial ??= string.Empty;
         Temperatura ??= string.Empty;
         MotivoConsulta ??= string.Empty;

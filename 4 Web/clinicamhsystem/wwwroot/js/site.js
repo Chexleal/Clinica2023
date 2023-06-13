@@ -32,3 +32,16 @@ function OpenReceta(id) {
     window.open(urlReceta + id, '_blank');
     location.reload(true);
 }
+
+function logout() {
+        $.ajax({
+            url: '/Home/CerrarSesion',
+            data: {},
+            async: true,
+            type: "POST",
+            atType: 'html',
+            success: function (res) {
+                window.location.href = '/Home/Index';
+            }
+        });
+}

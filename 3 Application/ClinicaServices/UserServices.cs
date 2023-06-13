@@ -18,7 +18,6 @@ public interface IUserServices
     string? SecurityQuestion(string userName);
     List<Usuario> GetAll();
     void AddUser(Usuario user, List<string> permissionsList);
-    List<Usuario> SearchUser(string input);
     Usuario? GetUser(Guid id);
     Usuario? GetUserByName(string userName);
     bool CheckEmails(string email, string emailConfirmed, string username);
@@ -26,6 +25,7 @@ public interface IUserServices
     void DeleteUser(Guid id);
     void UpdateUser(Usuario user, List<string> permissionsListEdit);
     void SetActive(Guid id, bool state);
+    void ChangePassword(Guid id, string Password);
 
     List<RolDetalle> GetPermissions(Guid idUser);
 }
@@ -46,7 +46,7 @@ public class UserServices : IUserServices
         _dbContext.Usuarios.Add(user);
         _dbContext.SaveChanges();
 
-        foreach(var permission in permissionsList)
+        foreach (var permission in permissionsList)
         {
             RolDetalle rolDetalle = new()
             {
@@ -55,7 +55,7 @@ public class UserServices : IUserServices
                 Permiso = permission,
                 Descripcion = permission
             };
-            _dbContext.RolDetalles.Add(rolDetalle); 
+            _dbContext.RolDetalles.Add(rolDetalle);
         }
         _dbContext.SaveChanges();
     }
@@ -157,7 +157,7 @@ public class UserServices : IUserServices
 
     public bool CheckEmails(string email, string emailConfirmed, string username)
     {
-        var emailOnData = _dbContext.Usuarios.FirstOrDefault(x =>x.NombreUsuario == username && x.Correo == email);
+        var emailOnData = _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == username && x.Correo == email);
         var userName = _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == emailOnData.NombreUsuario);
 
         if (emailOnData != null)
@@ -211,7 +211,7 @@ public class UserServices : IUserServices
     {
         var userDB = GetUser(user.IdUsuario);
         if (userDB is not null)
-        {       
+        {
             userDB.NombreUsuario = user.NombreUsuario;
             userDB.PreguntaSeg = user.PreguntaSeg;
             userDB.RespuestaSeg = user.RespuestaSeg;
@@ -224,6 +224,7 @@ public class UserServices : IUserServices
             userDB.EstadoCivil = user.EstadoCivil;
             userDB.Profesion = user.Profesion;
             userDB.Nacionalidad = user.Nacionalidad;
+            userDB.Password = user.Password;
             userDB.Antecedentes = user.Antecedentes;
             userDB.TipoSange = user.TipoSange;
 
@@ -245,14 +246,14 @@ public class UserServices : IUserServices
         }
     }
 
-    public void SetActive(Guid id,bool state)
+    public void SetActive(Guid id, bool state)
     {
         var userDB = GetUser(id);
         if (userDB is not null)
         {
             userDB.UsuarioActivo = state;
         }
-            _dbContext.SaveChanges();
+        _dbContext.SaveChanges();
     }
 
     public void DeleteUser(Guid id)
@@ -265,58 +266,21 @@ public class UserServices : IUserServices
         }
     }
 
-    public List<Usuario> SearchUser(string input)
-    {
-
-        if (input.IsNullOrEmpty()) return null;
-        
-        //DE ESTA FORMA NO SE NECESITA IR POR TODOS LOS USUARIOS, SINO SE FILTRAN DIRECTOS EN DB, LO CUAL LO HACE MAS RÁPIDO
-        List<Usuario> result = _dbContext.Usuarios.Where(x => 
-        x.NombreUsuario.Contains(input) ||
-        x.NombreUsuario.Contains(input) ||
-        x.PreguntaSeg.Contains(input) ||
-        x.RespuestaSeg.Contains(input) ||
-        x.Dpi.Contains(input) ||
-        x.Nombre.Contains(input) ||
-        x.Apellido.Contains(input) ||
-        x.FechaNacimiento.ToString().Contains(input) ||
-        x.Telefono.ToString().Contains(input) ||
-        x.EstadoCivil.Contains(input) ||
-        x.Profesion.Contains(input) ||
-        x.Nacionalidad.Contains(input) ||
-        x.Antecedentes.Contains(input) ||
-        x.TipoSange.Contains(input) ||
-        x.Password.Contains(input)).ToList();
-
-        //      foreach (var user in _dbContext.Usuarios.ToList())
-        //{
-        //          if (user.NombreUsuario.Contains(input) ||
-        //              user.NombreUsuario.Contains(input) ||
-        //              user.PreguntaSeg.Contains(input) ||
-        //              user.RespuestaSeg.Contains(input) ||
-        //              user.Dpi.Contains(input) ||
-        //              user.Nombre.Contains(input) ||
-        //              user.Apellido.Contains(input) ||
-        //              user.FechaNacimiento.ToString().Contains(input) ||
-        //              user.Telefono.ToString().Contains(input) ||
-        //              user.EstadoCivil.Contains(input) ||
-        //              user.Profesion.Contains(input) ||
-        //              user.Nacionalidad.Contains(input) ||
-        //              user.Remitido.Contains(input) ||
-        //              user.Antecedentes.Contains(input) ||
-        //              user.TipoSange.Contains(input) ||
-        //              user.NoRegistro.ToString().Contains(input) ||
-        //              user.Password.Contains(input)
-        //              )
-        //              result.Add(GetUser(user.IdUsuario));
-        //      }
-
-        return result;
-    }
-
     public List<RolDetalle> GetPermissions(Guid idUser)
     {
-        var permissions = _dbContext.RolDetalles.Where(x => x.UsuarioId==idUser).ToList();
+        var permissions = _dbContext.RolDetalles.Where(x => x.UsuarioId == idUser).ToList();
         return permissions;
+    }
+
+    public void ChangePassword(Guid id, string Password)
+    {
+        var usuario = GetUser(id);
+
+        if (usuario is not null)
+        {
+            usuario.Password = Password;
+            usuario.BeforeChanges();
+            _dbContext.SaveChanges();
+        }
     }
 }

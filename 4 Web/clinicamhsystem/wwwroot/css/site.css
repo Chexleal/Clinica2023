@@ -364,5 +364,26 @@ hr {
 /*estandares de botones*/
 .btn-primary {
     background-color: #0077c0;
+    border:none;
     color: white;
 }
+
+    .btn-primary:hover {
+        background-color: #005F9A;
+        border: none;
+        color: white;
+    }
+
+.option {
+    background-color: transparent;
+    border: 0px;
+    color: black;
+    text-decoration: none;
+    padding: 5px;
+}
+
+    .option:hover {
+        background-color: #8bc2f2;
+        text-decoration: none;
+        color:black;
+    }

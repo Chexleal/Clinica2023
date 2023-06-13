@@ -21,7 +21,7 @@
     </div>
     <div class="card-body">
             <p>
-                <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#createModal">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
                     <i class="fa-solid fa-plus fa-bounce"></i>  Agregar Paciente
                 </button>
             </p>
@@ -70,11 +70,11 @@
                                         .ForEach(cp => cp.Consulta.PacienteInformacion = cp.PacienteInformacion);
 
                                     }
-                                    <button class="option btn btn-outline-info" onclick="ShowHistorialModal(@historiaJson)">Historial</button>
+                                    <button class="option btn" onclick="ShowHistorialModal(@historiaJson)">Historial</button>
 
-                                    <button class="option btn btn-outline-info" onclick="ShowEditModal('@item.IdPaciente')">Ver Datos</button>
+                                    <button class="option btn" onclick="ShowEditModal('@item.IdPaciente')">Ver Datos</button>
                                     <form id="eliminarForm" onsubmit="alertElminarPrevent(event)" asp-action="Eliminar" asp-route-id="@item.IdPaciente">
-                                        <button class="option btn btn-outline-info" type="submit">Eliminar</button>
+                                        <button class="option btn" type="submit">Eliminar</button>
                                     </form>
                                 </div>
                             </td>

@@ -74,7 +74,6 @@ public class UsuariosController : Controller
 
     // POST: UsuariosController/Eliminar/5
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public ActionResult Eliminar(Guid id)
     {
         try
@@ -88,7 +87,6 @@ public class UsuariosController : Controller
 
     // POST: UsuariosController/Active/5
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public ActionResult Activate(Guid id, bool state)
     {
         try

@@ -21,7 +21,7 @@
 
     <div class="card-body">
         <p>
-            <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#createModal">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
                 <i class="fa-solid fa-plus fa-bounce"></i> Agregar Servicio
             </button>         
         </p>
@@ -41,7 +41,7 @@
                             <td>
                                 <div class="options d-flex ">
                                     <form id="eliminarForm" onsubmit="alertElminarPrevents(event)" asp-action="Eliminar">
-                                        <button class="option" type="button" onclick="alertElminarPrevents('@item.IdMotivoCobro')">Eliminar</button>
+                                        <button class="option btn" type="button" onclick="alertElminarPrevents('@item.IdMotivoCobro')">Eliminar</button>
                                         <input hidden id="idServicio" name="idServicio" value="@item.IdMotivoCobro" />
                                     </form>
                                                                     
@@ -122,6 +122,7 @@
                 timer: 1500
             }).then((result) => {
                 if (result.dismiss === Swal.DismissReason.timer) {
+                    window.location.href = '/Servicios/Index';
                 }
             })
         }

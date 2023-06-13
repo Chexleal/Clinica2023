@@ -19,7 +19,7 @@
     <div class="card-body ">
         <p>
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
-                Agregar Usuario
+                <i class="fa-solid fa-plus fa-bounce"></i> Agregar Usuario
             </button>
         </p>
         <table id="tableUser" class="table">
@@ -47,40 +47,26 @@
                                 <button class="option btn btn-outline-info" onclick="ShowEditModal('@item.IdUsuario')">Ver Datos</button>
                                 @*<a class="option" href="@Url.Action("Editar","Usuarios",new{id=item.IdUsuario}) ">Editar</a>*@
                                 <form id="eliminarUserForm" asp-action="Eliminar" asp-route-id="@item.IdUsuario">
-                                    <button class="option btn btn-outline-info" type="submit" onclick="alertEliminarUsuario(event)">Eliminar</button>
+                                    <button class="option btn btn-outline-info" type="button" onclick="alertEliminarUsuario('@item.IdUsuario')">Eliminar</button>
                                 </form>
                                 @if (item.UsuarioActivo == true)
                                 {
-                                    <form id="desactivarUserForm" asp-action="Activate" asp-route-id="@item.IdUsuario">
+                                    <form id="desactivarUserForm" asp-action="Activate">
+                                        <input type="hidden" value="@item.IdUsuario" name="id" />
                                         <input type="hidden" value="false" name="state" />
-                                        <button class="option btn btn-outline-info" type="submit" onclick="alertDesactivarUsuario(event)">Desactivar</button>
+                                        <button class="option btn" type="button" onclick="alertDesactivarUsuario('@item.IdUsuario')">Desactivar</button>
                                     </form>
                                 }
                                 else
                                 {
-                                    <form id="activarUserForm"asp-action="Activate" asp-route-id="@item.IdUsuario">
+                                    <form id="activarUserForm" asp-action="Activate" asp-route-id="@item.IdUsuario">
                                         <input type="hidden" value="true" name="state" />
-                                        <button class="option btn btn-outline-info" type="submit" onclick="usuarioActivadoAlert(event)">Activar</button>
+                                        <input type="hidden" value="@item.IdUsuario" name="id" />
+                                        <button class="option btn" type="button" onclick="usuarioActivadoAlert('@item.IdUsuario')">Activar</button>
                                     </form>
                                 }
                             </div>
                         </td>
-                        @*<td>
-                    <button class="btn" type="button" id="rowMenu" data-bs-toggle="dropdown" aria-expanded="false">
-                    ...
-                    </button>
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <a class="dropdown-item" href="/Usuarios/Detalles/@item.IdUsuario">Ver</a>
-                    <a class="dropdown-item" href="/Usuarios/Editar/@item.IdUsuario">Editar</a>
-                    <form asp-action="Eliminar" asp-route-id="@item.IdUsuario">
-                    <button class="dropdown-item" type="submit">Eliminar</button>
-                    </form>
-                    <form asp-action="Desactivar" asp-route-id="@item.IdUsuario">
-                    <button class="dropdown-item" type="submit">Desactivar</button>
-                    </form>
-
-                    </div>
-                    </td>*@
                     </tr>
                 }
             </tbody>
@@ -100,81 +86,81 @@
             <div class="modal-body">
                 <form id="crear" asp-action="Create" method="POST">
                     <div class="row">
-                    <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="control-label">Usuario</label>
-                        <input required name="NombreUsuario" id="NombreUsuario" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Pregunta de Seguridad</label>
-                        <input name="PreguntaSeg" id="PreguntaSeg" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Respuesta de seguridad</label>
-                        <input name="RespuestaSeg" id="RespuestaSeg" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">DPI</label>
-                        <input name="Dpi" id="Dpi" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Nombre</label>
-                        <input required name="Nombre" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Apellido</label>
-                                <input required name="Apellido" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Fecha de nacimiento</label>
-                        <input name="FechaNacimiento" type="date" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Teléfono</label>
-                        <input name="Telefono" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Correo</label>
-                                <input name="Correo" type="email" class="form-control" />
-                    </div>
-                    </div>
                         <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="control-label">Estado civil</label>
-                        <input name="EstadoCivil" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Profesión</label>
-                        <input name="Profesion" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Nacionalidad</label>
-                        <input name="Nacionalidad" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Antecedentes</label>
-                        <input name="Antecedentes" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Tipo de sangre</label>
-                        <input name="TipoSange" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Contraseña</label>
-                        <input required name="Password" class="form-control" />
-                    </div>
+                            <div class="form-group">
+                                <label class="control-label">Usuario</label>
+                                <input required name="NombreUsuario" id="NombreUsuario" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Pregunta de Seguridad</label>
+                                <input name="PreguntaSeg" id="PreguntaSeg" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Respuesta de seguridad</label>
+                                <input name="RespuestaSeg" id="RespuestaSeg" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">DPI</label>
+                                <input name="Dpi" id="Dpi" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Nombre</label>
+                                <input required name="Nombre" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Apellido</label>
+                                <input required name="Apellido" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Fecha de nacimiento</label>
+                                <input name="FechaNacimiento" type="date" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Teléfono</label>
+                                <input name="Telefono" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Correo</label>
+                                <input name="Correo" type="email" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="control-label">Estado civil</label>
+                                <input name="EstadoCivil" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Profesión</label>
+                                <input name="Profesion" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Nacionalidad</label>
+                                <input name="Nacionalidad" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Antecedentes</label>
+                                <input name="Antecedentes" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Tipo de sangre</label>
+                                <input name="TipoSange" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Contraseña</label>
+                                <input required name="Password" class="form-control" />
+                            </div>
 
-                     <div class="form-group">
-                        <label class="control-label">Permisos</label>
+                            <div class="form-group">
+                                <label class="control-label">Permisos</label>
                                 <select multiple class="form-control select2" id="permissionsList" name="permissionsList">
-                           @foreach (var item in Model.Permisos)
-                           {
-                               <option value="@item">@item</option>
-                           }
-                        </select>
-                     </div>
-                     </div>
-                     </div>
+                                    @foreach (var item in Model.Permisos)
+                                    {
+                                        <option value="@item">@item</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -190,10 +176,9 @@
     <script src="~/js/pages/usuarios.js" asp-append-version="true"></script>
 
     <script>
-        function alertEliminarUsuario(e) {
-            e.preventDefault();
+        function alertEliminarUsuario(id) {
             Swal.fire({
-                title: '¿Esta seguro de eliminar a este usuario?',
+                title: '¿Está seguro de eliminar a este usuario?',
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Si',
@@ -201,14 +186,25 @@
             }).then((resultado) => {
 
                 if (resultado.isConfirmed) {
-                    successWithTimer('eliminarUserForm');
+                    $.ajax({
+                        url: '/Usuarios/Eliminar',
+                        type: 'POST',
+                        data: { id: id},
+                        success: function (result) {
+                            successWithTimer();
+                        },
+                        error: function (error) {
+                            failWithTimer();
+                            console.log(error);
+                        }
+                    });
                 }
 
             })
         }
 
-        function alertDesactivarUsuario(e) {
-            e.preventDefault();
+        function alertDesactivarUsuario(id) {
+            var state = false;
             Swal.fire({
                 title: '¿Esta seguro de desactivar a este usuario?',
                 icon: 'question',
@@ -218,28 +214,40 @@
             }).then((resultado) => {
 
                 if (resultado.isConfirmed) {
-                    successWithTimer('desactivarUserForm');
+                    $.ajax({
+                        url: '/Usuarios/Activate',
+                        type: 'POST',
+                        data: { id: id, state: state },
+                        success: function (result) {
+                            successWithTimer();
+                        },
+                        error: function (error) {
+                            failWithTimer();
+                            console.log(error);
+                        }
+                    });
                 }
 
             })
         }
 
-        function usuarioActivadoAlert(e) {
-            e.preventDefault();
-            Swal.fire({
-                icon: 'success',
-                title: 'Usuario activado',
-                showConfirmButton: false,
-                timer: 1500
-            }).then((result) => {
-                if (result.dismiss === Swal.DismissReason.timer) {
-                    const formulario = document.getElementById('activarUserForm');
-                    formulario.submit();
-                }
-            })
+        function usuarioActivadoAlert(id) {
+            var state = true;
+                $.ajax({
+                    url: '/Usuarios/Activate',
+                    type: 'POST',
+                    data: { id: id, state: state },
+                    success: function (result) {
+                        successWithTimer();
+                    },
+                    error: function (error) {
+                    failWithTimer();
+                        console.log(error);
+                    }
+                });
         }
 
-        function successWithTimer(formName) {
+        function successWithTimer() {
             Swal.fire({
                 icon: 'success',
                 title: 'Cambios guardados',
@@ -247,8 +255,19 @@
                 timer: 1500
             }).then((result) => {
                 if (result.dismiss === Swal.DismissReason.timer) {
-                    const formulario = document.getElementById(formName);
-                    formulario.submit();
+                    window.location.href = '/Usuarios/Index';
+                }
+            })
+        }
+
+        function failWithTimer() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Ocurrió un error',
+                showConfirmButton: false,
+                timer: 1500
+            }).then((result) => {
+                if (result.dismiss === Swal.DismissReason.timer) {
                 }
             })
         }

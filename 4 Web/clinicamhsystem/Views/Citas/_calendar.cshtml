@@ -29,10 +29,10 @@
         };
         eventos.push(evento);
     });
-   var calendar;
-    function Loadcalendar () {
-    //$('#modalCalendario').on('shown.bs.modal', function () {
-    //document.addEventListener('DOMContentLoaded', function () {
+    var calendar;
+    function Loadcalendar() {
+        //$('#modalCalendario').on('shown.bs.modal', function () {
+        //document.addEventListener('DOMContentLoaded', function () {
         var calendarEl = document.getElementById('calendar');
         calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
@@ -60,30 +60,55 @@
                 deleteButton.classList.add('delete-button');
 
                 deleteButton.addEventListener('click', function () {
-                    if (confirm('¿Estás seguro de eliminar este evento?')) {
+                    Swal.fire({
+                        title: '¿Esta seguro de eliminar a esta cita?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Si',
+                        cancelButtonText: 'No'
+                    }).then((resultado) => {
                         var eventId = info.event.id;
 
-                        $.ajax({
-                            url: '/Citas/Eliminar',
-                            type: 'POST',
-                            data: { id: eventId },
-                            success: function (result) {
-                                
-                            },
-                            error: function (error) {
-                                alert("no");
-                                console.log(error);
-                            }
-                        });
-                        if($("#Destiny").val()=="citas"){
-                        calendar.getEventById(eventId).remove();
-                        calendar.render();
-                        }else{
-                           
+                        if (resultado.isConfirmed) {
+
+                            $.ajax({
+                                url: '/Citas/Eliminar',
+                                type: 'POST',
+                                data: { id: eventId },
+                                success: function (result) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Cambios guardados',
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    }).then((result) => {
+                                        if (result.dismiss === Swal.DismissReason.timer) {
+                                        }
+                                    })
+                                },
+                                error: function (error) {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Ocurrió un error',
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    }).then((result) => {
+                                        if (result.dismiss === Swal.DismissReason.timer) {
+                                        }
+                                    })
+                                    console.log(error);
+                                }
+                            });
+                            if ($("#Destiny").val() == "citas") {
+                                calendar.getEventById(eventId).remove();
+                                calendar.render();
+                            } else {
+
                                 $('#modalCalendario').modal('toggle');
                                 $("#modalCalendario").find('.modal-body').html("");
+                            }
                         }
-                    }
+                    })
                 });
 
                 eventElement.appendChild(deleteButton);
@@ -110,8 +135,8 @@
 </script>
 
 <div class="container">
-<div id='calendar'>
-</div>
+    <div id='calendar'>
+    </div>
 </div>
 
 
@@ -124,9 +149,9 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
-                    <form id="cita-form" method="POST" >
-                        <input hidden name="destiny" id="Destiny" />
-                        
+                <form id="cita-form" method="POST">
+                    <input hidden name="destiny" id="Destiny" />
+
                     <div class="form-group">
                         @if (Model.Paciente == null)
                         {
@@ -137,11 +162,12 @@
                                     <option value="@paciente.IdPaciente">@paciente.Nombre @paciente.Apellido - @paciente.Dpi</option>
                                 }
                             </select>
-                        } else
+                        }
+                        else
                         {
                             <label class="control-label">Paciente: @Model.Paciente.Nombre @Model.Paciente.Apellido</label>
-                            <input hidden name="IdPaciente" class="form-control" value="@Model.Paciente.IdPaciente"/>
-                        }               
+                            <input hidden name="IdPaciente" class="form-control" value="@Model.Paciente.IdPaciente" />
+                        }
                     </div>
                     <div class="row mt-2">
                         <div class="col col-sm col-md col-lg col-xl col-xxl">

@@ -21,7 +21,7 @@
     </div>
     <div class="card-body">
             <p>
-                <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#createModal">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
                     <i class="fa-solid fa-plus fa-bounce"></i>  Agregar Paciente
                 </button>
             </p>
@@ -70,11 +70,11 @@
                                         .ForEach(cp => cp.Consulta.PacienteInformacion = cp.PacienteInformacion);
 
                                     }
-                                    <button class="option btn btn-outline-info" onclick="ShowHistorialModal(@historiaJson)">Historial</button>
+                                    <button class="option btn" onclick="ShowHistorialModal(@historiaJson)">Historial</button>
 
-                                    <button class="option btn btn-outline-info" onclick="ShowEditModal('@item.IdPaciente')">Ver Datos</button>
-                                    <form id="eliminarForm" onsubmit="alertElminarPrevent(event)" asp-action="Eliminar" asp-route-id="@item.IdPaciente">
-                                        <button class="option btn btn-outline-info" type="submit">Eliminar</button>
+                                    <button class="option btn" onclick="ShowEditModal('@item.IdPaciente')">Ver Datos</button>
+                                    <form id="eliminarForm" asp-action="Eliminar" asp-route-id="@item.IdPaciente">
+                                        <button class="option btn" type="button" onclick="alertElminarPrevent('@item.IdPaciente')">Eliminar</button>
                                     </form>
                                 </div>
                             </td>
@@ -95,9 +95,7 @@
 
     <script>
 
-        function alertElminarPrevent(e) {
-            e.preventDefault();
-
+        function alertElminarPrevent(id) {
             Swal.fire({
                 title: '¿Esta seguro de eliminar a este paciente?',
                 icon: 'question',
@@ -107,13 +105,23 @@
             }).then((resultado) => {
 
                 if (resultado.isConfirmed) {
-                    const formulario = document.getElementById('eliminarForm');
-                    formulario.submit();
+                    $.ajax({
+                        url: '/Pacientes/Eliminar',
+                        type: 'POST',
+                        data: { id: id },
+                        success: function (result) {
+                            successWithTimer();
+                        },
+                        error: function (error) {
+                            failWithTimer();
+                            console.log(error);
+                        }
+                    });
                 }
 
             })
         }
-
+ 
         function alertAgregarPrevent(e) {
             e.preventDefault();
 
@@ -133,18 +141,30 @@
             })
         }
 
-        function testAlert() {
-            Swal.fire('Any fool can use a computer');
-        }
-        
-        function alertaEliminar(){
-            Swal.fire(
-                'Good job!',
-                'You clicked the button!',
-                'success'
-            ) 
+        function successWithTimer() {
+            Swal.fire({
+                icon: 'success',
+                title: 'Cambios guardados',
+                showConfirmButton: false,
+                timer: 1500
+            }).then((result) => {
+                if (result.dismiss === Swal.DismissReason.timer) {
+                    window.location.href = '/Pacientes/Index';
+                }
+            })
         }
 
+        function failWithTimer() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Ocurrió un error',
+                showConfirmButton: false,
+                timer: 1500
+            }).then((result) => {
+                if (result.dismiss === Swal.DismissReason.timer) {
+                }
+            })
+        }
 
         let urls = {
             getPaciente: "@Url.Action("GetPaciente", "Pacientes")",

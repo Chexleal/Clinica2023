@@ -19,8 +19,8 @@
         </div>
         <div class="card-body">
             <p>
-                <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#createModal">
-                    <i class="fa-solid fa-plus fa-bounce"></i> Agregar Consulta
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+                    <i class="fa-solid fa-plus fa-bounce "></i> Agregar Consulta
                 </button>
             </p>
             <div class=" table-responsive ">
@@ -39,14 +39,14 @@
                     @foreach (var item in Model.Consultas.Where(x => !x.Terminada))
                     {
                         <tr>
-                            <td><a class="option" href="@Url.Action("Index","ContinuarConsulta",new{consultaId=item.IdConsulta})">Continuar</a></td>
+                            <td><a class="option btn" href="@Url.Action("Index","ContinuarConsulta",new{consultaId=item.IdConsulta})">Continuar</a></td>
                             <td>@item.Fecha</td>
                             <td>@item.PacienteInformacion?.Nombre</td>
                             <td>@item.PacienteInformacion?.Apellido</td>
                             <td>@item.MotivoConsulta</td>
                             <td>
                                     <form asp-action="Eliminar" asp-route-id="@item.IdConsulta">
-                                        <button class="option" type="submit">Eliminar</button>
+                                        <button class="option btn" type="submit">Eliminar</button>
                                     </form>
                             </td>
                         </tr>

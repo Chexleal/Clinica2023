@@ -195,6 +195,8 @@ public partial class ClinicaContext : DbContext
                 .HasMaxLength(250)
                 .IsUnicode(false)
                 .HasColumnName("descripcion");
+            entity.Property(e => e.EstadoEliminado).HasColumnName("estado_eliminado");
+
         });
 
         modelBuilder.Entity<Paciente>(entity =>

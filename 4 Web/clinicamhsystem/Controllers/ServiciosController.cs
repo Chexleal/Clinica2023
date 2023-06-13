@@ -84,7 +84,6 @@ public class ServiciosController : Controller
 
     // POST: ServiciosControler/Delete/5
     [HttpPost]
-
     public ActionResult Eliminar(Guid id)
     {
         try
@@ -92,7 +91,6 @@ public class ServiciosController : Controller
             _services.DeleteServicio(id);
         }
         catch { }
-        var servicios = _services.GetAll();
         return RedirectToAction("Index");
     }
 }

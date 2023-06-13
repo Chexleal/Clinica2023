@@ -17,7 +17,7 @@ function CreateTable() {
         dom: 'Bfrtip',
         "pageLength": 20,
         "language": {
-            searchPlaceholder:'Buscar consulta',
+            searchPlaceholder: 'Buscar consulta',
             sSearch: '',
             lengthMenu: 'MENU items/page',
             paginate: {
@@ -48,7 +48,7 @@ function CreateTable() {
                 title: "Consultas",
                 filename: "Consultas",
                 exportOptions: {
-                    columns: [1,2,3,4],
+                    columns: [1, 2, 3, 4],
                     page: 'all'
                 },
                 orientation: "landscape",
@@ -70,6 +70,17 @@ function CreateTable() {
                 },
                 orientation: "landscape",
                 pageSize: "LEGAL"
-            }]
+            }],
+        columnDefs: [
+            {
+                targets: [4], // Índice de la columna que deseas truncar
+                render: function (data, type, row) {
+                    if (type === 'display' && data.length > 30) {
+                        return '<span title="' + data + '">' + data.substr(0, 30) + '...</span>';
+                    }
+                    return data;
+                }
+            }
+        ]
     });
 }

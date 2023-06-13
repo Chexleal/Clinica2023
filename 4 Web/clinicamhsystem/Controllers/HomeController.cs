@@ -29,7 +29,7 @@ public class HomeController : Controller
 
     public IActionResult LogInAsync(string password, string user)
     {
-
+        bool usuarioEntra;
         var existingUser = _userServices.Authenticate(user, password);
         //Usuario existingUser = new() { Nombre = "Dev", Apellido = "Test"};
         //existingUser.IdUsuario = new Guid();
@@ -43,16 +43,14 @@ public class HomeController : Controller
         }
         else
         {
-            return Content("alert('El usuario no existe');", "application/javascript"); // se agrega return content solo para probar el metodo.
+            TempData["Error"] = "Usuario o contraseña incorrectos";
+            return RedirectToAction("Index");
         }
-        
-        // context.HttpContext.Session.SetString($"UserData({country + "|" + session.TaxId})", JsonConvert.SerializeObject(securityUserData));
- 
-        //return View("/Pacientes/Pacientes");
     }
 
     public IActionResult UsuarioExistente(string userName)
     {
+
         var existingUser = _userServices.CheckUserExist(userName);
         if (existingUser)
         {
@@ -73,7 +71,8 @@ public class HomeController : Controller
         }
         else
         {
-            return Content("alert('El usuario no existe');", "application/javascript"); // se agrega return content solo para probar el metodo.
+            TempData["Error"] = "El usuario que introdujo no existe";
+            return View("CheckUser");
         }
 
     }
@@ -86,8 +85,8 @@ public class HomeController : Controller
             // return Content($"alert('Respuesta correcta');", "application/javascript");
             return View("NewPassword", hiddenUsername);
         else
-            return Content($"alert('Respuesta Incorrecta {hiddenUsername}');", "application/javascript"); // Si la respuesta es incorrecta
-
+            TempData["Error"] = "Respuesta Incorrecta";
+            return View("RecoverAccount", hiddenUsername);
     }
 
     public IActionResult CheckEmails(string email, string emailConfirmed, string hiddenUsername)

@@ -1,11 +1,10 @@
+@model string
 
 @{
-    Layout = null; 
-    var emailCensored = ViewData["emailCensored"]; 
-    var userEmail = ViewData["emailCensored"];
-    var username = ViewData["username"];
-
-} <!DOCTYPE html>
+    Layout = null;
+    var username = @Model.ToString();
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />

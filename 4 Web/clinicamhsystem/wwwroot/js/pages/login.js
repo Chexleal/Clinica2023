@@ -20,15 +20,15 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-    var successMessageElement = document.getElementById("successMessage");
-    if (successMessageElement) {
-        var successMessage = successMessageElement.innerText;
+    var successMessage = document.getElementById("successMessage").innerText;
+    if (successMessage) {
         Swal.fire({
-            title: "Éxito",
+            title: "Exito",
             text: successMessage,
             icon: "success",
             confirmButtonText: "Aceptar"
         });
+        console.log(successMessage);
     }
 });
 

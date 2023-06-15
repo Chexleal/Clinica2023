@@ -114,7 +114,7 @@ public class HomeController : Controller
         else
         {
             TempData["Error"] = "Email Incorrecto";
-            return View("Index");
+            return View("RecoverAccountEmail");
         }
 
     }

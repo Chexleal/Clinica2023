@@ -162,20 +162,26 @@ public class UserServices : IUserServices
     public bool CheckEmails(string email, string emailConfirmed, string username)
     {
         var emailOnData = _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == username && x.Correo == email);
-        var userName = _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == emailOnData.NombreUsuario);
-        var answer = userName.RespuestaSeg.ToString();
+        if(emailOnData != null) {
+            var userName = _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == emailOnData.NombreUsuario);
+            var answer = userName.RespuestaSeg.ToString();
 
-        if (emailOnData != null)
-        {
-            bool checkedEmail = email.Equals(emailConfirmed);
-            if (checkedEmail)
+            if (emailOnData != null)
             {
-                RecoverAccount(email, userName.NombreUsuario.ToString(), answer);
-                return true;
+                bool checkedEmail = email.Equals(emailConfirmed);
+                if (checkedEmail)
+                {
+                    RecoverAccount(email, userName.NombreUsuario.ToString(), answer);
+                    return true;
+                }
+                else { return false; }
             }
             else { return false; }
+            }
+        else
+        {
+            return false;
         }
-        else { return false; }
 
     }
 

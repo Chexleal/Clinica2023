@@ -20,12 +20,13 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-    var sucessMessage = document.getElementById("successMessage").innerText;
-    if (sucessMessage) {
+    var successMessageElement = document.getElementById("successMessage");
+    if (successMessageElement) {
+        var successMessage = successMessageElement.innerText;
         Swal.fire({
-            title: "Exito",
-            text: sucessMessage,
-            icon: "Sucess",
+            title: "Éxito",
+            text: successMessage,
+            icon: "success",
             confirmButtonText: "Aceptar"
         });
     }

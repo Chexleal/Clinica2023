@@ -30,3 +30,18 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 });
+
+
+function successTimer(id) {
+    Swal.fire({
+        icon: 'success',
+        title: 'Cambios guardados',
+        showConfirmButton: false,
+        timer: 1500
+    }).then((result) => {
+        if (result.dismiss === Swal.DismissReason.timer) {
+            const form = document.getElementById(id);
+            form.submit();
+        }
+    })
+}

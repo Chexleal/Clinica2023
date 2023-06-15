@@ -171,7 +171,6 @@ public class HomeController : Controller
                 Usuario userData = JsonConvert.DeserializeObject<Usuario>(jsonUserData);
 
                 _userServices.ChangePassword(userData.IdUsuario, Password);
-                var users = _userServices.GetAll();
             }
             return RedirectToAction("Index");
         }
@@ -187,10 +186,9 @@ public class HomeController : Controller
         try
         {
             string clave = "UserData";
-            string valor = null;
-            _memoryCache.Set(clave, valor);
-            TempData["UsuarioNombre"] = null;
-            TempData["IdUsuario"] = null;
+            _memoryCache.Remove(clave);
+            TempData.Remove("UsuarioNombre");
+            TempData.Remove("IdUsuario");
             return RedirectToAction("Index");
         }
         catch

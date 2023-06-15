@@ -104,6 +104,20 @@ public class HomeController : Controller
 
     public IActionResult CheckEmails(string email, string emailConfirmed, string hiddenUsername)
     {
+        var userEmail = ViewData["userEmail"];
+
+        Usuario? userInfo = _userServices.GetUserByName(hiddenUsername);
+        ViewData["username"] = userInfo.NombreUsuario.ToString();
+        userEmail = userInfo.Correo.ToString();
+
+        string[] emailSplited = userInfo.Correo.ToString().Split('@');
+        string beforeArroba = emailSplited[0];
+        var emailCensored = string.Concat(Enumerable.Repeat("*", 3)) + beforeArroba.Substring(3);
+        var userEmailCesored = emailCensored.ToString() + "@" + emailSplited[1].ToString();
+
+        //List<object> userInformation = new List<object> { userName, userSecureQuestion, userEmail };
+        object[] userInformation = { hiddenUsername, userEmailCesored };
+
 
         bool emailCheck = _userServices.CheckEmails(email, emailConfirmed, hiddenUsername);
         if (emailCheck)
@@ -114,14 +128,13 @@ public class HomeController : Controller
         else
         {
             TempData["Error"] = "Email Incorrecto";
-            return View("RecoverAccountEmail");
+            return View("RecoverAccountEmail", hiddenUsername);
         }
 
     }
 
     public IActionResult RecuperarCuenta()
     {
-
         return View("CheckUser");
     }
 
@@ -150,8 +163,7 @@ public class HomeController : Controller
 
     public IActionResult RecuperarCuentaEmail(string userName)
     {
-        ViewData["username"] = userName;
-        return View("RecoverAccountEmail");
+        return View("RecoverAccountEmail", userName);
     }
 
     [HttpGet]

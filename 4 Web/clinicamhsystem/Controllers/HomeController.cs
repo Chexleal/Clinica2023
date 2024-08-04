@@ -42,7 +42,7 @@ public class HomeController : Controller
             string valor = JsonConvert.SerializeObject(existingUser);
             _memoryCache.Set(clave, valor);
             TempData["UsuarioNombre"] = $"{existingUser.Nombre} {existingUser.Apellido}";
-            return RedirectToAction("Index", "Pacientes");
+            return RedirectToAction("Index", "Inicio");
         }
         else
         {

@@ -17,6 +17,9 @@ namespace ClinicaServices
         List<Consulta> GetAll();
         List<Consulta> GetAllByPacienteId(Guid pacienteId);
         List<Consulta> GetAllByPacienteId(Guid pacienteId, DateTime from, DateTime to);
+        List<Consulta> GetAllByMonth(int month);
+        List<Consulta> GetAllPaidByMonth(int month);
+        List<Consulta> GetAllOpen();
         List<Consulta> GetAllNotPaid();
         //List<Consulta> SearchConsulta(string input);
         void AddConsulta(Consulta consulta);
@@ -54,6 +57,22 @@ namespace ClinicaServices
         {
             return _dbContext.Consulta.Where(x => x.IdPaciente == pacienteId && x.Fecha>=from && x.Fecha<=to).ToList();
         }
+
+        public List<Consulta> GetAllByMonth(int month)
+        {
+            return _dbContext.Consulta.Where(x => x.Fecha.Month.Equals(month) && x.Fecha.Year.Equals(DateTime.Today.Year)).ToList();
+        }
+
+        public List<Consulta> GetAllPaidByMonth(int month)
+        {
+            return _dbContext.Consulta.Where(x => x.Fecha.Month.Equals(month) && x.Fecha.Year.Equals(DateTime.Today.Year) && x.Pagada).ToList();
+        }
+
+        public List<Consulta> GetAllOpen()
+        {
+            return _dbContext.Consulta.Where(x => !x.Terminada).ToList();
+        }
+
         public List<Consulta> GetAllNotPaid()
         {
             return _dbContext.Consulta.Where(x => x.Terminada && !x.Pagada).ToList();

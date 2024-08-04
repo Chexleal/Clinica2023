@@ -91,20 +91,16 @@
 
 @section Scripts{
     <script src="~/js/pages/pacientes.js" asp-append-version="true"></script>
-    <script src="~/lib/limonte-sweetalert2/sweetalert2.min.js"></script>
 
     <script>
 
         function alertElminarPrevent(id) {
-            Swal.fire({
-                title: '¿Esta seguro de eliminar a este paciente?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Si',
-                cancelButtonText: 'No'
-            }).then((resultado) => {
-
-                if (resultado.isConfirmed) {
+            swal({
+                title: '¿Está seguro de eliminar a este paciente?',
+                icon: 'warning',
+                buttons: ["No", "Si"]
+            }).then((result) => {
+                if (result) {
                     $.ajax({
                         url: '/Pacientes/Eliminar',
                         type: 'POST',
@@ -121,19 +117,16 @@
 
             })
         }
- 
+
         function alertAgregarPrevent(e) {
             e.preventDefault();
 
-            Swal.fire({
+            swal({
                 title: '¿Esta seguro de agregar a un nuevo paciente?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Si',
-                cancelButtonText: 'No'
-            }).then((resultado) => {
-
-                if (resultado.isConfirmed) {
+                icon: 'warning',
+                buttons: ["No", "Si"]
+            }).then((result) => {
+                if (result) {
                     const formulario = document.getElementById('crear');
                     formulario.submit();
                 }
@@ -142,7 +135,7 @@
         }
 
         function successWithTimer() {
-            Swal.fire({
+            swal({
                 icon: 'success',
                 title: 'Cambios guardados',
                 showConfirmButton: false,

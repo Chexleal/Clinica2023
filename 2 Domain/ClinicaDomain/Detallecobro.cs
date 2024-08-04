@@ -15,11 +15,11 @@ public partial class DetalleCobro
 
     public decimal Valor { get; set; }
 
-    public string Producto { get; set; }
+    public string? Producto { get; set; }
 
     public int Cantidad { get; set; }
 
-    public string NombreServicio { get; set; }
+    public string? NombreServicio { get; set; }
 
     //public virtual Consulta IdConsultaNavigation { get; set; }
 

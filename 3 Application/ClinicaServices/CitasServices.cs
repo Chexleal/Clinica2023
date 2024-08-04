@@ -12,6 +12,7 @@ namespace ClinicaServices
     public interface ICitaServices
     {
         List<Cita> GetAll();
+        List<Cita> GetAllForToday();
         void Add(Cita cita);
         void Delete(Guid id);
         DateTime GetNextCita(DateTime fecha, Guid idPaciente);
@@ -37,7 +38,12 @@ namespace ClinicaServices
             return _dbContext.Cita.ToList();
         }
 
-    
+        public List<Cita> GetAllForToday()
+        {
+            return _dbContext.Cita.Where(x => x.FechaHora.Year == DateTime.Today.Year & x.FechaHora.Month == DateTime.Today.Month & x.FechaHora.Day == DateTime.Today.Day).ToList();
+        }
+
+
         public void Delete(Guid id)
         {
             Cita cita = _dbContext.Cita.FirstOrDefault(p => p.IdCita == id);

@@ -103,6 +103,13 @@
 
             <div class="row mt-2">
                 <div class="col col-sm col-md col-lg col-xl col-xxl">
+                    <label class="fw-bold" for="diagnostico">CIE-10: </label>
+                    <textarea class="form-control" id="diagnostico" name="Diagnostico">@Model.Consulta.Diagnostico</textarea>
+                </div>
+            </div>
+
+            <div class="row mt-2">
+                <div class="col col-sm col-md col-lg col-xl col-xxl">
                     <label class="fw-bold" for="diagnostico">Observaciones: </label>
                     <textarea class="form-control" id="diagnostico" name="Observaciones">@Model.Consulta.Observaciones</textarea>
                 </div>
@@ -149,35 +156,30 @@
 
         function alertTerminarConsulta(e) {
             e.preventDefault();
-            Swal.fire({
+            swal({
                 title: '¿Esta seguro de terminar esta consulta?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Si',
-                cancelButtonText: 'No'
-            }).then((resultado) => {
-
-                if (resultado.isConfirmed) {
+                icon: 'warning',
+                buttons: ["No", "Si"]
+            }).then((result) => {
+                if(result){
+                    alert("entró")
                     const formulario = document.getElementById('formCST');
                     $("#terminado").val(true);
                     formulario.submit();
                 }
-
             })
         }
 
         function guardadoAlert(e) {
             e.preventDefault();
-            Swal.fire({
+            swal({
                 icon: 'success',
                 title: 'Cambios guardados',
-                showConfirmButton: false,
+                button: false,
                 timer: 1500
             }).then((result)=>{
-                if (result.dismiss === Swal.DismissReason.timer) {
                     const formulario = document.getElementById('formCST');
                     formulario.submit();
-                }
             })
         }
 

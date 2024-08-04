@@ -60,23 +60,21 @@
                 deleteButton.classList.add('delete-button');
 
                 deleteButton.addEventListener('click', function () {
-                    Swal.fire({
-                        title: '¿Esta seguro de eliminar a esta cita?',
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonText: 'Si',
-                        cancelButtonText: 'No'
-                    }).then((resultado) => {
+                    swal({
+                        title: '¿Está seguro de eliminar a esta cita?',
+                        icon: 'warning',
+                        buttons: ["No", "Si"]
+                    }).then((result) => {
                         var eventId = info.event.id;
 
-                        if (resultado.isConfirmed) {
+                        if (result) {
 
                             $.ajax({
                                 url: '/Citas/Eliminar',
                                 type: 'POST',
                                 data: { id: eventId },
                                 success: function (result) {
-                                    Swal.fire({
+                                    swal({
                                         icon: 'success',
                                         title: 'Cambios guardados',
                                         showConfirmButton: false,
@@ -87,7 +85,7 @@
                                     })
                                 },
                                 error: function (error) {
-                                    Swal.fire({
+                                    swal({
                                         icon: 'error',
                                         title: 'Ocurrió un error',
                                         showConfirmButton: false,

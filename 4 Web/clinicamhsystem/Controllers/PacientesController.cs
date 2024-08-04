@@ -54,7 +54,7 @@ public class PacientesController: Controller
             return View("Error");
 
         }
-        return RedirectToAction("Index");
+        //return RedirectToAction("Index");
     }
 
     // GET: UsuariosController/Editar/fj33-4ra4r
@@ -87,12 +87,13 @@ public class PacientesController: Controller
         try
         {
             _pacienteServices.DeletePaciente(id);
+            return RedirectToAction("Index");
         }
         catch {
             return View("Error");
         }
-        var pacientes = _pacienteServices.GetAll();
-        return RedirectToAction("Index", pacientes);
+        //var pacientes = _pacienteServices.GetAll();
+        //return RedirectToAction("Index", pacientes);
     }
 
     [HttpGet]

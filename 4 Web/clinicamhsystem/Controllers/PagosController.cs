@@ -39,9 +39,10 @@ public class PagosController : Controller
     public IActionResult Detalles(Guid idconsulta)
     {
         var detalles = _detallesServices.GetAll();
+        //Console.Write("Detalless -------------------------------------------------" + detalles.Count);
         var servicios = _serviciosServices.GetAll();
         var consulta = _consultaServices.GetConsulta(idconsulta);
-        return PartialView("Detalles", (new DetallesPagarViewModel { Detalles = detalles, Servicios = servicios, consulta = consulta }));
+        return PartialView("Detalles", new DetallesPagarViewModel { Detalles = detalles, Servicios = servicios, consulta = consulta });
     }
 
 

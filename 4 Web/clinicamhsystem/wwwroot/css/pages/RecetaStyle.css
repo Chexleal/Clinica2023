@@ -1,19 +1,19 @@
 ﻿@media print {
     @page {
         size: A5;
-        margin-top: 5mm;
-        margin-bottom: 5mm;
-        margin-right: 5mm;
-        margin-left: 1mm;
+        margin-top: 0;
+        margin-bottom:0;
+        margin-right: 0;
+        margin-left: 0;
 }
 
     html, body {
         width: 148mm;
         height: 210mm;
         margin-top: auto;
-        margin-bottom: 5mm;
-        margin-right: 5mm;
-        margin-left: 3mm;
+        margin-bottom: 0;
+        margin-right: 0;
+        margin-left: 0;
         padding: 0;
 }
 }
@@ -39,16 +39,14 @@ body {
 }
 
 .logoTh {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 150px;
-    height: 50px;
+    width: 200px;
+    height: 100px;
+    margin-left:-20px;
 }
 
     .logoTh img {
         display: block;
-        margin: auto;
+        margin: 0;
     }
 
 .CompanyName {

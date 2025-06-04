@@ -33,20 +33,14 @@
         };
     </script>
 <div class="upper">
-    <img src="~/img/Logo.png" alt="Logo" class="logoTh">
-    <table style="border-style: none; width:100%;">
-        <tr>
-            <th style="text-align: left">
-                    <h1 style="display:inline; font-size: 13px;">Dr.Manuel Hernandez Espinoza</h1>
-            </th>
-            <th style="text-align: right">
-                    <b style="font-size: 13px">MSc. TRAUMATOLOGIA Y ORTOPEDIA</b>
-            </th>
-        </tr>
-    </table>
+    <img  src="~/img/NewLogo.png" alt="Logo" class="logoTh">
+@*     <div style="display: inline;">
+            <label><b style="font-size: 13px">Dr.Manuel Hernandez Espinoza</b></label><br/>
+            <label><b style="font-size: 13px">MSc. TRAUMATOLOGIA Y ORTOPEDIA</b></label>
+    </div> *@
 </div>
 
-<div class="upper2">
+<div class="upper2" style="margin-top:-10px;">
     <hr style="border: 0.5px solid #004169 ;">
 
     <table style="border-style: none; width:100%;">
@@ -87,9 +81,14 @@
                             <br>
                             <label class="d-none" style="display:none;">@(contador++)</label>
                         }
-                        <p style="display: inline; font-size: 14px; font-weight:lighter"> @(observacionesReceta.IsNullOrEmpty() ? "" : $"Otras observaciones: {observacionesReceta}") </p><br>
-                        <p style="display: inline; font-size: 14px; font-weight:lighter"> @(proximaCita == new DateTime() ? "" : $"Próxima cita: {proximaCita.ToString("dd/MM/yyyy HH:mm:ss")}") </p><br>
+
+                        @if(!observacionesReceta.IsNullOrEmpty())
+                        {
+                        <p style="display: inline; font-size: 14px; font-weight:lighter"> @($"Otras observaciones: {observacionesReceta}") </p><br>
+                        }
                         <p style="display: inline; font-size: 11px; font-weight:bold">-OMITIR CUALQUIER PRESCRIPCION DESPUES DE ESTA LINEA-</p><br>
+                        <p style="display: inline; font-size: 14px; font-weight:lighter"> @(proximaCita == new DateTime() ? "" : $"Próxima cita: {proximaCita.ToString("dd/MM/yyyy HH:mm:ss")}") </p><br>
+                    
                     </th>
                 </tr>
             </table>
@@ -101,8 +100,9 @@
             <p style=" text-align: center; font-size: 11px; font-weight:bold">-NO PERMITA QUE LE CAMBIEN LA RECETA-</p>
             <hr style="border: 0.5px solid #004169 ;">
             <h1 style="display: inline; font-size: 11px; "> Contacto: </h1><br>
-            <p style="display: inline; font-size: 11px; font-weight:lighter"><img src="~/img/tel.png" style="width: 14px; height: 14px;"> Tel: 7832-6115 - <img src="~/img/cel.png" style="width: 14px; height: 14px;"> Cel: 3116-0253</p><br>
-            <p style="display: inline; font-size: 11px; font-weight:lighter"><img src="~/img/correo.png" style="width: 15px; height: 15px;"> Correo: dr.manuelhernandeztyo@gmail.com </p><br>
+            <p style="display: inline; font-size: 11px; font-weight:lighter"><img src="~/img/tel.png" style="width: 14px; height: 14px;"> Tel: 7832-6115 - <img src="~/img/cel.png" style="width: 14px; height: 14px;"> Cel: 3787-1021</p><br>
+            <p style="display: inline; font-size: 11px; font-weight:lighter"><img src="~/img/correo.png" style="width: 15px; height: 15px;"> Correo: dr.manuelhernandeztyo@gmail.com </p>
+            <p style="display: inline; font-size: 11px; font-weight:lighter;padding-left:5px;"><img src="~/img/web.png" style="width: 15px; height: 15px;"> drmanuelhernandez.com </p>
     <hr style="border: 0.5px solid #004169 ;">
     <table style="border-style: none; width:100%;">
         <tr style="margin-left: 3px">
@@ -114,7 +114,7 @@
         </tr>
     </table>
     <hr style="border: 0.5px solid #004169 ;">
-            <p style=" text-align: center; font-size: 13px; font-weight:bold"><img src="~/img/facebook.png" style="width: 15px; height: 15px;"> CLINICAS MEDICAS DRA.MIRIAM LOPEZ & HM </p>
+            <p style=" text-align: center; font-size: 13px; font-weight:bold"><img src="~/img/facebook.png" style="width: 15px; height: 15px;"> Clínicas Dr. Manuel Hernández - Traumatología y Ortopedia del Deporte</p>
 </div>
     </footer>
 

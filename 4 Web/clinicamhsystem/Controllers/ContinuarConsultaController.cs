@@ -1,6 +1,7 @@
 ﻿using ClinicaDomain;
 using clinicamhsystem.Models;
 using ClinicaServices;
+using clinicaWeb.Models;
 using clinicaWeb.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -103,12 +104,14 @@ public class ContinuarConsulta : Controller
             var pacienteInfo = _pacienteServices.GetPacienteById(consulta.IdPaciente);
             var proximaCita = _citasServices.GetNextCita(consulta.Fecha, consulta.IdPaciente);
 
-            ViewData["Paciente"] = pacienteInfo.Nombre + " " + pacienteInfo.Apellido;
-            ViewData["fecha"] = receta.Fecha.ToString("dd/MM/yyyy");
-            ViewData["observacionesReceta"] = receta.Descripcion.ToString();
-            ViewData["detalleReceta"] = _recetaServices.GetAllDetalles(receta.IdReceta);
-            ViewData["CitaProx"] = proximaCita;
-        return View("ConsultaPdf");
+        return View("ConsultaPdf", new GenerarRecetaModel
+        {
+            Receta = receta,
+            Consulta = consulta,
+            Paciente = pacienteInfo,
+            DetallesReceta = _recetaServices.GetAllDetalles(receta.IdReceta),
+            CitaProx = proximaCita
+        });
     }
 
 

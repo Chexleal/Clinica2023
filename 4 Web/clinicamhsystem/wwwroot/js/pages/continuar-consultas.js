@@ -114,7 +114,6 @@ function addMedicamento() {
             $('#tablaInfo').html(result);
         },
         error: function (error) {
-            alert("no");
             console.log(error);
         }
     });
@@ -129,7 +128,6 @@ function deleteDetalle(id) {
             $('#tablaInfo').html(result);
         },
         error: function (error) {
-            alert("no");
             console.log(error);
         }
     });

@@ -89,12 +89,13 @@ body {
     margin-right: 10px;
 }
 
-h5 {
+h6 {
     margin: 0;
 }
 
 .line {
     border: none;
     border-top: 1px solid #000;
-    margin: 10px 0;
+    margin: 1px 0;
+    margin-bottom:2px;
 }

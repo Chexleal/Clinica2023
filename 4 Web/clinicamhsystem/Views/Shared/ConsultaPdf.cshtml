@@ -1,17 +1,9 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@using clinicaWeb.Models
+@model GenerarRecetaModel
 @using ClinicaDomain
 @using ServiceStack
 @{
     Layout = null;
-    var recetaDetalle =(List<DetalleReceta>) ViewData["detalleReceta"];
-    var observacionesReceta = ViewData["observacionesReceta"].ToString();
-    var fecha = ViewData["fecha"];
-    var paciente = ViewData["Paciente"];
-    var proximaCita = (DateTime)ViewData["CitaProx"];
-
-
 }
 
 
@@ -52,7 +44,7 @@
             </th>
             <th style="text-align: right">
                     <b style="font-size: 13px; font-weight: bold; ">Fecha:</b><br>
-                    <b style="font-size: 12px; font-weight: lighter;">@fecha</b>
+                    <b style="font-size: 12px; font-weight: lighter;">@Model.Receta.Fecha.ToString("dd/MM/yyyy")</b>
             </th>
         </tr>
     </table>
@@ -60,34 +52,46 @@
 
 <div class="middle">
     <hr style="border: 0.5px solid #004169 ;">
-        <b style="font-size: 13px;font-weight:lighter">Paciente: @paciente</b>
+        <b style="font-size: 13px;font-weight:lighter">Paciente: @($"{Model.Paciente.Nombre} {Model.Paciente.Apellido}")</b>
     <hr style="border: 0.5px solid #004169 ;">
         <div class="detalleReceta">
             <table style="border-style: none; width:100%;">
                 <tr style="margin-left: 3px">
                     <th style="text-align: center; padding-right:30px; padding-left:30px;">
-                        @{
-                            int contador = 1;
-                        }
-                        @foreach (var item in recetaDetalle??new())
+                        @foreach (var item in Model.DetallesReceta ?? new())
                         {
                             <div class="circle-container">
-                                <div class="circle-label">@contador</div>
-                                <h5>@item.Medicamento.ToUpper()</h5>&nbsp;&nbsp;&nbsp;&nbsp;<label class="ms-3" style="font-size:12px;"># &nbsp;@item.Cantidad</label>
+                                @{
+                                    double total = 0;
+                                    var tieneTotal = !item.Cantidad.IsNullOrEmpty() && !item.DosisTiempo.IsNullOrEmpty() && !item.DosisDias.IsNullOrEmpty();
+                                    if(tieneTotal)
+                                    {
+                                        var tiempoInt = int.Parse(item.DosisTiempo);
+                                        var cantidadDeci = double.Parse(item.Cantidad);
+                                        var diasInt = int.Parse(item.DosisDias);
+                                        total = cantidadDeci * (24/tiempoInt) * diasInt;
+                                    }
+                                }
+                                <h6>@item.Medicamento.ToUpper()</h6>&nbsp;&nbsp;&nbsp;&nbsp;<label class="ms-3" style="font-size:10px;">@(total!=0? $"Total: {total}":"")</label>
                             </div>
                             <hr class="line">
-                            <p style="display: inline; font-size: 14px; font-weight:lighter"> @(item.Instrucciones.IsNullOrEmpty() ? "" : $"Instrucciones: {item.Instrucciones}") cada  @(int.Parse(item.DosisTiempo) > 1 ? $"{@item.DosisTiempo} horas" : " hora") durante @item.DosisDias @(int.Parse(item.DosisDias) > 1 ? "días" : "día") </p>
+                            @if (tieneTotal)
+                            {
+                                <p style="display: inline; font-size: 12px; font-weight:lighter"> @(item.Cantidad.IsNullOrEmpty() ? "" : $"Cantidad: {item.Cantidad}") @(item.DosisTiempo.IsNullOrEmpty() ? "" : int.Parse(item.DosisTiempo) > 1 ? $"cada {item.DosisTiempo} horas" : "cada hora") @(item.DosisDias.IsNullOrEmpty() ? "" : int.Parse(item.DosisDias) > 1 ? $"durante {item.DosisDias} días" : "durante un día") </p><br>
+                            }
+                            <p style="display: inline; font-size: 12px; font-weight:lighter"> @(item.Instrucciones.IsNullOrEmpty() ? "" : $"Instrucciones: {item.Instrucciones}") </p>
+                         
                             <br>
                             <br>
-                            <label class="d-none" style="display:none;">@(contador++)</label>
                         }
 
-                        @if(!observacionesReceta.IsNullOrEmpty())
+                        @if(!Model.Receta.Descripcion.IsNullOrEmpty())
                         {
-                        <p style="display: inline; font-size: 14px; font-weight:lighter"> @($"Otras observaciones: {observacionesReceta}") </p><br>
+                            <p style="display: inline; font-size: 12px; font-weight:lighter"> @($"Otras observaciones: {Model.Receta.Descripcion}") </p>
+                            <br>
                         }
                         <p style="display: inline; font-size: 11px; font-weight:bold">-OMITIR CUALQUIER PRESCRIPCION DESPUES DE ESTA LINEA-</p><br>
-                        <p style="display: inline; font-size: 14px; font-weight:lighter"> @(proximaCita == new DateTime() ? "" : $"Próxima cita: {proximaCita.ToString("dd/MM/yyyy HH:mm:ss")}") </p><br>
+                        <p style="display: inline; font-size: 12px; font-weight:lighter"> @(Model.CitaProx == new DateTime() ? "" : $"Próxima cita: {Model.CitaProx.ToString("dd/MM/yyyy HH:mm:ss")}") </p><br>
                     
                     </th>
                 </tr>

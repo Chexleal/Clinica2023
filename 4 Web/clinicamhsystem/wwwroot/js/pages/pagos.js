@@ -115,7 +115,6 @@ function addDetalle() {
 /*            $('#pagarConsultaModal').modal('show');*/
         },
         error: function (error) {
-            alert("no");
             console.log(error);
         }
     });
@@ -136,7 +135,6 @@ function deleteDetalle(id) {
             /*            $('#pagarConsultaModal').modal('show');*/
         },
         error: function (error) {
-            alert("no");
             console.log(error);
         }
     });

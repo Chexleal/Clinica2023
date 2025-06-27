@@ -84,6 +84,7 @@ namespace ClinicaServices
             if (consulta is not null)
             {
                 consulta.Terminada = true;
+                _dbContext.Consulta.Remove(consulta);
                 _dbContext.SaveChanges();
             }
         }

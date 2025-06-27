@@ -30,12 +30,6 @@ public class ConsultasController : Controller
         {
             consulta.PacienteInformacion = pacientes.FirstOrDefault(x => x.IdPaciente == consulta.IdPaciente);
         }
-        //ConsultasModel modelo = new ConsultasModel();
-
-        //modelo.Paciente = pacientes;
-        //modelo.Consulta = consultas;
-        //return View(modelo);
-        //return View(consultas);
         return View(new ConsultasViewModel { Consultas = consultas, Pacientes = pacientes });
     }
 
@@ -120,8 +114,14 @@ public class ConsultasController : Controller
             _consultaServices.DeleteConsulta(id);
         }
         catch {  }
+
+        var pacientes = _pacienteServices.GetAll();
         var consultas = _consultaServices.GetAll();
-        return View("Index", consultas);
+        foreach (var consulta in consultas)
+        {
+            consulta.PacienteInformacion = pacientes.FirstOrDefault(x => x.IdPaciente == consulta.IdPaciente);
+        }
+        return View("Index", new ConsultasViewModel { Consultas = consultas, Pacientes = pacientes });
     }
 
 

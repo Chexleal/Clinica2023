@@ -1,9 +1,13 @@
-﻿@using clinicaWeb.Models
+﻿@using ClinicaInfrastructure
+@using clinicaWeb.Models
 @model GenerarRecetaModel
 @using ClinicaDomain
 @using ServiceStack
 @{
     Layout = null;
+    var frases = StaticConfiguration.frases;
+    var random = new Random();
+    var fraseElegida = frases[random.Next(frases.Count)];
 }
 
 
@@ -19,24 +23,32 @@
 
 
 <body>
+    <img src="@Url.Content("~/img/NewLogoOp.png")" alt="Marca de agua" class="watermark" />
+
     <script>
         window.onload = function () {
             window.print();
         };
     </script>
-<div class="upper">
-    <img  src="~/img/NewLogo.png" alt="Logo" class="logoTh">
-@*     <div style="display: inline;">
-            <label><b style="font-size: 13px">Dr.Manuel Hernandez Espinoza</b></label><br/>
-            <label><b style="font-size: 13px">MSc. TRAUMATOLOGIA Y ORTOPEDIA</b></label>
-    </div> *@
+
+<div class="fila">
+  <div class="logo-container">
+    <img src="@Url.Content("~/img/NewLogoOp.png")" alt="Logo">
+  </div>
+
+  <div class="horario">
+    <div><strong>Horario:</strong></div>
+    <div>Lunes a Viernes de 9:00 a 18:00 Hrs.</div>
+    <div>Sábados de 9:00 a 13:00 Hrs.</div>
+  </div>
 </div>
+
 
 <div class="upper2" style="margin-top:-10px;">
     <hr style="border: 0.5px solid #004169 ;">
 
     <table style="border-style: none; width:100%;">
-        <tr style="margin-left: 3px">
+        <tr style="margin-left: 10px;margin-right: 15px">
             <th style="text-align: left">
                     <h1 style="display: inline; font-size: 13px; font-weight: bold; "> Direccion:</h1><br>
                     <b style="font-size: 12px; font-weight: lighter;">Calzada Santa Lucia Norte No. 22</b><br>
@@ -51,8 +63,8 @@
 </div>
 
 <div class="middle">
-    <hr style="border: 0.5px solid #004169 ;">
-        <b style="font-size: 13px;font-weight:lighter">Paciente: @($"{Model.Paciente.Nombre} {Model.Paciente.Apellido}")</b>
+    <hr style="border: 0.5px solid #004169 ; ">
+        <b style="font-size: 13px;font-weight:lighter;margin-left:10px;">Paciente: @($"{Model.Paciente.Nombre} {Model.Paciente.Apellido}")</b>
     <hr style="border: 0.5px solid #004169 ;">
         <div class="detalleReceta">
             <table style="border-style: none; width:100%;">
@@ -102,21 +114,12 @@
     <footer class="piePag">
 <div class="under">
             <p style=" text-align: center; font-size: 11px; font-weight:bold">-NO PERMITA QUE LE CAMBIEN LA RECETA-</p>
+            <p style="text-align: center; font-size: 11px; font-style: italic;">@fraseElegida</p>
             <hr style="border: 0.5px solid #004169 ;">
             <h1 style="display: inline; font-size: 11px; "> Contacto: </h1><br>
             <p style="display: inline; font-size: 11px; font-weight:lighter"><img src="~/img/tel.png" style="width: 14px; height: 14px;"> Tel: 7832-6115 - <img src="~/img/cel.png" style="width: 14px; height: 14px;"> Cel: 3787-1021</p><br>
             <p style="display: inline; font-size: 11px; font-weight:lighter"><img src="~/img/correo.png" style="width: 15px; height: 15px;"> Correo: dr.manuelhernandeztyo@gmail.com </p>
             <p style="display: inline; font-size: 11px; font-weight:lighter;padding-left:5px;"><img src="~/img/web.png" style="width: 15px; height: 15px;"> drmanuelhernandez.com </p>
-    <hr style="border: 0.5px solid #004169 ;">
-    <table style="border-style: none; width:100%;">
-        <tr style="margin-left: 3px">
-            <th style="text-align: center">
-                        <h1 style="display: inline; font-size: 11px; "> Horario: </h1><br>
-                        <h1 style="display: inline; font-size: 11px; font-weight:lighter ">Lunes a Viernes de 9:00 a 18:00 Hrs.</h1><br>
-                        <h1 style="display: inline; font-size: 11px; font-weight:lighter ">Sabados de 9:00 a 13:00 Hrs.</h1><br>
-            </th>
-        </tr>
-    </table>
     <hr style="border: 0.5px solid #004169 ;">
             <p style=" text-align: center; font-size: 13px; font-weight:bold"><img src="~/img/facebook.png" style="width: 15px; height: 15px;"> Clínicas Dr. Manuel Hernández - Traumatología y Ortopedia del Deporte</p>
 </div>

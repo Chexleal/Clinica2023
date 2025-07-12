@@ -49,12 +49,12 @@
 
     <table style="border-style: none; width:100%;">
         <tr style="margin-left: 10px;margin-right: 15px">
-            <th style="text-align: left">
+            <th style="text-align: left;padding-left: 2%;">
                     <h1 style="display: inline; font-size: 13px; font-weight: bold; "> Direccion:</h1><br>
                     <b style="font-size: 12px; font-weight: lighter;">Calzada Santa Lucia Norte No. 22</b><br>
                     <b style="font-size: 12px; font-weight: lighter;">Antigua Guatemala</b><br>
             </th>
-            <th style="text-align: right">
+            <th style="text-align: right; padding-right: 1%;">
                     <b style="font-size: 13px; font-weight: bold; ">Fecha:</b><br>
                     <b style="font-size: 12px; font-weight: lighter;">@Model.Receta.Fecha.ToString("dd/MM/yyyy")</b>
             </th>
@@ -64,9 +64,9 @@
 
 <div class="middle">
     <hr style="border: 0.5px solid #004169 ; ">
-        <b style="font-size: 13px;font-weight:lighter;margin-left:10px;">Paciente: @($"{Model.Paciente.Nombre} {Model.Paciente.Apellido}")</b>
+        <b style="font-size: 13px;font-weight:lighter;margin-left:10px;padding-left: 2%;">Paciente: @($"{Model.Paciente.Nombre} {Model.Paciente.Apellido}")</b>
     <hr style="border: 0.5px solid #004169 ;">
-        <div class="detalleReceta">
+        <div class="detalleReceta" style="margin-top:30px;">
             <table style="border-style: none; width:100%;">
                 <tr style="margin-left: 3px">
                     <th style="text-align: center; padding-right:30px; padding-left:30px;">
@@ -76,21 +76,18 @@
                                 @{
                                     double total = 0;
                                     var tieneTotal = !item.Cantidad.IsNullOrEmpty() && !item.DosisTiempo.IsNullOrEmpty() && !item.DosisDias.IsNullOrEmpty();
-                                    if(tieneTotal)
+                                    if(tieneTotal && int.TryParse(item.DosisTiempo,out int tiempoInt ) && double.TryParse(item.Cantidad, out var cantidadDeci) && int.TryParse(item.DosisDias, out var diasInt))
                                     {
-                                        var tiempoInt = int.Parse(item.DosisTiempo);
-                                        var cantidadDeci = double.Parse(item.Cantidad);
-                                        var diasInt = int.Parse(item.DosisDias);
                                         total = cantidadDeci * (24/tiempoInt) * diasInt;
                                     }
                                 }
-                                <h6>@item.Medicamento.ToUpper()</h6>&nbsp;&nbsp;&nbsp;&nbsp;<label class="ms-3" style="font-size:10px;">@(total!=0? $"Total: {total}":"")</label>
+                                <label style="font-weight:bold; font-size:12px;">@item.Medicamento.ToUpper()</label>&nbsp;&nbsp;&nbsp;&nbsp;<label class="ms-3" style="font-size:10px;">@(total!=0? $"Total: {total}":"")</label>
                             </div>
                             <hr class="line">
-                            @if (tieneTotal)
+                          @*   @if (tieneTotal)
                             {
                                 <p style="display: inline; font-size: 12px; font-weight:lighter"> @(item.Cantidad.IsNullOrEmpty() ? "" : $"Cantidad: {item.Cantidad}") @(item.DosisTiempo.IsNullOrEmpty() ? "" : int.Parse(item.DosisTiempo) > 1 ? $"cada {item.DosisTiempo} horas" : "cada hora") @(item.DosisDias.IsNullOrEmpty() ? "" : int.Parse(item.DosisDias) > 1 ? $"durante {item.DosisDias} días" : "durante un día") </p><br>
-                            }
+                            } *@
                             <p style="display: inline; font-size: 12px; font-weight:lighter"> @(item.Instrucciones.IsNullOrEmpty() ? "" : $"Instrucciones: {item.Instrucciones}") </p>
                          
                             <br>

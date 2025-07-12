@@ -33,6 +33,7 @@ public partial class Consulta
     public decimal Total { get; set; }
 
     public bool Terminada { get; set; }
+    public bool Eliminada { get; set; }
 
     //public virtual ICollection<DetalleCobro> DetalleCobros { get; set; } = new List<DetalleCobro>();
 

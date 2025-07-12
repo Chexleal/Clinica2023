@@ -1,5 +1,7 @@
 ﻿using ClinicaDomain;
 using iText.Html2pdf;
+using Microsoft.EntityFrameworkCore;
+
 //using Microsoft.EntityFrameworkCore;
 using PaaS.Framework.Utils.Extensions;
 using ServiceStack;
@@ -46,36 +48,36 @@ namespace ClinicaServices
 
         public List<Consulta> GetAll()
         {
-            return _dbContext.Consulta.ToList();
+            return _dbContext.Consulta.Where(x => x.Eliminada == false).ToList();
         }
         public List<Consulta> GetAllByPacienteId(Guid pacienteId)
         {
-            return _dbContext.Consulta.Where(x=>x.IdPaciente== pacienteId).ToList();
+            return _dbContext.Consulta.Where(x=>x.IdPaciente== pacienteId && x.Eliminada == false).ToList();
         }
 
         public List<Consulta> GetAllByPacienteId(Guid pacienteId, DateTime from, DateTime to)
         {
-            return _dbContext.Consulta.Where(x => x.IdPaciente == pacienteId && x.Fecha>=from && x.Fecha<=to).ToList();
+            return _dbContext.Consulta.Where(x => x.IdPaciente == pacienteId && x.Fecha>=from && x.Fecha<=to && x.Eliminada == false).ToList();
         }
 
         public List<Consulta> GetAllByMonth(int month)
         {
-            return _dbContext.Consulta.Where(x => x.Fecha.Month.Equals(month) && x.Fecha.Year.Equals(DateTime.Today.Year)).ToList();
+            return _dbContext.Consulta.Where(x => x.Fecha.Month.Equals(month) && x.Fecha.Year.Equals(DateTime.Today.Year) && x.Eliminada == false).ToList();
         }
 
         public List<Consulta> GetAllPaidByMonth(int month)
         {
-            return _dbContext.Consulta.Where(x => x.Fecha.Month.Equals(month) && x.Fecha.Year.Equals(DateTime.Today.Year) && x.Pagada).ToList();
+            return _dbContext.Consulta.Where(x => x.Fecha.Month.Equals(month) && x.Fecha.Year.Equals(DateTime.Today.Year) && x.Pagada && x.Eliminada == false).ToList();
         }
 
         public List<Consulta> GetAllOpen()
         {
-            return _dbContext.Consulta.Where(x => !x.Terminada).ToList();
+            return _dbContext.Consulta.Where(x => !x.Terminada && x.Eliminada == false).ToList();
         }
 
         public List<Consulta> GetAllNotPaid()
         {
-            return _dbContext.Consulta.Where(x => x.Terminada && !x.Pagada).ToList();
+            return _dbContext.Consulta.Where(x => x.Terminada && !x.Pagada && x.Eliminada == false).ToList();
         }
 
         public void DeleteConsulta(Guid id)
@@ -83,9 +85,27 @@ namespace ClinicaServices
             var consulta = GetConsulta(id);
             if (consulta is not null)
             {
-                consulta.Terminada = true;
-                _dbContext.Consulta.Remove(consulta);
-                _dbContext.SaveChanges();
+                try
+                {
+                    consulta.Terminada = true;
+                    _dbContext.Consulta.Remove(consulta);
+                    _dbContext.SaveChanges();
+                }
+                catch (DbUpdateException ex)
+                {
+                    if (ex.InnerException != null && ex.InnerException.Message.Contains("The DELETE statement conflicted with the REFERENCE constraint"))
+                    {
+                        // Desmarcar el estado Deleted para evitar que vuelva a intentar borrar
+                        _dbContext.Entry(consulta).State = EntityState.Modified;
+
+                        consulta.Eliminada = true;
+                        UpdateConsulta(consulta);
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
             }
         }
 
@@ -130,6 +150,7 @@ namespace ClinicaServices
             consulta.IdConsulta = Guid.NewGuid();
             consulta.Fecha = DateTime.Now;
             consulta.Terminada = false;
+            consulta.Eliminada = false;
             consulta.Pagada = false;
             consulta.BeforeSaveChanges();
             _dbContext.Consulta.Add(consulta);

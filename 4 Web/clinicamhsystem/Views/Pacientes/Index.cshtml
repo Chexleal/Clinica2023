@@ -1,46 +1,47 @@
 ﻿@using Newtonsoft.Json;
 @using ClinicaDomain;
 @using ClinicaInfrastructure;
-@model clinicaWeb.Models.PacientesViewModel
+
+@model clinicaWeb.Models.PacientesViewModel;
 
 @{
     ViewData["Title"] = "Pacientes";
 }
-@section Links{
+@section Links {
     <link rel="stylesheet" href="~/css/pages/Usuarios.css" asp-append-version="true" />
 }
 
-    <partial name="~/Views/Shared/_modalEdit.cshtml" />
-    <partial name="Partials/_modalCrear.cshtml" />
-    <partial name="Partials/_modalCrearConsulta.cshtml" />
-    <partial name="Partials/_modalHistorial.cshtml" />
+<partial name="~/Views/Shared/_modalEdit.cshtml" />
+<partial name="Partials/_modalCrear.cshtml" />
+<partial name="Partials/_modalCrearConsulta.cshtml" />
+<partial name="Partials/_modalHistorial.cshtml" />
 
 <div class="card shadow-lg mt-5">
     <div class="card-header bg-ligth">
         <h3 class="h3">Pacientes</h3>
     </div>
     <div class="card-body">
-            <p>
+        <p>
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
-                    <i class="fa-solid fa-plus fa-bounce"></i>  Agregar Paciente
-                </button>
-            </p>
-            <div class="table-responsive table-responsive-sm table-responsive-md table-responsive-lg table-responsive-xl table-responsive-xxl mt-5">
-                <table id="tablePaciente" class="table table-striped ">
-                    <thead class="table-dark">
-                        <tr>
-                            <th></th>
-                            <th>No Registro</th>
-                            <th>Nombre</th>
-                            <th>Apellido</th>
-                            <th>DPI</th>
-                            <th>Edad</th>
-                            <th>Teléfono</th>
-                            <th>Correo</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <i class="fa-solid fa-plus fa-bounce"></i>  Agregar Paciente
+            </button>
+        </p>
+        <div class="table-responsive table-responsive-sm table-responsive-md table-responsive-lg table-responsive-xl table-responsive-xxl mt-5">
+            <table id="tablePaciente" class="table table-striped ">
+                <thead class="table-dark">
+                    <tr>
+                        <th></th>
+                        <th>No Registro</th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>DPI</th>
+                        <th>Edad</th>
+                        <th>Teléfono</th>
+                        <th>Correo</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
                     @foreach (var item in Model.Pacientes)
                     {
                         <tr>
@@ -52,30 +53,17 @@
                             <td>@DateManager.GetAge(item.FechaNacimiento)</td>
                             <td>@item.Telefono</td>
                             <td>@item.Correo</td>
-@*                            <td class="display">@item.Direccion</td>*@
-@*                            <td>@item.TipoSange</td>*@
+                            @*                            <td class="display">@item.Direccion</td>*@
+                            @*                            <td>@item.TipoSange</td>*@
                             <td>
                                 <div class="options d-flex ">
-                                    @{
-                                        var consultas = new List<Consulta>(Model.Consultas.Where(x=>x.IdPaciente==item.IdPaciente).ToList());
-                                        // Almacenar el PacienteInformacion de cada objeto de consultas en una lista
-                                        var pacientesInformacion = consultas.Select(c => c.PacienteInformacion).ToList();
-                                        // Asignar null a la propiedad PacienteInformacion de cada objeto de consultas
-                                        consultas.ForEach(c => c.PacienteInformacion = null);
-                                        // Serializar la lista de consultas modificada
-                                        var historiaJson = JsonConvert.SerializeObject(consultas);
-                                        // Asignar el PacienteInformacion correspondiente a cada objeto de consultas
-                                        consultas.Zip(pacientesInformacion, (c, p) => new { Consulta = c, PacienteInformacion = p })
-                                        .ToList()
-                                        .ForEach(cp => cp.Consulta.PacienteInformacion = cp.PacienteInformacion);
 
-                                    }
-                                    <button class="option btn" onclick="ShowHistorialModal(@historiaJson)">Historial</button>
+                                    <button class="option btn" onclick="ShowHistorialModal('@item.IdPaciente')">Historial</button>
 
                                     <button class="option btn" onclick="ShowEditModal('@item.IdPaciente')">Ver Datos</button>
-                                    <form id="eliminarForm" asp-action="Eliminar" asp-route-id="@item.IdPaciente">
-                                        <button class="option btn" type="button" onclick="alertElminarPrevent('@item.IdPaciente')">Eliminar</button>
-                                    </form>
+
+                                    <button class="option btn" type="button" onclick="alertElminarPrevent('@item.IdPaciente')">Eliminar</button>
+
                                 </div>
                             </td>
                         </tr>
@@ -89,34 +77,12 @@
 
 
 
-@section Scripts{
+@section Scripts {
     <script src="~/js/pages/pacientes.js" asp-append-version="true"></script>
 
     <script>
 
-        function alertElminarPrevent(id) {
-            swal({
-                title: '¿Está seguro de eliminar a este paciente?',
-                icon: 'warning',
-                buttons: ["No", "Si"]
-            }).then((result) => {
-                if (result) {
-                    $.ajax({
-                        url: '/Pacientes/Eliminar',
-                        type: 'POST',
-                        data: { id: id },
-                        success: function (result) {
-                            successWithTimer();
-                        },
-                        error: function (error) {
-                            failWithTimer();
-                            console.log(error);
-                        }
-                    });
-                }
 
-            })
-        }
 
         function alertAgregarPrevent(e) {
             e.preventDefault();
@@ -161,7 +127,8 @@
 
         let urls = {
             getPaciente: "@Url.Action("GetPaciente", "Pacientes")",
+            getHistorial: "@Url.Action("GetHistorialConsultas", "Pacientes")",
         }
-        
+
     </script>
 }

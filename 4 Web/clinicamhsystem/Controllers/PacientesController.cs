@@ -3,6 +3,7 @@ using ClinicaServices;
 using Microsoft.AspNetCore.Mvc;
 using clinicaWeb.Models;
 using clinicaWeb.Security;
+using System.Threading.Tasks;
 
 namespace clinicaWeb.Controllers;
 
@@ -22,8 +23,7 @@ public class PacientesController: Controller
     public IActionResult Index()
     {
         var pacientes = _pacienteServices.GetAll();
-        var consultas = _consultaServices.GetAll();
-        return View(new PacientesViewModel { Pacientes=pacientes,Consultas=consultas });
+        return View(new PacientesViewModel { Pacientes=pacientes });
     }
 
     // GET: UsuariosController/Detalles/fj33-4ra4r
@@ -101,5 +101,11 @@ public class PacientesController: Controller
     {
         var paciente = _pacienteServices.GetPacienteById(pacienteId);
         return PartialView("Editar", paciente);
+    }
+    [HttpGet]
+    public IActionResult GetHistorialConsultas(Guid pacienteId)
+    {
+        var consultas = _consultaServices.GetAllByPacienteId(pacienteId) ?? [];
+        return PartialView("Partials/_tablaHistorial", consultas);
     }
 }

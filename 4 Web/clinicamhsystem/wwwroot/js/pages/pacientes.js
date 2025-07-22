@@ -7,6 +7,30 @@ $(document).ready(function () {
     CreateTable();
 });
 
+function alertElminarPrevent(id) {
+    swal({
+        title: '¿Está seguro de eliminar a este paciente?',
+        icon: 'warning',
+        buttons: ["No", "Si"]
+    }).then((result) => {
+        if (result) {
+            $.ajax({
+                url: '/Pacientes/Eliminar',
+                type: 'POST',
+                data: { id: id },
+                success: function (result) {
+                    successWithTimer();
+                },
+                error: function (error) {
+                    failWithTimer();
+                    console.log(error);
+                }
+            });
+        }
+
+    })
+}
+
 function CreateTable() {
     $('#tablePaciente').DataTable({
 
@@ -85,6 +109,7 @@ function CreateTable() {
     });
 }
 
+
 function ShowEditModal(id) {
     $('#modalEdit').modal('show');
 
@@ -105,24 +130,24 @@ function ShowConsultaModal(id) {
     $('#IdPaciente').val(id);
 }
 
-function ShowHistorialModal(consultas) {
+function ShowHistorialModal(pacienteId) {
     $('#loading').show();
     $("#table > tbody").empty();
 
-    consultas.forEach(c => {
-
-        $('#table > tbody:last-child').append(`<tr>
-                                                <td>${parseDate(c.Fecha)}</td>
-                                                <td>${c.MotivoConsulta}</td>
-                                                <td>${c.Diagnostico}</td>
-                                                <td>${c.Observaciones}</td>
-                                                <td>
-                                                    <div class="options d-flex ">
-                                                    <a class="option btn" href="/ContinuarConsulta/Index?consultaId=${c.IdConsulta}">Ver</a>
-                                                    </div>
-                                                </td>
-                                               </tr>`);
+    $.ajax({
+        url: urls.getHistorial,
+        data: { pacienteId: pacienteId },
+        async: true,
+        type: "GET",
+        atType: 'html',
+        success: function (res) {
+            $('#modalConsultaBody').html(res);
+            $("#modalConsulta").modal('show');
+            $('#loading').hide();
+            const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+            popoverTriggerList.forEach(pop => new bootstrap.Popover(pop));
+        }
     });
-    $("#modalConsulta").modal('show');
-    $('#loading').hide();
+
+   
 }

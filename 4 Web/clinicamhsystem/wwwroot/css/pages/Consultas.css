@@ -44,3 +44,9 @@
     border-radius: 2px;
     background: transparent;
 }
+
+textarea:focus {
+    outline: 2px solid #007bff; /* Borde visible al enfocar */
+    caret-color: black !important; /* Línea de escritura negra */
+    cursor: text !important;
+}

@@ -22,7 +22,7 @@
                     <td data-bs-toggle="popover" data-bs-placement="top" data-bs-trigger="hover focus" data-bs-content="@consulta.Diagnostico">@StringManager.CutOnMax(consulta.Diagnostico, 40)</td>
                     <td data-bs-toggle="popover" data-bs-placement="top" data-bs-trigger="hover focus" data-bs-content="@consulta.Observaciones">@StringManager.CutOnMax(consulta.Observaciones, 40)</td>
                     <td>
-                        <button class="btn btn-outline-info" onclick="ShowHistorialModal('@consulta.IdConsulta')">Ver Historial</button>
+                      <a class="btn btn-outline-info" href="@Url.Action("Index", "ContinuarConsulta", new { consultaId = consulta.IdConsulta })">Ver</a>
                     </td>
                 </tr>
             }

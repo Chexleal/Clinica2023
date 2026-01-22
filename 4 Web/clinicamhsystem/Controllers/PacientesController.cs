@@ -74,7 +74,7 @@ public class PacientesController: Controller
             _pacienteServices.UpdatePaciente(paciente);
             return RedirectToAction("Index");
         }
-        catch
+        catch(Exception ex)
         {
             return View("Error");
         }

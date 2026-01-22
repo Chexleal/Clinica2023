@@ -250,7 +250,8 @@ public partial class ClinicaContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("nacionalidad");
             entity.Property(e => e.NoRegistro)
-              .ValueGeneratedOnAdd()
+              .HasMaxLength(25)
+              .IsUnicode(false)
               .HasColumnName("no_registro");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(50)

@@ -1,4 +1,8 @@
-﻿document.getElementById("toggle-button").addEventListener("click", function () {
+﻿$.fn.dataTable.ext.type.search = function (data) {
+    return !data ? '' : typeof data === 'string' ? data.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() : data;
+};
+
+document.getElementById("toggle-button").addEventListener("click", function () {
     var sidebar = document.querySelector(".menu");
     var toggleButton = document.querySelector(".toggle-button");
     var container = document.querySelector(".container-larger");

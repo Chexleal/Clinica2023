@@ -94,6 +94,18 @@ public partial class ClinicaContext : DbContext
                 .HasMaxLength(25)
                 .IsUnicode(false)
                 .HasColumnName("temperatura");
+            entity.Property(e => e.SaturacionOxigeno)
+                .HasMaxLength(25)
+                .IsUnicode(false)
+                .HasColumnName("saturacion_oxigeno");
+            entity.Property(e => e.Glucometro)
+                .HasMaxLength(25)
+                .IsUnicode(false)
+                .HasColumnName("glucometro");
+            entity.Property(e => e.FrecuenciaCardiaca)
+                .HasMaxLength(25)
+                .IsUnicode(false)
+                .HasColumnName("frecuencia_cardiaca");
             entity.Property(e => e.Terminada).HasColumnName("terminada");
             entity.Property(e => e.Eliminada).HasColumnName("eliminada");
             entity.Property(e => e.TiempoDuracion).HasMaxLength(25)

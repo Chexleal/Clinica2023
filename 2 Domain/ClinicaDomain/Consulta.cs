@@ -21,6 +21,12 @@ public partial class Consulta
 
     public string Temperatura { get; set; }
 
+    public string SaturacionOxigeno { get; set; }
+
+    public string Glucometro { get; set; }
+
+    public string FrecuenciaCardiaca { get; set; }
+
     public string MotivoConsulta { get; set; }
 
     public string HistoriaClinica { get; set; }
@@ -47,6 +53,9 @@ public partial class Consulta
         TiempoDuracion ??= string.Empty;
         PresionArterial ??= string.Empty;
         Temperatura ??= string.Empty;
+        SaturacionOxigeno ??= string.Empty;
+        Glucometro ??= string.Empty;
+        FrecuenciaCardiaca ??= string.Empty;
         MotivoConsulta ??= string.Empty;
         Diagnostico ??= string.Empty;
         Observaciones ??= string.Empty;

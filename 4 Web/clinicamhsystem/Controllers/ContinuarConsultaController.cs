@@ -65,6 +65,9 @@ public class ContinuarConsulta : Controller
         consultaDb.PresionArterial = consulta.PresionArterial;
         consultaDb.Radiografias = consulta.Radiografias;
         consultaDb.Temperatura = consulta.Temperatura;
+        consultaDb.SaturacionOxigeno = consulta.SaturacionOxigeno;
+        consultaDb.Glucometro = consulta.Glucometro;
+        consultaDb.FrecuenciaCardiaca = consulta.FrecuenciaCardiaca;
         consultaDb.Terminada = consulta.Terminada;
         consultaDb.TiempoDuracion = duracion.ToString();
 

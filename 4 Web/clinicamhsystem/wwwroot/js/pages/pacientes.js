@@ -33,12 +33,52 @@ function alertElminarPrevent(id) {
 
 function CreateTable() {
     $('#tablePaciente').DataTable({
-
         "responsive": true,
         "ordering": true,
         "lengthChange": true,
+        "processing": true,
+        "serverSide": true,
         dom: 'Bfrtip',
         "pageLength": 20,
+        "ajax": {
+            "url": "/Pacientes/GetPacientesTable",
+            "type": "GET"
+        },
+        "columns": [
+            { "data": null, "orderable": false, "defaultContent": "" },
+            { "data": "noRegistro" },
+            { "data": "nombre" },
+            { "data": "apellido" },
+            { "data": "dpi" },
+            { "data": "fechaNacimiento" },
+            { "data": "telefono" },
+            { "data": "correo" },
+            { "data": null, "orderable": false, "defaultContent": "" }
+        ],
+        "columnDefs": [
+            {
+                "targets": 0,
+                "render": function (data, type, row) {
+                    return '<button class="option btn btn-outline-info" onclick="ShowConsultaModal(\'' + row.idPaciente + '\')">Generar consulta</button>';
+                }
+            },
+            {
+                "targets": 5,
+                "render": function (data, type, row) {
+                    return getAge(row.fechaNacimiento);
+                }
+            },
+            {
+                "targets": 8,
+                "render": function (data, type, row) {
+                    return '<div class="options d-flex ">' +
+                        '<button class="option btn" onclick="ShowHistorialModal(\'' + row.idPaciente + '\')">Historial</button>' +
+                        '<button class="option btn" onclick="ShowEditModal(\'' + row.idPaciente + '\')">Ver Datos</button>' +
+                        '<button class="option btn" type="button" onclick="alertElminarPrevent(\'' + row.idPaciente + '\')">Eliminar</button>' +
+                        '</div>';
+                }
+            }
+        ],
         "language": {
             searchPlaceholder: 'Buscar paciente',
             sSearch: '',
@@ -109,6 +149,17 @@ function CreateTable() {
     });
 }
 
+
+function getAge(dateString) {
+    var fecha = new Date(dateString);
+    var hoy = new Date();
+    var edad = hoy.getFullYear() - fecha.getFullYear();
+    var m = hoy.getMonth() - fecha.getMonth();
+    if (m < 0 || (m === 0 && hoy.getDate() < fecha.getDate())) {
+        edad--;
+    }
+    return edad;
+}
 
 function ShowEditModal(id) {
     $('#modalEdit').modal('show');

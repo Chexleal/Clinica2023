@@ -62,7 +62,6 @@ html {
 
 .menu {
     text-align: center;
-    align-content: center;
     display: block;
     background-color: #8bc2f2;
     /*background-color: #8bc2f2; #B4D9F8; #66ADEA;#4D7491*/
@@ -84,6 +83,10 @@ html {
 .logo {
     display: block;
     width: 100%;
+}
+
+.logo img {
+    transform: scale(1.2);
 }
 
 .header {
@@ -168,7 +171,6 @@ hr {
 
     .menu {
         text-align: center;
-        align-content: center;
         display: block;
         background-color: #8bc2f2;
         /*background-color: #8bc2f2; #B4D9F8; #66ADEA;#4D7491*/
@@ -243,7 +245,6 @@ hr {
 
         .menu.hidden {
             text-align: center;
-            align-content: center;
             display: block;
             background-color: #8bc2f2;
             /*background-color: #8bc2f2; #B4D9F8; #66ADEA;#199687*/
@@ -283,7 +284,7 @@ hr {
 }
 
 @media (max-width: 480px) {
-    /* Estilos para smartphones en posición vertical */
+    /* Estilos para smartphones en posiciï¿½n vertical */
     .menu {
         transform: translateX(-100%);
         transition: transform 0.3s ease-in-out;
@@ -295,7 +296,6 @@ hr {
     }
         .menu.hidden {
             text-align: center;
-            align-content: center;
             display: block;
             background-color: #8bc2f2;
             /*background-color: #8bc2f2; #B4D9F8; #66ADEA;#199687*/

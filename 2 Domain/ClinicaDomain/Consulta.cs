@@ -21,11 +21,11 @@ public partial class Consulta
 
     public string Temperatura { get; set; }
 
-    public string SaturacionOxigeno { get; set; }
+    public string? SaturacionOxigeno { get; set; }
 
-    public string Glucometro { get; set; }
+    public string? Glucometro { get; set; }
 
-    public string FrecuenciaCardiaca { get; set; }
+    public string? FrecuenciaCardiaca { get; set; }
 
     public string MotivoConsulta { get; set; }
 

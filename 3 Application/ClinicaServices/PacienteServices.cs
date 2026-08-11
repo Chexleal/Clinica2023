@@ -1,5 +1,6 @@
 ﻿using Azure.Core;
 using ClinicaDomain;
+using Microsoft.EntityFrameworkCore;
 using PaaS.Framework.Utils.Extensions;
 
 namespace ClinicaServices;
@@ -12,6 +13,7 @@ public interface IPacienteServices
     void UpdatePaciente(Paciente paciente);
     void DeletePaciente(Guid id);
     List<Consulta>? GetConsultasFiltradas(Guid servicioId);
+    PagedResult<Paciente> GetPaginated(int start, int length, string search, int sortColumn, string sortDir);
 }
 public class PacienteServices : IPacienteServices
 {
@@ -52,6 +54,43 @@ public class PacienteServices : IPacienteServices
 	{
         return _dbContext.Pacientes.Where(x => !x.EstadoEliminado).ToList();
 	}
+
+    public PagedResult<Paciente> GetPaginated(int start, int length, string search, int sortColumn, string sortDir)
+    {
+        var query = _dbContext.Pacientes.AsNoTracking().Where(x => !x.EstadoEliminado);
+        var total = query.Count();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(x =>
+                EF.Functions.Collate(x.Nombre, "Latin1_General_CI_AI").Contains(term) ||
+                EF.Functions.Collate(x.Apellido, "Latin1_General_CI_AI").Contains(term) ||
+                EF.Functions.Collate(x.Dpi, "Latin1_General_CI_AI").Contains(term) ||
+                EF.Functions.Collate(x.Telefono, "Latin1_General_CI_AI").Contains(term) ||
+                EF.Functions.Collate(x.Correo, "Latin1_General_CI_AI").Contains(term) ||
+                x.NoRegistro.ToString().Contains(term));
+        }
+
+        var totalFiltered = query.Count();
+
+        var asc = string.Equals(sortDir, "asc", StringComparison.OrdinalIgnoreCase);
+        query = sortColumn switch
+        {
+            1 => asc ? query.OrderBy(x => x.NoRegistro) : query.OrderByDescending(x => x.NoRegistro),
+            2 => asc ? query.OrderBy(x => x.Nombre) : query.OrderByDescending(x => x.Nombre),
+            3 => asc ? query.OrderBy(x => x.Apellido) : query.OrderByDescending(x => x.Apellido),
+            4 => asc ? query.OrderBy(x => x.Dpi) : query.OrderByDescending(x => x.Dpi),
+            5 => asc ? query.OrderByDescending(x => x.FechaNacimiento) : query.OrderBy(x => x.FechaNacimiento),
+            6 => asc ? query.OrderBy(x => x.Telefono) : query.OrderByDescending(x => x.Telefono),
+            7 => asc ? query.OrderBy(x => x.Correo) : query.OrderByDescending(x => x.Correo),
+            _ => query.OrderBy(x => x.NoRegistro)
+        };
+
+        var data = length > 0 ? query.Skip(start).Take(length).ToList() : query.ToList();
+
+        return new PagedResult<Paciente> { Total = total, TotalFiltered = totalFiltered, Data = data };
+    }
 
     public void UpdatePaciente(Paciente paciente)
     {

@@ -22,8 +22,33 @@ public class PacientesController: Controller
 
     public IActionResult Index()
     {
-        var pacientes = _pacienteServices.GetAll();
-        return View(new PacientesViewModel { Pacientes=pacientes });
+        return View(new PacientesViewModel { Pacientes = new(), Consultas = new() });
+    }
+
+    [HttpGet]
+    public IActionResult GetPacientesTable(DataTableRequest request)
+    {
+        var result = _pacienteServices.GetPaginated(request.Start, request.Length, request.SearchValue, request.SortColumn, request.SortDir);
+
+        var data = result.Data.Select(p => new
+        {
+            p.IdPaciente,
+            p.NoRegistro,
+            p.Nombre,
+            p.Apellido,
+            p.Dpi,
+            p.FechaNacimiento,
+            p.Telefono,
+            p.Correo
+        });
+
+        return Json(new DataTableResponse<object>
+        {
+            Draw = request.Draw,
+            RecordsTotal = result.Total,
+            RecordsFiltered = result.TotalFiltered,
+            Data = data
+        });
     }
 
     // GET: UsuariosController/Detalles/fj33-4ra4r

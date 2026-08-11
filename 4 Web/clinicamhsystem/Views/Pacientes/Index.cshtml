@@ -42,32 +42,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model.Pacientes)
-                    {
-                        <tr>
-                            <td><button class="option btn btn-outline-info" onclick="ShowConsultaModal('@item.IdPaciente')">Generar consulta</button></td>
-                            <td>@item.NoRegistro</td>
-                            <td>@item.Nombre</td>
-                            <td>@item.Apellido</td>
-                            <td>@item.Dpi</td>
-                            <td>@DateManager.GetAge(item.FechaNacimiento)</td>
-                            <td>@item.Telefono</td>
-                            <td>@item.Correo</td>
-                            @*                            <td class="display">@item.Direccion</td>*@
-                            @*                            <td>@item.TipoSange</td>*@
-                            <td>
-                                <div class="options d-flex ">
-
-                                    <button class="option btn" onclick="ShowHistorialModal('@item.IdPaciente')">Historial</button>
-
-                                    <button class="option btn" onclick="ShowEditModal('@item.IdPaciente')">Ver Datos</button>
-
-                                    <button class="option btn" type="button" onclick="alertElminarPrevent('@item.IdPaciente')">Eliminar</button>
-
-                                </div>
-                            </td>
-                        </tr>
-                    }
                 </tbody>
             </table>
         </div>
@@ -78,6 +52,7 @@
 
 
 @section Scripts {
+    <partial name="_DataTablesButtonsScripts" />
     <script src="~/js/pages/pacientes.js" asp-append-version="true"></script>
 
     <script>

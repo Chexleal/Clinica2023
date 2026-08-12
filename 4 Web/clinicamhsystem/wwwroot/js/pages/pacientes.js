@@ -42,7 +42,7 @@ function CreateTable() {
         "pageLength": 20,
         "ajax": {
             "url": "/Pacientes/GetPacientesTable",
-            "type": "GET"
+            "type": "POST"
         },
         "columns": [
             { "data": null, "orderable": false, "defaultContent": "" },

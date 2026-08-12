@@ -62,14 +62,18 @@ public class PacienteServices : IPacienteServices
 
         if (!string.IsNullOrWhiteSpace(search))
         {
-            var term = search.Trim();
-            query = query.Where(x =>
-                EF.Functions.Collate(x.Nombre, "Latin1_General_CI_AI").Contains(term) ||
-                EF.Functions.Collate(x.Apellido, "Latin1_General_CI_AI").Contains(term) ||
-                EF.Functions.Collate(x.Dpi, "Latin1_General_CI_AI").Contains(term) ||
-                EF.Functions.Collate(x.Telefono, "Latin1_General_CI_AI").Contains(term) ||
-                EF.Functions.Collate(x.Correo, "Latin1_General_CI_AI").Contains(term) ||
-                x.NoRegistro.ToString().Contains(term));
+            var tokens = search.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            foreach (var token in tokens)
+            {
+                var term = token;
+                query = query.Where(x =>
+                    EF.Functions.Collate(x.Nombre, "Latin1_General_CI_AI").Contains(term) ||
+                    EF.Functions.Collate(x.Apellido, "Latin1_General_CI_AI").Contains(term) ||
+                    EF.Functions.Collate(x.Dpi, "Latin1_General_CI_AI").Contains(term) ||
+                    EF.Functions.Collate(x.Telefono, "Latin1_General_CI_AI").Contains(term) ||
+                    EF.Functions.Collate(x.Correo, "Latin1_General_CI_AI").Contains(term) ||
+                    x.NoRegistro.ToString().Contains(term));
+            }
         }
 
         var totalFiltered = query.Count();

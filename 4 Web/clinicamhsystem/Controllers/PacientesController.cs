@@ -25,7 +25,7 @@ public class PacientesController: Controller
         return View(new PacientesViewModel { Pacientes = new(), Consultas = new() });
     }
 
-    [HttpGet]
+    [HttpPost]
     public IActionResult GetPacientesTable(DataTableRequest request)
     {
         var result = _pacienteServices.GetPaginated(request.Start, request.Length, request.SearchValue, request.SortColumn, request.SortDir);

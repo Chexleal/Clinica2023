@@ -4,22 +4,22 @@ namespace clinicaWeb.Models
 {
     public class DataTableRequest
     {
-        [FromQuery(Name = "draw")]
+        [FromForm(Name = "draw")]
         public int Draw { get; set; }
 
-        [FromQuery(Name = "start")]
+        [FromForm(Name = "start")]
         public int Start { get; set; }
 
-        [FromQuery(Name = "length")]
+        [FromForm(Name = "length")]
         public int Length { get; set; }
 
-        [FromQuery(Name = "search[value]")]
+        [FromForm(Name = "search[value]")]
         public string SearchValue { get; set; }
 
-        [FromQuery(Name = "order[0][column]")]
+        [FromForm(Name = "order[0][column]")]
         public int SortColumn { get; set; }
 
-        [FromQuery(Name = "order[0][dir]")]
+        [FromForm(Name = "order[0][dir]")]
         public string SortDir { get; set; }
     }
 

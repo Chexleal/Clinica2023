@@ -52,3 +52,25 @@ function logout() {
 
 const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
 popoverTriggerList.forEach(pop => new bootstrap.Popover(pop));
+
+function successWithTimer(url) {
+    Swal.fire({
+        icon: 'success',
+        title: 'Cambios guardados',
+        showConfirmButton: false,
+        timer: 1500
+    }).then((result) => {
+        if (result.dismiss === Swal.DismissReason.timer && url) {
+            window.location.href = url;
+        }
+    });
+}
+
+function failWithTimer() {
+    Swal.fire({
+        icon: 'error',
+        title: 'Ocurrió un error',
+        showConfirmButton: false,
+        timer: 1500
+    });
+}

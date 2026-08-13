@@ -19,10 +19,16 @@ namespace ClinicaServices
         List<Consulta> GetAll();
         List<Consulta> GetAllByPacienteId(Guid pacienteId);
         List<Consulta> GetAllByPacienteId(Guid pacienteId, DateTime from, DateTime to);
+        List<Consulta> GetAllByRangeWithPaciente(DateTime from, DateTime to);
         List<Consulta> GetAllByMonth(int month);
         List<Consulta> GetAllPaidByMonth(int month);
         List<Consulta> GetAllOpen();
         List<Consulta> GetAllNotPaid();
+        int CountOpen();
+        int CountNotPaid();
+        int CountByMonth(int month);
+        decimal SumPaidByMonth(int month);
+        PagedResult<Consulta> GetPaginatedOpen(int start, int length, string search, int sortColumn, string sortDir);
         //List<Consulta> SearchConsulta(string input);
         void AddConsulta(Consulta consulta);
         void UpdateConsulta(Consulta consulta);
@@ -60,6 +66,12 @@ namespace ClinicaServices
             return _dbContext.Consulta.Where(x => x.IdPaciente == pacienteId && x.Fecha>=from && x.Fecha<=to && x.Eliminada == false).ToList();
         }
 
+        public List<Consulta> GetAllByRangeWithPaciente(DateTime from, DateTime to)
+        {
+            return _dbContext.Consulta.Include(x => x.PacienteInformacion)
+                .Where(x => x.Fecha >= from && x.Fecha <= to && x.Eliminada == false).ToList();
+        }
+
         public List<Consulta> GetAllByMonth(int month)
         {
             return _dbContext.Consulta.Where(x => x.Fecha.Month.Equals(month) && x.Fecha.Year.Equals(DateTime.Today.Year) && x.Eliminada == false).ToList();
@@ -77,7 +89,64 @@ namespace ClinicaServices
 
         public List<Consulta> GetAllNotPaid()
         {
-            return _dbContext.Consulta.Where(x => x.Terminada && !x.Pagada && x.Eliminada == false).ToList();
+            return _dbContext.Consulta.Include(x => x.PacienteInformacion).Where(x => x.Terminada && !x.Pagada && x.Eliminada == false).ToList();
+        }
+
+        public int CountOpen()
+        {
+            return _dbContext.Consulta.Count(x => !x.Terminada && !x.Eliminada);
+        }
+
+        public int CountNotPaid()
+        {
+            return _dbContext.Consulta.Count(x => x.Terminada && !x.Pagada && !x.Eliminada);
+        }
+
+        public int CountByMonth(int month)
+        {
+            return _dbContext.Consulta.Count(x => x.Fecha.Month == month && x.Fecha.Year == DateTime.Today.Year && !x.Eliminada);
+        }
+
+        public decimal SumPaidByMonth(int month)
+        {
+            return _dbContext.Consulta.Where(x => x.Fecha.Month == month && x.Fecha.Year == DateTime.Today.Year && x.Pagada && !x.Eliminada).Sum(x => x.Total);
+        }
+
+        public PagedResult<Consulta> GetPaginatedOpen(int start, int length, string search, int sortColumn, string sortDir)
+        {
+            var query = _dbContext.Consulta.Include(x => x.PacienteInformacion).AsNoTracking()
+                .Where(x => !x.Terminada && !x.Eliminada);
+            var total = query.Count();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var tokens = search.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                foreach (var token in tokens)
+                {
+                    var term = token;
+                    query = query.Where(x =>
+                        EF.Functions.Collate(x.MotivoConsulta, "Latin1_General_CI_AI").Contains(term) ||
+                        EF.Functions.Collate(x.PacienteInformacion.Nombre, "Latin1_General_CI_AI").Contains(term) ||
+                        EF.Functions.Collate(x.PacienteInformacion.Apellido, "Latin1_General_CI_AI").Contains(term) ||
+                        EF.Functions.Collate(x.PacienteInformacion.Dpi, "Latin1_General_CI_AI").Contains(term));
+                }
+            }
+
+            var totalFiltered = query.Count();
+
+            var asc = string.Equals(sortDir, "asc", StringComparison.OrdinalIgnoreCase);
+            query = sortColumn switch
+            {
+                1 => asc ? query.OrderBy(x => x.Fecha) : query.OrderByDescending(x => x.Fecha),
+                2 => asc ? query.OrderBy(x => x.PacienteInformacion.Nombre) : query.OrderByDescending(x => x.PacienteInformacion.Nombre),
+                3 => asc ? query.OrderBy(x => x.PacienteInformacion.Apellido) : query.OrderByDescending(x => x.PacienteInformacion.Apellido),
+                4 => asc ? query.OrderBy(x => x.MotivoConsulta) : query.OrderByDescending(x => x.MotivoConsulta),
+                _ => query.OrderBy(x => x.Fecha)
+            };
+
+            var data = length > 0 ? query.Skip(start).Take(length).ToList() : query.ToList();
+
+            return new PagedResult<Consulta> { Total = total, TotalFiltered = totalFiltered, Data = data };
         }
 
         public void DeleteConsulta(Guid id)

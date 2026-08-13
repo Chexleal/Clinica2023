@@ -13,6 +13,7 @@ namespace ClinicaServices
     {
         List<Cita> GetAll();
         List<Cita> GetAllForToday();
+        int CountForToday();
         void Add(Cita cita);
         void Delete(Guid id);
         DateTime GetNextCita(DateTime fecha, Guid idPaciente);
@@ -40,7 +41,12 @@ namespace ClinicaServices
 
         public List<Cita> GetAllForToday()
         {
-            return _dbContext.Cita.Where(x => x.FechaHora.Year == DateTime.Today.Year & x.FechaHora.Month == DateTime.Today.Month & x.FechaHora.Day == DateTime.Today.Day).ToList();
+            return _dbContext.Cita.Where(x => x.FechaHora.Year == DateTime.Today.Year && x.FechaHora.Month == DateTime.Today.Month && x.FechaHora.Day == DateTime.Today.Day).ToList();
+        }
+
+        public int CountForToday()
+        {
+            return _dbContext.Cita.Count(x => x.FechaHora.Year == DateTime.Today.Year && x.FechaHora.Month == DateTime.Today.Month && x.FechaHora.Day == DateTime.Today.Day);
         }
 
 

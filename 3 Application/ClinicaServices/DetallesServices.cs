@@ -13,8 +13,8 @@ namespace ClinicaServices
     public interface IDetallesServices
     {
         DetalleCobro GetDetalle(Guid id);
-        List<DetalleCobro> GetAll();
         List<DetalleCobro> GetDetallesByConsulta(Guid consultaId);
+        List<DetalleCobro> GetByRange(DateTime from, DateTime to);
         void AddDetalle(DetalleCobro detalle);
         void Delete(Guid id);
         void Pagar(Guid IdConsulta);
@@ -38,14 +38,11 @@ namespace ClinicaServices
             return _dbContext.DetalleCobros.Where(x => x.IdConsulta.Equals(consultaId)).ToList();
         }
 
-        //public List<DetalleCobro> GetDetallesByServicio(Guid consultaId)
-        //{
-        //    return _dbContext.DetalleCobros.Where(x => x.IdConsulta.Equals(consultaId)).ToList();
-        //}
-
-        public List<DetalleCobro> GetAll()
+        public List<DetalleCobro> GetByRange(DateTime from, DateTime to)
         {
-            return _dbContext.DetalleCobros.ToList();
+            return _dbContext.DetalleCobros
+                .Where(d => _dbContext.Consulta.Any(c => c.IdConsulta == d.IdConsulta && c.Fecha >= from && c.Fecha <= to && !c.Eliminada))
+                .ToList();
         }
 
         public void AddDetalle(DetalleCobro detalle)

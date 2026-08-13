@@ -1,10 +1,7 @@
 ﻿using ClinicaDomain;
 using ClinicaServices;
 using clinicaWeb.Models;
-using iText.StyledXmlParser.Jsoup.Safety;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.VisualBasic.Syntax;
-using Microsoft.EntityFrameworkCore;
 
 namespace clinicaWeb.Controllers
 {
@@ -21,9 +18,9 @@ namespace clinicaWeb.Controllers
 
         public IActionResult Index()
         {
-            var citasParaHoy = _citaServices.GetAllForToday().Count;
-            var consultasAbiertas = _consultaServices.GetAllOpen().Count;
-            var consultasPendientesPago = _consultaServices.GetAllNotPaid().Count;
+            var citasParaHoy = _citaServices.CountForToday();
+            var consultasAbiertas = _consultaServices.CountOpen();
+            var consultasPendientesPago = _consultaServices.CountNotPaid();
 
             //    var graficaConsultas = new List<ChartData>
             //{
@@ -41,21 +38,16 @@ namespace clinicaWeb.Controllers
 
             var dataConsultas = new List<int>
             {
-                _consultaServices.GetAllByMonth(DateTime.Today.AddMonths(-2).Month).Count,
-                _consultaServices.GetAllByMonth(DateTime.Today.AddMonths(-1).Month).Count,
-                _consultaServices.GetAllByMonth(DateTime.Today.Month).Count
+                _consultaServices.CountByMonth(DateTime.Today.AddMonths(-2).Month),
+                _consultaServices.CountByMonth(DateTime.Today.AddMonths(-1).Month),
+                _consultaServices.CountByMonth(DateTime.Today.Month)
             };
-
-            decimal ingresosMesA = 0;
-            _consultaServices.GetAllPaidByMonth(DateTime.Today.AddMonths(-2).Month).ForEach(x => { ingresosMesA += x.Total; });
-            decimal ingresosMesB = 0;
-            _consultaServices.GetAllPaidByMonth(DateTime.Today.AddMonths(-1).Month).ForEach(x => { ingresosMesB += x.Total; });
-            decimal ingresosMesC = 0;
-            _consultaServices.GetAllPaidByMonth(DateTime.Today.Month).ForEach(x => { ingresosMesC += x.Total; });
 
             var dataIngresos = new List<decimal>
             {
-                ingresosMesA, ingresosMesB, ingresosMesC
+                _consultaServices.SumPaidByMonth(DateTime.Today.AddMonths(-2).Month),
+                _consultaServices.SumPaidByMonth(DateTime.Today.AddMonths(-1).Month),
+                _consultaServices.SumPaidByMonth(DateTime.Today.Month)
             };
 
             //DataIngresos

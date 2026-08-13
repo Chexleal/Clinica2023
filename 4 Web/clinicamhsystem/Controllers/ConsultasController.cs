@@ -25,12 +25,30 @@ public class ConsultasController : Controller
     public ActionResult Index()
     {
         var pacientes = _pacienteServices.GetAll();
-        var consultas = _consultaServices.GetAll();
-        foreach(var consulta in consultas)
+        return View(new ConsultasViewModel { Consultas = new(), Pacientes = pacientes });
+    }
+
+    [HttpPost]
+    public IActionResult GetConsultasTable(DataTableRequest request)
+    {
+        var result = _consultaServices.GetPaginatedOpen(request.Start, request.Length, request.SearchValue, request.SortColumn, request.SortDir);
+
+        var data = result.Data.Select(c => new
         {
-            consulta.PacienteInformacion = pacientes.FirstOrDefault(x => x.IdPaciente == consulta.IdPaciente);
-        }
-        return View(new ConsultasViewModel { Consultas = consultas, Pacientes = pacientes });
+            c.IdConsulta,
+            Fecha = c.Fecha.ToString("dd/MM/yyyy HH:mm"),
+            PacienteNombre = c.PacienteInformacion?.Nombre,
+            PacienteApellido = c.PacienteInformacion?.Apellido,
+            c.MotivoConsulta
+        });
+
+        return Json(new DataTableResponse<object>
+        {
+            Draw = request.Draw,
+            RecordsTotal = result.Total,
+            RecordsFiltered = result.TotalFiltered,
+            Data = data
+        });
     }
 
     /*
@@ -114,14 +132,7 @@ public class ConsultasController : Controller
             _consultaServices.DeleteConsulta(id);
         }
         catch {  }
-
-        var pacientes = _pacienteServices.GetAll();
-        var consultas = _consultaServices.GetAll();
-        foreach (var consulta in consultas)
-        {
-            consulta.PacienteInformacion = pacientes.FirstOrDefault(x => x.IdPaciente == consulta.IdPaciente);
-        }
-        return View("Index", new ConsultasViewModel { Consultas = consultas, Pacientes = pacientes });
+        return RedirectToAction("Index");
     }
 
 

@@ -13,23 +13,18 @@ public class PagosController : Controller
     private readonly IConsultaServices _consultaServices;
     private readonly IDetallesServices _detallesServices;
     private readonly IServiciosServices _serviciosServices;
-    private readonly IPacienteServices _pacientesServices;
 
-    public PagosController(IConsultaServices consultaServices, IDetallesServices detallesServices, IServiciosServices serviciosServices, IPacienteServices pacientesServices)
+    public PagosController(IConsultaServices consultaServices, IDetallesServices detallesServices, IServiciosServices serviciosServices)
     {
         _consultaServices = consultaServices;
         _detallesServices = detallesServices;
         _serviciosServices = serviciosServices;
-        _pacientesServices = pacientesServices;
     }
 
     // GET: PagosController
     public ActionResult Index()
     {
         var consultas = _consultaServices.GetAllNotPaid();
-        foreach(var consulta in consultas)
-            consulta.PacienteInformacion ??= _pacientesServices.GetPacienteById(consulta.IdPaciente);
-        //var detalles = _detallesServices.GetAll();
         var servicios = _serviciosServices.GetAll();
         return View(new PagarConsultaViewModel { Consultas = consultas, Servicios = servicios });
     }
@@ -38,8 +33,7 @@ public class PagosController : Controller
     [HttpPost]
     public IActionResult Detalles(Guid idconsulta)
     {
-        var detalles = _detallesServices.GetAll();
-        //Console.Write("Detalless -------------------------------------------------" + detalles.Count);
+        var detalles = _detallesServices.GetDetallesByConsulta(idconsulta);
         var servicios = _serviciosServices.GetAll();
         var consulta = _consultaServices.GetConsulta(idconsulta);
         return PartialView("Detalles", new DetallesPagarViewModel { Detalles = detalles, Servicios = servicios, consulta = consulta });
@@ -56,7 +50,7 @@ public class PagosController : Controller
 
         _detallesServices.AddDetalle(detalle);
 
-        var detalles = _detallesServices.GetAll();
+        var detalles = _detallesServices.GetDetallesByConsulta(detalle.IdConsulta);
         var servicios = _serviciosServices.GetAll();
         var consulta = _consultaServices.GetConsulta(detalle.IdConsulta);
         return PartialView("Detalles", (new DetallesPagarViewModel { Detalles = detalles, Servicios = servicios, consulta = consulta }));
@@ -70,7 +64,7 @@ public class PagosController : Controller
             _detallesServices.Delete(id);
         }
         catch { }
-        var detalles = _detallesServices.GetAll();
+        var detalles = _detallesServices.GetDetallesByConsulta(idConsulta);
         var servicios = _serviciosServices.GetAll();
         var consulta = _consultaServices.GetConsulta(idConsulta);
         return PartialView("Detalles", (new DetallesPagarViewModel { Detalles = detalles, Servicios = servicios, consulta = consulta }));

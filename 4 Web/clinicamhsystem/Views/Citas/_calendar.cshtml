@@ -60,40 +60,26 @@
                 deleteButton.classList.add('delete-button');
 
                 deleteButton.addEventListener('click', function () {
-                    swal({
+                    Swal.fire({
                         title: '¿Está seguro de eliminar a esta cita?',
                         icon: 'warning',
-                        buttons: ["No", "Si"]
+                        showCancelButton: true,
+                        confirmButtonText: 'Si',
+                        cancelButtonText: 'No'
                     }).then((result) => {
                         var eventId = info.event.id;
 
-                        if (result) {
+                        if (result.isConfirmed) {
 
                             $.ajax({
                                 url: '/Citas/Eliminar',
                                 type: 'POST',
                                 data: { id: eventId },
                                 success: function (result) {
-                                    swal({
-                                        icon: 'success',
-                                        title: 'Cambios guardados',
-                                        showConfirmButton: false,
-                                        timer: 1500
-                                    }).then((result) => {
-                                        if (result.dismiss === Swal.DismissReason.timer) {
-                                        }
-                                    })
+                                    successWithTimer();
                                 },
                                 error: function (error) {
-                                    swal({
-                                        icon: 'error',
-                                        title: 'Ocurrió un error',
-                                        showConfirmButton: false,
-                                        timer: 1500
-                                    }).then((result) => {
-                                        if (result.dismiss === Swal.DismissReason.timer) {
-                                        }
-                                    })
+                                    failWithTimer();
                                     console.log(error);
                                 }
                             });

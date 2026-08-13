@@ -53,19 +53,15 @@ public class ReportesController : Controller
     [HttpPost]
     public ActionResult Servicios(DateTime from_dt, DateTime to_dt)
     {
-        //string from = Request.Form["from"];
-        //string to = Request.Form["to"];
-
-        //DateTime from_dt = DateTime.ParseExact(from, "yyyy-MM-dd", null);
-        //DateTime to_dt = DateTime.ParseExact(to, "yyyy-MM-dd", null);
-
-        var pacientes = _pacienteServices.GetAll();
-        foreach(var paciente in pacientes)
-            paciente.Consulta = _consultaServices.GetAllByPacienteId(paciente.IdPaciente, from_dt, to_dt);
+        var consultas = _consultaServices.GetAllByRangeWithPaciente(from_dt, to_dt);
+        var pacientes = consultas.Select(c => c.PacienteInformacion).DistinctBy(p => p.IdPaciente).ToList();
+        var consultasPorPaciente = consultas.ToLookup(c => c.IdPaciente);
+        foreach (var paciente in pacientes)
+            paciente.Consulta = consultasPorPaciente[paciente.IdPaciente].ToList();
         var servicios = _serviciosServices.GetAll();
-        var detalles = _detallesServices.GetAll();
+        var detalles = _detallesServices.GetByRange(from_dt, to_dt);
 
-        return View("Index",new ReportesViewModel { Pacientes = pacientes, Servicios = servicios, Detalles = detalles, EsServicio = true, From = from_dt, To = to_dt, Paciente = null});
+        return View("Index", new ReportesViewModel { Pacientes = pacientes, Servicios = servicios, Detalles = detalles, EsServicio = true, From = from_dt, To = to_dt, Paciente = null});
     }
 
     [HttpPost]

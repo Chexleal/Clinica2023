@@ -192,7 +192,7 @@
                         type: 'POST',
                         data: { id: id},
                         success: function (result) {
-                            successWithTimer();
+                            successWithTimer('/Usuarios/Index');
                         },
                         error: function (error) {
                             failWithTimer();
@@ -220,7 +220,7 @@
                         type: 'POST',
                         data: { id: id, state: state },
                         success: function (result) {
-                            successWithTimer();
+                            successWithTimer('/Usuarios/Index');
                         },
                         error: function (error) {
                             failWithTimer();
@@ -239,38 +239,13 @@
                     type: 'POST',
                     data: { id: id, state: state },
                     success: function (result) {
-                        successWithTimer();
+                        successWithTimer('/Usuarios/Index');
                     },
                     error: function (error) {
                     failWithTimer();
                         console.log(error);
                     }
                 });
-        }
-
-        function successWithTimer() {
-            Swal.fire({
-                icon: 'success',
-                title: 'Cambios guardados',
-                showConfirmButton: false,
-                timer: 1500
-            }).then((result) => {
-                if (result.dismiss === Swal.DismissReason.timer) {
-                    window.location.href = '/Usuarios/Index';
-                }
-            })
-        }
-
-        function failWithTimer() {
-            Swal.fire({
-                icon: 'error',
-                title: 'Ocurrió un error',
-                showConfirmButton: false,
-                timer: 1500
-            }).then((result) => {
-                if (result.dismiss === Swal.DismissReason.timer) {
-                }
-            })
         }
 
         let urls = {

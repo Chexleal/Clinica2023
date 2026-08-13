@@ -62,41 +62,18 @@
         function alertAgregarPrevent(e) {
             e.preventDefault();
 
-            swal({
+            Swal.fire({
                 title: '¿Esta seguro de agregar a un nuevo paciente?',
                 icon: 'warning',
-                buttons: ["No", "Si"]
+                showCancelButton: true,
+                confirmButtonText: 'Si',
+                cancelButtonText: 'No'
             }).then((result) => {
-                if (result) {
+                if (result.isConfirmed) {
                     const formulario = document.getElementById('crear');
                     formulario.submit();
                 }
 
-            })
-        }
-
-        function successWithTimer() {
-            swal({
-                icon: 'success',
-                title: 'Cambios guardados',
-                showConfirmButton: false,
-                timer: 1500
-            }).then((result) => {
-                if (result.dismiss === Swal.DismissReason.timer) {
-                    window.location.href = '/Pacientes/Index';
-                }
-            })
-        }
-
-        function failWithTimer() {
-            Swal.fire({
-                icon: 'error',
-                title: 'Ocurrió un error',
-                showConfirmButton: false,
-                timer: 1500
-            }).then((result) => {
-                if (result.dismiss === Swal.DismissReason.timer) {
-                }
             })
         }
 

@@ -11,76 +11,56 @@ $(document).ready(function () {
 });
 
 function CreateTable() {
+    if (!$('#table').length) return;
     $('#table').DataTable({
+        "responsive": true,
         "ordering": true,
         "lengthChange": true,
+        "processing": true,
+        "serverSide": true,
         dom: 'Bfrtip',
         "pageLength": 20,
-        "language": {
-            searchPlaceholder: 'Buscar consulta',
-            sSearch: '',
-            lengthMenu: 'MENU items/page',
-            paginate: {
-                previous: 'Anterior',
-                next: 'Siguiente',
-            },
-            info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-            infoEmpty: "Mostrando 0 a 0 de 0 registros",
-            infoFiltered: "(Filtrado de _TOTAL_ registros)",
-            processing: `<div class="progress" style="margin: 0; width: 100%">
-                                      <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
-                                    </div>`,
-            emptyTable: "No hay datos disponibles en esta tabla",
-            buttons: {
-                copyTitle: "Copiar al portapapeles",
-                copySuccess: {
-                    1: "Copi&oacute; una fila al portapapeles",
-                    _: "Se copiaron %d filas al portapapeles"
-                },
-            }
+        "ajax": {
+            "url": "/Consultas/GetConsultasTable",
+            "type": "POST"
         },
-        buttons: [
+        "columns": [
+            { "data": null, "orderable": false, "defaultContent": "" },
+            { "data": "fecha" },
+            { "data": "pacienteNombre" },
+            { "data": "pacienteApellido" },
+            { "data": "motivoConsulta" },
+            { "data": null, "orderable": false, "defaultContent": "" }
+        ],
+        "columnDefs": [
             {
-                extend: 'copy',
-                text: '<i class="fas fa-clone"></i><strong>Copiar</strong>',
-                messageTop: '',
-                className: "btn btn-outline-dark",
-                title: "Consultas",
-                filename: "Consultas",
-                exportOptions: {
-                    columns: [1, 2, 3, 4],
-                    page: 'all'
-                },
-                orientation: "landscape",
-                pageSize: "LEGAL"
+                "targets": 0,
+                "render": function (data, type, row) {
+                    return '<a class="option btn" href="/ContinuarConsulta?consultaId=' + row.idConsulta + '">Continuar</a>';
+                }
             },
             {
-                extend: 'excel',
-                text: '<i class="fas fa-file-excel"></i><strong>Excel </strong>',
-                messageTop: '',
-                className: "btn btn-outline-dark",
-                title: "Consultas",
-                filename: "Consultas",
-                exportOptions: {
-                    columns: [1, 2, 3, 4],
-                    modifier: {
-                        page: 'all',
-                        search: 'none'
-                    }
-                },
-                orientation: "landscape",
-                pageSize: "LEGAL"
-            }],
-        columnDefs: [
-            {
-                targets: [4], // Índice de la columna que deseas truncar
-                render: function (data, type, row) {
-                    if (type === 'display' && data.length > 30) {
+                "targets": 4,
+                "render": function (data, type, row) {
+                    if (type === 'display' && data && data.length > 30) {
                         return '<span title="' + data + '">' + data.substr(0, 30) + '...</span>';
                     }
                     return data;
                 }
+            },
+            {
+                "targets": 5,
+                "render": function (data, type, row) {
+                    var token = $('input[name="__RequestVerificationToken"]').first().val();
+                    return '<form method="post" action="/Consultas/Eliminar">' +
+                        '<input type="hidden" name="__RequestVerificationToken" value="' + token + '" />' +
+                        '<input type="hidden" name="id" value="' + row.idConsulta + '" />' +
+                        '<button class="option btn" type="submit">Eliminar</button>' +
+                        '</form>';
+                }
             }
-        ]
+        ],
+        "language": DataTablesCommon.withLanguage({ searchPlaceholder: 'Buscar consulta' }),
+        buttons: DataTablesCommon.exportButtons('Consultas', [1, 2, 3, 4], false),
     });
 }

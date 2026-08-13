@@ -167,12 +167,14 @@
 
         function alertTerminarConsulta(e) {
             e.preventDefault();
-            swal({
+            Swal.fire({
                 title: '¿Esta seguro de terminar esta consulta?',
                 icon: 'warning',
-                buttons: ["No", "Si"]
+                showCancelButton: true,
+                confirmButtonText: 'Si',
+                cancelButtonText: 'No'
             }).then((result) => {
-                if(result){
+                if (result.isConfirmed) {
                     const formulario = document.getElementById('formCST');
                     $("#terminado").val(true);
                     formulario.submit();
@@ -182,14 +184,14 @@
 
         function guardadoAlert(e) {
             e.preventDefault();
-            swal({
+            Swal.fire({
                 icon: 'success',
                 title: 'Cambios guardados',
-                button: false,
+                showConfirmButton: false,
                 timer: 1500
-            }).then((result)=>{
-                    const formulario = document.getElementById('formCST');
-                    formulario.submit();
+            }).then(() => {
+                const formulario = document.getElementById('formCST');
+                formulario.submit();
             })
         }
 

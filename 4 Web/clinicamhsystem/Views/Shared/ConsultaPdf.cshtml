@@ -12,25 +12,24 @@
 
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preload" href="@Url.Content("~/css/pages/RecetaStyle.css")" as="style" />
+    <link rel="preload" href="@Url.Content("~/img/NewLogoOp-print.png")" as="image" fetchpriority="high" />
+    <link rel="preload" href="@Url.Content("~/img/NewLogoOp-wm-baked.png")" as="image" fetchpriority="low" />
+    <link rel="preload" href="@Url.Content("~/fonts/roboto-latin.woff2")" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="~/css/pages/RecetaStyle.css" asp-append-version="true" />
 </head>
 
 
 <body>
-    <img src="@Url.Content("~/img/NewLogoOp.png")" alt="Marca de agua" class="watermark" />
-
-    <script>
-        window.onload = function () {
-            window.print();
-        };
-    </script>
+    <img src="@Url.Content("~/img/NewLogoOp-wm-baked.png")" alt="" class="watermark" width="900" height="463" decoding="async" fetchpriority="low" aria-hidden="true" onerror="this.style.display='none'" />
 
 <div class="fila">
   <div class="logo-container">
-    <img src="@Url.Content("~/img/NewLogoOp.png")" alt="Logo">
+    <img src="@Url.Content("~/img/NewLogoOp-print.png")" alt="Logo" onerror="this.onerror=null;this.src='@Url.Content("~/img/NewLogoOp.png")'">
   </div>
 
   <div class="horario">
@@ -42,12 +41,12 @@
 
 
 <div class="upper2" style="margin-top:-10px;">
-    <hr style="border: 0.5px solid #004169 ;">
+    <hr style="border: 0.5px solid #0d659b ;">
 
     <table style="border-style: none; width:100%;">
         <tr style="margin-left: 10px;margin-right: 15px">
             <th style="text-align: left;padding-left: 2%;">
-                    <h1 style="display: inline; font-size: 13px; font-weight: bold; "> Direccion:</h1><br>
+                    <h1 style="display: inline; font-size: 13px; font-weight: bold; "> Dirección:</h1><br>
                     <b style="font-size: 12px; font-weight: lighter;">Calzada Santa Lucia Norte No. 22</b><br>
                     <b style="font-size: 12px; font-weight: lighter;">Antigua Guatemala</b><br>
             </th>
@@ -60,9 +59,9 @@
 </div>
 
 <div class="middle">
-    <hr style="border: 0.5px solid #004169 ; ">
+    <hr style="border: 0.5px solid #0d659b ; ">
         <b style="font-size: 13px;font-weight:lighter;margin-left:10px;padding-left: 2%;">Paciente: @($"{Model.Paciente.Nombre} {Model.Paciente.Apellido}")</b>
-    <hr style="border: 0.5px solid #004169 ;">
+    <hr style="border: 0.5px solid #0d659b ;">
         <div class="detalleReceta" style="margin-top:30px;">
             <table style="border-style: none; width:100%;">
                 <tr style="margin-left: 3px">
@@ -109,15 +108,46 @@
 <div class="under">
             <p style=" text-align: center; font-size: 11px; font-weight:bold">-NO PERMITA QUE LE CAMBIEN LA RECETA-</p>
             <p style="text-align: center; font-size: 11px; font-style: italic;">@fraseElegida</p>
-            <hr style="border: 0.5px solid #004169 ;">
+            <hr style="border: 0.5px solid #0d659b ;">
             <h1 style="display: inline; font-size: 11px; "> Contacto: </h1><br>
-            <p style="display: inline; font-size: 11px; font-weight:lighter"><img src="~/img/tel.png" style="width: 14px; height: 14px;"> Tel: 7832-6115 - <img src="~/img/cel.png" style="width: 14px; height: 14px;"> Cel: 3787-1021</p><br>
-            <p style="display: inline; font-size: 11px; font-weight:lighter"><img src="~/img/correo.png" style="width: 15px; height: 15px;"> Correo: dr.manuelhernandeztyo@gmail.com </p>
-            <p style="display: inline; font-size: 11px; font-weight:lighter;padding-left:5px;"><img src="~/img/web.png" style="width: 15px; height: 15px;"> drmanuelhernandez.com </p>
-    <hr style="border: 0.5px solid #004169 ;">
-            <p style=" text-align: center; font-size: 13px; font-weight:bold"><img src="~/img/facebook.png" style="width: 15px; height: 15px;"> Clínicas Dr. Manuel Hernández - Traumatología y Ortopedia del Deporte</p>
+            <p style="display: inline; font-size: 11px; font-weight:lighter"><span aria-hidden="true">☎</span> Tel: 7832-6115 - <span aria-hidden="true">📱</span> Cel: 3787-1021</p><br>
+            <p style="display: inline; font-size: 11px; font-weight:lighter"><span aria-hidden="true">✉</span> Correo: dr.manuelhernandeztyo@gmail.com </p>
+            <p style="display: inline; font-size: 11px; font-weight:lighter;padding-left:5px;"><span aria-hidden="true">🌐</span> drmanuelhernandez.com </p>
+    <hr style="border: 0.5px solid #0d659b ;">
+            <p style=" text-align: center; font-size: 13px; font-weight:bold"><span aria-hidden="true">📘</span> Clínicas Dr. Manuel Hernández - Traumatología y Ortopedia del Deporte</p>
 </div>
     </footer>
 
+    <script>
+    (function(){
+        let printed=false;
+        function doPrint(){
+            if(printed) return;
+            printed=true;
+            // doble rAF asegura layout estable antes del preview
+            requestAnimationFrame(function(){
+                requestAnimationFrame(function(){ window.print(); });
+            });
+        }
+        // 1) Cuando las fuentes están listas (evita reflow en preview)
+        if(document.fonts && document.fonts.ready){
+            document.fonts.ready.then(function(){ setTimeout(doPrint, 80); });
+        }
+        // 2) DOM listo + logo cargado
+        document.addEventListener('DOMContentLoaded', function(){
+            var logo=document.querySelector('.logo-container img');
+            if(logo && logo.complete){
+                setTimeout(doPrint, 120);
+            } else if(logo){
+                logo.addEventListener('load', function(){ setTimeout(doPrint, 120); }, {once:true});
+                logo.addEventListener('error', function(){ setTimeout(doPrint, 120); }, {once:true});
+            }
+            // fallback por si las fuentes tardan
+            setTimeout(doPrint, 700);
+        });
+        // 3) fallback final window.load
+        window.addEventListener('load', function(){ setTimeout(doPrint, 80); });
+    })();
+    </script>
 </body>
 </html>

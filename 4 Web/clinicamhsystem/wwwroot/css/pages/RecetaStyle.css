@@ -139,16 +139,16 @@ h6 {
         margin-top:3%;
     }
 }
-/*MARCA */
+/*MARCA - baked: la imagen ya lleva la transparencia (~10%), no aplicar doble opacity en CSS */
 .watermark {
     position: fixed; /* Fija en la ventana */
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%); /* Centra exactamente */
-    opacity: 0.1; /* Baja opacidad para que no moleste */
+    opacity: 0.5; /* baked en PNG, no filtrar de nuevo */
     z-index: 0; /* Detrás de todo */
     pointer-events: none; /* Que no interfiera con clicks */
-    max-width: 90vw; /* Ajusta tamaño, máximo 50% del ancho */
-    max-height: 90vh; /* Ajusta máximo alto */
+    max-width: 120vw; /* Ajusta tamaño, máximo 50% del ancho */
+    max-height: 50vh; /* Ajusta máximo alto */
     user-select: none; /* No seleccionable */
 }

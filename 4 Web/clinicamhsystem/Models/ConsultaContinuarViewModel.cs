@@ -1,6 +1,6 @@
 using ClinicaDomain;
 
-namespace clinicamhsystem.Models
+namespace clinicaWeb.Models
 {
     public class ConsultaContinuarViewModel
     {

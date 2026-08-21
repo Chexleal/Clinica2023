@@ -1,4 +1,5 @@
 ﻿using ClinicaDomain;
+using clinicamhsystem.Models;
 using ClinicaServices;
 using clinicaWeb.Models;
 using clinicaWeb.Security;
@@ -99,24 +100,22 @@ public class ContinuarConsulta : Controller
 
 
 
-public ActionResult DescargarPdf(Guid consultaId)
-        {
+    public ActionResult DescargarPdf(Guid consultaId)
+    {
             var receta = _recetaServices.GetByConsulta(consultaId);
             var consulta = _consultaServices.GetConsulta(consultaId);
             var pacienteInfo = _pacienteServices.GetPacienteById(consulta.IdPaciente);
             var proximaCita = _citasServices.GetNextCita(consulta.Fecha, consulta.IdPaciente);
 
-            var pdfData = new RecetaPdfData(
-                Receta: receta,
-                Consulta: consulta,
-                Paciente: pacienteInfo,
-                DetallesReceta: _recetaServices.GetAllDetalles(receta.IdReceta),
-                CitaProx: proximaCita
-            );
-
-            var pdfBytes = _recetaServices.GenerarRecetaPdf(pdfData);
-            return File(pdfBytes, "application/pdf", $"receta_{consultaId}.pdf");
-        }
+        return View("ConsultaPdf", new GenerarRecetaModel
+        {
+            Receta = receta,
+            Consulta = consulta,
+            Paciente = pacienteInfo,
+            DetallesReceta = _recetaServices.GetAllDetalles(receta.IdReceta),
+            CitaProx = proximaCita
+        });
+    }
 
 
     // GET: ConsultasController/Edit/5

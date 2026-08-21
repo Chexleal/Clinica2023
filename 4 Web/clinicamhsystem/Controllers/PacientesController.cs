@@ -130,7 +130,7 @@ public class PacientesController: Controller
     [HttpGet]
     public IActionResult GetHistorialConsultas(Guid pacienteId)
     {
-        var consultas = _consultaServices.GetAllByPacienteId(pacienteId) ?? [];
+        var consultas = (_consultaServices.GetAllByPacienteId(pacienteId) ?? []).OrderByDescending(c => c.Fecha).ToList();
         return PartialView("Partials/_tablaHistorial", consultas);
     }
 }

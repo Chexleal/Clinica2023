@@ -70,7 +70,7 @@
     <div class="card shadow-lg p-3 mb-5 mt-5">
         <div class="card-header bg-white">
             @{
-                var consultas = new List<Consulta>(Model.Consulta.PacienteInformacion.Consulta.Where(x=>x.Terminada).ToList());
+                var consultas = new List<Consulta>(Model.Consulta.PacienteInformacion.Consulta.Where(x=>x.Terminada).OrderByDescending(x => x.Fecha).ToList());
                 // Almacenar el PacienteInformacion de cada objeto de consultas en una lista
                 var pacientesInformacion = consultas.Select(c => c.PacienteInformacion).ToList();
                 // Asignar null a la propiedad PacienteInformacion de cada objeto de consultas

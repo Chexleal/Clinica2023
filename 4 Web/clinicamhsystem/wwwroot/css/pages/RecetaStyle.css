@@ -9,39 +9,36 @@
 @media print {
     @page {
         size: A5;
-        margin-top: 0;
-        margin-bottom:0;
-        margin-right: 0;
-        margin-left: 0;
-}
-
+        margin: 8mm 6mm 8mm 6mm;
+    }
     html, body {
-        margin-top: auto;
-        margin-bottom: 0;
-        margin-right: 0;
-        margin-left: 0;
+        margin: 0;
         padding: 0;
-}
-}
-
-
-.piePag {
-    justify-content: center;
-    align-items: center;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    padding: 0px;
-    text-align: center;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .piePag { position: static !important; }
+    .watermark { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 
-
+html { height: 100%; }
 body {
     font-family: 'Roboto', sans-serif;
-    align-items: center;
     color: rgb(1, 1, 39);
-    /* width: 148mm;
-    height: 210mm; */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.piePag {
+    display: block;
+    width: 100%;
+    padding: 6px 0 0;
+    text-align: center;
+    margin-top: auto;
+    page-break-inside: avoid;
+    break-inside: avoid;
 }
 
 .logoTh {
@@ -101,9 +98,8 @@ h6 {
 
 .line {
     border: none;
-    border-top: 1px solid #000;
-    margin: 1px 0;
-    margin-bottom:2px;
+    border-top: 0.5px solid #0d659b;
+    margin: 1px 0 2px 0;
 }
 
 
@@ -139,16 +135,24 @@ h6 {
         margin-top:3%;
     }
 }
-/*MARCA - baked: la imagen ya lleva la transparencia (~10%), no aplicar doble opacity en CSS */
+/*MARCA - baked 14% en PNG, opacity:1 evita doble compositing por pagina (mas rapido) */
 .watermark {
-    position: fixed; /* Fija en la ventana */
+    position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%); /* Centra exactamente */
-    opacity: 0.5; /* baked en PNG, no filtrar de nuevo */
-    z-index: 0; /* Detrás de todo */
-    pointer-events: none; /* Que no interfiera con clicks */
-    max-width: 120vw; /* Ajusta tamaño, máximo 50% del ancho */
-    max-height: 50vh; /* Ajusta máximo alto */
-    user-select: none; /* No seleccionable */
+    transform: translate(-50%, -50%);
+    opacity: 1;
+    z-index: -1;
+    pointer-events: none;
+    max-width: 58vw;
+    max-height: 58vh;
+    width: auto;
+    height: auto;
+    user-select: none;
+    image-rendering: -webkit-optimize-contrast;
+    will-change: transform;
+    contain: strict;
+    content-visibility: auto;
 }
+/* contenido sobre la marca */
+.fila, .upper2, .middle, .piePag { position: relative; z-index: 1; }

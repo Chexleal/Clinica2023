@@ -10,8 +10,9 @@ public interface IPacienteServices
 	int AddPaciente(Paciente paciente);
 	Paciente? GetPacienteById(Guid id);
     List<Paciente>? GetAll();
-    void UpdatePaciente(Paciente paciente);
-    void DeletePaciente(Guid id);
+	void UpdatePaciente(Paciente paciente);
+	void UpdateAntecedentes(Guid pacienteId, string? antecedentes);
+	void DeletePaciente(Guid id);
     List<Consulta>? GetConsultasFiltradas(Guid servicioId);
     PagedResult<Paciente> GetPaginated(int start, int length, string search, int sortColumn, string sortDir);
 }
@@ -118,6 +119,17 @@ public class PacienteServices : IPacienteServices
             pacienteDB.TipoSange = paciente.TipoSange;
             pacienteDB.NoRegistro = paciente.NoRegistro;
             pacienteDB.BeforeSaveChanges();
+            _dbContext.SaveChanges();
+        }
+    }
+
+    public void UpdateAntecedentes(Guid pacienteId, string? antecedentes)
+    {
+        var paciente = GetPacienteById(pacienteId);
+        if (paciente is not null)
+        {
+            paciente.Antecedentes = antecedentes ?? string.Empty;
+            paciente.BeforeSaveChanges();
             _dbContext.SaveChanges();
         }
     }

@@ -51,7 +51,7 @@ public class ContinuarConsulta : Controller
 
     // POST: ConsultasController/Create
     [HttpPost]
-    public ActionResult Guardar(Consulta consulta)
+    public ActionResult Guardar(Consulta consulta, string? antecedentes)
     {
         var consultaDb = _consultaServices.GetConsulta(consulta.IdConsulta);
 
@@ -72,6 +72,7 @@ public class ContinuarConsulta : Controller
         consultaDb.TiempoDuracion = duracion.ToString();
 
         _consultaServices.UpdateConsulta(consultaDb);
+        _pacienteServices.UpdateAntecedentes(consultaDb.IdPaciente, antecedentes);
         if (consulta.Terminada) return RedirectToAction("Index", "Consultas");
         return RedirectToAction("Index", new { consultaId = consulta.IdConsulta });
     }

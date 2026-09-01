@@ -40,8 +40,14 @@ namespace ClinicaServices
 
         public List<DetalleCobro> GetByRange(DateTime from, DateTime to)
         {
+            var fromDate = from.Date;
+            var toDateExclusive = to.Date.AddDays(1);
+
             return _dbContext.DetalleCobros
-                .Where(d => _dbContext.Consulta.Any(c => c.IdConsulta == d.IdConsulta && c.Fecha >= from && c.Fecha <= to && !c.Eliminada))
+                .Where(d => _dbContext.Consulta.Any(c => c.IdConsulta == d.IdConsulta
+                    && c.Fecha >= fromDate
+                    && c.Fecha < toDateExclusive
+                    && !c.Eliminada))
                 .ToList();
         }
 

@@ -63,13 +63,27 @@ namespace ClinicaServices
 
         public List<Consulta> GetAllByPacienteId(Guid pacienteId, DateTime from, DateTime to)
         {
-            return _dbContext.Consulta.Where(x => x.IdPaciente == pacienteId && x.Fecha>=from && x.Fecha<=to && x.Eliminada == false).ToList();
+            var fromDate = from.Date;
+            var toDateExclusive = to.Date.AddDays(1);
+
+            return _dbContext.Consulta
+                .Where(x => x.IdPaciente == pacienteId
+                    && x.Fecha >= fromDate
+                    && x.Fecha < toDateExclusive
+                    && x.Eliminada == false)
+                .ToList();
         }
 
         public List<Consulta> GetAllByRangeWithPaciente(DateTime from, DateTime to)
         {
+            var fromDate = from.Date;
+            var toDateExclusive = to.Date.AddDays(1);
+
             return _dbContext.Consulta.Include(x => x.PacienteInformacion)
-                .Where(x => x.Fecha >= from && x.Fecha <= to && x.Eliminada == false).ToList();
+                .Where(x => x.Fecha >= fromDate
+                    && x.Fecha < toDateExclusive
+                    && x.Eliminada == false)
+                .ToList();
         }
 
         public List<Consulta> GetAllByMonth(int month)

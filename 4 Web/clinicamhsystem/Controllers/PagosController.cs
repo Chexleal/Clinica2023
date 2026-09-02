@@ -8,7 +8,7 @@ using System.Text.Json;
 
 namespace clinicaWeb.Controllers;
 [SecurityFilter("Pagos")]
-public class PagosController : Controller
+public class PagosController : ErrorHandlingController
 {
     private readonly IConsultaServices _consultaServices;
     private readonly IDetallesServices _detallesServices;
@@ -63,7 +63,10 @@ public class PagosController : Controller
         {
             _detallesServices.Delete(id);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            RegistrarError(ex);
+        }
         var detalles = _detallesServices.GetDetallesByConsulta(idConsulta);
         var servicios = _serviciosServices.GetAll();
         var consulta = _consultaServices.GetConsulta(idConsulta);
@@ -77,7 +80,10 @@ public class PagosController : Controller
         {
             _detallesServices.Pagar(id);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            RegistrarError(ex);
+        }
         return RedirectToAction("Index");
     }
 }

@@ -3,23 +3,29 @@ using clinicamhsystem.Models;
 using ClinicaServices;
 using clinicaWeb.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
-using Newtonsoft.Json;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Security.Claims;
 using ServiceStack.Script;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using Microsoft.AspNetCore.Diagnostics;
 
 namespace clinicamhsystem.Controllers;
 public class HomeController : Controller
 {
     private readonly IUserServices _userServices;
-    private readonly IMemoryCache _memoryCache;
+    private readonly ICurrentUser _currentUser;
+    private readonly IErrorLogService _errorLogService;
 
-    public HomeController(IUserServices userServices, IMemoryCache memoryCache)
+    public HomeController(
+        IUserServices userServices,
+        ICurrentUser currentUser,
+        IErrorLogService errorLogService)
     {
         _userServices = userServices;
-        _memoryCache = memoryCache;
+        _currentUser = currentUser;
+        _errorLogService = errorLogService;
     }
 
     public IActionResult Index()
@@ -28,7 +34,13 @@ public class HomeController : Controller
         return View();
     }
 
-    public IActionResult LogInAsync(string password, string user)
+    [HttpGet]
+    public IActionResult NoAutorizado()
+    {
+        return View();
+    }
+
+    public async Task<IActionResult> LogInAsync(string password, string user)
     {
 
         var existingUser = _userServices.Authenticate(user, password);
@@ -38,9 +50,18 @@ public class HomeController : Controller
         {
             existingUser.Permisos = _userServices.GetPermissions(existingUser.IdUsuario);
             existingUser.Permisos ??= new();
-            string clave = "UserData";
-            string valor = JsonConvert.SerializeObject(existingUser);
-            _memoryCache.Set(clave, valor);
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, existingUser.IdUsuario.ToString()),
+                new(ClaimTypes.Name, existingUser.NombreUsuario)
+            };
+            claims.AddRange(existingUser.Permisos.Select(permission => new Claim(ClaimTypes.Role, permission.Permiso)));
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(identity));
+
             TempData["UsuarioNombre"] = $"{existingUser.Nombre} {existingUser.Apellido}";
             return RedirectToAction("Index", "Inicio");
         }
@@ -174,37 +195,34 @@ public class HomeController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public ActionResult ChangePassWord(String Password)
+    public async Task<ActionResult> ChangePassWord(String Password)
     {
         try
         {
-            if (_memoryCache.TryGetValue("UserData", out string jsonUserData))
+            if (_currentUser.Usuario is { } usuarioActual)
             {
-                Usuario userData = JsonConvert.DeserializeObject<Usuario>(jsonUserData);
-
-                _userServices.ChangePassword(userData.IdUsuario, Password);
+                _userServices.ChangePassword(usuarioActual.IdUsuario, Password);
             }
             return RedirectToAction("Index");
         }
-        catch
+        catch (Exception ex)
         {
+            await _errorLogService.RegistrarAsync(ex, "Controlado", Request.Path, Request.Method, HttpContext.TraceIdentifier);
             return View("Error");
         }
     }
 
     [HttpPost]
-    public ActionResult CerrarSesion()
+    public async Task<ActionResult> CerrarSesion()
     {
         try
         {
-            string clave = "UserData";
-            _memoryCache.Remove(clave);
-            TempData.Remove("UsuarioNombre");
-            TempData.Remove("IdUsuario");
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index");
         }
-        catch
+        catch (Exception ex)
         {
+            await _errorLogService.RegistrarAsync(ex, "Controlado", Request.Path, Request.Method, HttpContext.TraceIdentifier);
             return View("Error");
         }
     }
@@ -216,8 +234,19 @@ public class HomeController : Controller
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
+    public async Task<IActionResult> Error()
     {
+        var exceptionFeature = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
+        if (exceptionFeature?.Error is { } exception)
+        {
+            await _errorLogService.RegistrarAsync(
+                exception,
+                "No controlado",
+                exceptionFeature.Path,
+                Request.Method,
+                HttpContext.TraceIdentifier);
+        }
+
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 }

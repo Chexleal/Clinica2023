@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace clinicaWeb.Controllers;
 [SecurityFilter("Usuarios")]
-public class UsuariosController : Controller
+public class UsuariosController : ErrorHandlingController
 {
     private readonly IUserServices _userServices;
     private static List<string> permisos = new()
@@ -50,8 +50,9 @@ public class UsuariosController : Controller
             _userServices.AddUser(usuario, permissionsList);
 
         }
-        catch
+        catch (Exception ex)
         {
+            RegistrarError(ex);
         }
         return RedirectToAction("Index");
     }
@@ -66,8 +67,9 @@ public class UsuariosController : Controller
             var users = _userServices.GetAll();
             return RedirectToAction("Index", users);
         }
-        catch
+        catch (Exception ex)
         {
+            RegistrarError(ex);
             return View("Error");
         }
     }
@@ -80,7 +82,10 @@ public class UsuariosController : Controller
         {
             _userServices.DeleteUser(id);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            RegistrarError(ex);
+        }
         var users = _userServices.GetAll();
         return RedirectToAction("Index",users);
     }
@@ -93,7 +98,10 @@ public class UsuariosController : Controller
         {
             _userServices.SetActive(id,state);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            RegistrarError(ex);
+        }
         var users = _userServices.GetAll();
         return RedirectToAction("Index", users);
     }

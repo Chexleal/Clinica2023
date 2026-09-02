@@ -5,6 +5,8 @@ namespace ClinicaServices;
 
 public partial class ClinicaContext : DbContext
 {
+    private readonly ICurrentUser? _currentUser;
+
     public ClinicaContext()
     {
     }
@@ -13,6 +15,12 @@ public partial class ClinicaContext : DbContext
         : base(options)
     {
         //ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+    }
+
+    public ClinicaContext(DbContextOptions<ClinicaContext> options, ICurrentUser currentUser)
+        : base(options)
+    {
+        _currentUser = currentUser;
     }
 
     public virtual DbSet<Cita> Cita { get; set; }
@@ -33,7 +41,60 @@ public partial class ClinicaContext : DbContext
 
     public virtual DbSet<Usuario> Usuarios { get; set; }
     public virtual DbSet<Medicamento> Medicamento { get; set; }
+    public virtual DbSet<ErrorLog> ErrorLogs { get; set; }
 
+    public override int SaveChanges()
+    {
+        AplicarAuditoria();
+        return base.SaveChanges();
+    }
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        AplicarAuditoria();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        AplicarAuditoria();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        AplicarAuditoria();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    private void AplicarAuditoria()
+    {
+        var ahora = DateTime.UtcNow;
+        var usuarioId = _currentUser?.Usuario?.IdUsuario;
+
+        foreach (var entry in ChangeTracker.Entries<Base>())
+        {
+            if (entry.State == EntityState.Added)
+            {
+                entry.Entity.FechaCreacion ??= ahora;
+                entry.Entity.CreadoPor ??= usuarioId;
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                entry.Entity.FechaModificacion = ahora;
+                entry.Entity.ModificadoPor = usuarioId;
+
+                var estadoEliminado = entry.Metadata.FindProperty(nameof(Paciente.EstadoEliminado));
+                if (estadoEliminado is not null
+                    && entry.Property<bool>(estadoEliminado.Name).CurrentValue
+                    && entry.Entity.FechaEliminacion is null)
+                {
+                    entry.Entity.FechaEliminacion = ahora;
+                    entry.Entity.EliminadoPor = usuarioId;
+                }
+            }
+        }
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -411,6 +472,37 @@ public partial class ClinicaContext : DbContext
                 .HasColumnName("tipo_sange");
             entity.Property(e => e.UsuarioActivo).HasColumnName("usuario_activo");
         });
+
+        modelBuilder.Entity<ErrorLog>(entity =>
+        {
+            entity.HasKey(e => e.IdErrorLog);
+            entity.ToTable("Error_log");
+            entity.Property(e => e.IdErrorLog)
+                .ValueGeneratedNever()
+                .HasColumnName("id_error_log");
+            entity.Property(e => e.TipoError).HasMaxLength(50).IsUnicode(false).HasColumnName("tipo_error");
+            entity.Property(e => e.Mensaje).HasMaxLength(500).IsUnicode(false).HasColumnName("mensaje");
+            entity.Property(e => e.Detalle).HasMaxLength(4000).IsUnicode(false).HasColumnName("detalle");
+            entity.Property(e => e.StackTrace).HasMaxLength(8000).IsUnicode(false).HasColumnName("stack_trace");
+            entity.Property(e => e.Ruta).HasMaxLength(500).IsUnicode(false).HasColumnName("ruta");
+            entity.Property(e => e.MetodoHttp).HasMaxLength(20).IsUnicode(false).HasColumnName("metodo_http");
+            entity.Property(e => e.TraceIdentifier).HasMaxLength(100).IsUnicode(false).HasColumnName("trace_identifier");
+            entity.Property(e => e.Nivel).HasMaxLength(20).IsUnicode(false).HasColumnName("nivel");
+            entity.Property(e => e.Resuelto).HasColumnName("resuelto");
+            entity.Property(e => e.Observaciones).HasMaxLength(1000).IsUnicode(false).HasColumnName("observaciones");
+        });
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes()
+            .Where(type => typeof(Base).IsAssignableFrom(type.ClrType)))
+        {
+            var entity = modelBuilder.Entity(entityType.ClrType);
+            entity.Property(nameof(Base.FechaCreacion)).HasColumnName("fecha_creacion");
+            entity.Property(nameof(Base.CreadoPor)).HasColumnName("creado_por");
+            entity.Property(nameof(Base.FechaModificacion)).HasColumnName("fecha_modificacion");
+            entity.Property(nameof(Base.ModificadoPor)).HasColumnName("modificado_por");
+            entity.Property(nameof(Base.FechaEliminacion)).HasColumnName("fecha_eliminacion");
+            entity.Property(nameof(Base.EliminadoPor)).HasColumnName("eliminado_por");
+        }
 
         OnModelCreatingPartial(modelBuilder);
     }

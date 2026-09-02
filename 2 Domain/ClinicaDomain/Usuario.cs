@@ -4,7 +4,7 @@ using System.Runtime.Intrinsics.Arm;
 
 namespace ClinicaDomain;
 
-public partial class Usuario
+public partial class Usuario : Base
 {
 
     public Guid IdUsuario { get; set; }

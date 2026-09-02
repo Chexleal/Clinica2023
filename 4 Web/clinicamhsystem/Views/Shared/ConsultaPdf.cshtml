@@ -52,7 +52,7 @@
             </th>
             <th style="text-align: right; padding-right: 1%;">
                     <b style="font-size: 13px; font-weight: bold; ">Fecha:</b><br>
-                    <b style="font-size: 12px; font-weight: lighter;">@Model.Receta.Fecha.ToString("dd/MM/yyyy")</b>
+                    <b style="font-size: 12px; font-weight: lighter;">@((Model.Receta.FechaCreacion ?? Model.Receta.Fecha).ToString("dd/MM/yyyy"))</b>
             </th>
         </tr>
     </table>

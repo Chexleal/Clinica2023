@@ -33,9 +33,11 @@ public interface IUserServices
 public class UserServices : IUserServices
 {
     private readonly ClinicaContext _dbContext;
-    public UserServices(ClinicaContext dbContext)
+    private readonly IErrorLogService _errorLogService;
+    public UserServices(ClinicaContext dbContext, IErrorLogService errorLogService)
     {
         _dbContext = dbContext;
+        _errorLogService = errorLogService;
     }
 
     public void AddUser(Usuario user, List<string> permissionsList)
@@ -125,6 +127,7 @@ public class UserServices : IUserServices
         }
         catch (Exception ex)
         {
+            _errorLogService.Registrar(ex, "Controlado", nameof(RecoverAccount));
             Console.WriteLine("Error al enviar correo electrónico: " + ex.Message);
             return false;
         }

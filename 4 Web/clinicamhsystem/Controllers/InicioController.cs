@@ -1,10 +1,12 @@
 ﻿using ClinicaDomain;
 using ClinicaServices;
 using clinicaWeb.Models;
+using clinicaWeb.Security;
 using Microsoft.AspNetCore.Mvc;
 
 namespace clinicaWeb.Controllers
 {
+    [SecurityFilter("Inicio")]
     public class InicioController : Controller
     {
         private readonly IConsultaServices _consultaServices;

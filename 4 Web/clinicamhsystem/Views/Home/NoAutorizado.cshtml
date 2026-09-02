@@ -1,0 +1,45 @@
+@{
+    Layout = null;
+    ViewData["Title"] = "Acceso no autorizado";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Acceso no autorizado - Traumha</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e8f7f1, #f9fbff);
+            color: #263238;
+        }
+
+        .card-error {
+            max-width: 650px;
+            border: 0;
+            border-radius: 24px;
+        }
+
+        .doctor-video {
+            display: block;
+            width: min(100%, 520px);
+            height: 220px;
+            object-fit: contain;
+            margin: 0 auto 1rem;
+        }
+    </style>
+</head>
+<body class="d-flex align-items-center justify-content-center p-4">
+    <main class="card card-error shadow-lg p-4 p-md-5 text-center">
+        <video class="doctor-video" autoplay loop muted playsinline preload="auto" aria-label="Doctor reparando un hueso">
+            <source src="~/videos/no-session-doctor.webm" type="video/webm" />
+        </video>
+        <h1 class="h2 mb-3">¡Ups! Se desacomodó la sesión</h1>
+        <p class="lead mb-4">La sesión no es válida o ya venció.</p>
+        <a class="btn btn-primary" href="@Url.Action("Index", "Home")">Volver al inicio de sesión</a>
+    </main>
+</body>
+</html>

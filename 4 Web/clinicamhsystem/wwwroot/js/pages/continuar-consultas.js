@@ -57,7 +57,7 @@ function ShowHistorialModal(consultas) {
                         <a class="option" href="/ContinuarConsulta/Index?consultaId=${c.IdConsulta}">Ver</a>
                     </div>
                 </td>
-                <td>${parseDate(c.Fecha)}</td>
+                <td>${parseDate(c.FechaCreacion || c.Fecha)}</td>
                 <td>${truncateWithPopover(c.MotivoConsulta)}</td>
                 <td>${truncateWithPopover(c.HistoriaClinica)}</td>
                 <td>${truncateWithPopover(c.Diagnostico)}</td>

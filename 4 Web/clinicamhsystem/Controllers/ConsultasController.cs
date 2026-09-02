@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace clinicaWeb.Controllers;
 [SecurityFilter("Consultas")]
-public class ConsultasController : Controller
+public class ConsultasController : ErrorHandlingController
 {
     private readonly IPacienteServices _pacienteServices;
     private readonly IConsultaServices _consultaServices;
@@ -36,7 +36,7 @@ public class ConsultasController : Controller
         var data = result.Data.Select(c => new
         {
             c.IdConsulta,
-            Fecha = c.Fecha.ToString("dd/MM/yyyy HH:mm"),
+                    Fecha = (c.FechaCreacion ?? c.Fecha).ToString("dd/MM/yyyy HH:mm"),
             PacienteNombre = c.PacienteInformacion?.Nombre,
             PacienteApellido = c.PacienteInformacion?.Apellido,
             c.MotivoConsulta
@@ -90,8 +90,9 @@ public class ConsultasController : Controller
         {
             _consultaServices.AddConsulta(consulta);
         }
-        catch
+        catch (Exception ex)
         {           
+            RegistrarError(ex);
         }
         return RedirectToAction("Index");
     }
@@ -131,7 +132,10 @@ public class ConsultasController : Controller
         {
             _consultaServices.DeleteConsulta(id);
         }
-        catch {  }
+        catch (Exception ex)
+        {
+            RegistrarError(ex);
+        }
         return RedirectToAction("Index");
     }
 

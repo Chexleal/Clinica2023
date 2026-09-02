@@ -40,10 +40,12 @@ namespace ClinicaServices
     {
         private readonly ClinicaContext _dbContext;
         private readonly IRecetaServices _recetaServices;
-        public ConsultaServices(ClinicaContext dbContext, IRecetaServices recetaServices)
+        private readonly IErrorLogService _errorLogService;
+        public ConsultaServices(ClinicaContext dbContext, IRecetaServices recetaServices, IErrorLogService errorLogService)
         {
             _dbContext = dbContext;
             _recetaServices = recetaServices;
+            _errorLogService = errorLogService;
         }    
 
         public Consulta GetConsulta(Guid id)
@@ -176,6 +178,7 @@ namespace ClinicaServices
                 }
                 catch (DbUpdateException ex)
                 {
+                    _errorLogService.Registrar(ex, "Controlado", nameof(DeleteConsulta));
                     if (ex.InnerException != null && ex.InnerException.Message.Contains("The DELETE statement conflicted with the REFERENCE constraint"))
                     {
                         // Desmarcar el estado Deleted para evitar que vuelva a intentar borrar

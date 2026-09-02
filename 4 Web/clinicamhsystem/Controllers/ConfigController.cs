@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace clinicaWeb.Controllers
 {
-    public class ConfigController : Controller
+    public class ConfigController : ErrorHandlingController
     {
         // GET: ConfigController
         public ActionResult Index()
@@ -32,9 +32,10 @@ namespace clinicaWeb.Controllers
             {
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                RegistrarError(ex);
+                return View("Error");
             }
         }
 
@@ -53,9 +54,10 @@ namespace clinicaWeb.Controllers
             {
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                RegistrarError(ex);
+                return View("Error");
             }
         }
 
@@ -74,9 +76,10 @@ namespace clinicaWeb.Controllers
             {
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                RegistrarError(ex);
+                return View("Error");
             }
         }
     }

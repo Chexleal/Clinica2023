@@ -8,6 +8,7 @@
     <meta charset="utf-8" />
     <title>Inicio - Traumha</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/limonte-sweetalert2/sweetalert2.min.css" />
     <link rel="stylesheet" href="~/css/pages/login.css" asp-append-version="true" />
 </head>
 <body>
@@ -32,7 +33,28 @@
     <div id="successMessage" style="display:none;">@TempData["Success"]</div>
 
     <script src="~/lib/limonte-sweetalert2/sweetalert2.min.js"></script>
-    <script src="~/js/pages/login.js"></script>
+    @if (TempData["Error"] is string errorMessage && !string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <script>
+            Swal.fire({
+                title: 'Error',
+                text: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(errorMessage)),
+                icon: 'error',
+                confirmButtonText: 'Aceptar'
+            });
+        </script>
+    }
+    @if (TempData["Success"] is string successMessage && !string.IsNullOrWhiteSpace(successMessage))
+    {
+        <script>
+            Swal.fire({
+                title: 'Éxito',
+                text: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(successMessage)),
+                icon: 'success',
+                confirmButtonText: 'Aceptar'
+            });
+        </script>
+    }
 
 </body>
 </html>

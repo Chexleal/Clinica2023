@@ -5,23 +5,20 @@ using clinicaWeb.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.Caching.Memory;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace clinicaWeb.Controllers;
 [SecurityFilter("Citas")]
-public class CitasController : Controller
+public class CitasController : ErrorHandlingController
 {
     private readonly IPacienteServices _pacienteServices;
     private readonly ICitaServices _citaServices;
-    private readonly IMemoryCache _cache;
+    private readonly ICurrentUser _currentUser;
 
-    public CitasController(IPacienteServices pacienteServices , ICitaServices citaServices, IMemoryCache memoryCache)
+    public CitasController(IPacienteServices pacienteServices, ICitaServices citaServices, ICurrentUser currentUser)
     {
         _pacienteServices = pacienteServices;
         _citaServices = citaServices;
-        _cache = memoryCache;
+        _currentUser = currentUser;
     }
     // GET: CitasController
     public ActionResult Index()
@@ -43,7 +40,7 @@ public class CitasController : Controller
     public ActionResult Add(Guid IdPaciente, string destiny)
     {
 
-        if (_cache.TryGetValue("UserData", out string jsonUserData))
+        if (_currentUser.Usuario is { } usuarioActual)
         {
             string fecha_str = Request.Form["fecha"];
             string hora_str = Request.Form["hora"];
@@ -52,14 +49,12 @@ public class CitasController : Controller
             TimeOnly hora = TimeOnly.ParseExact(hora_str, "HH:mm", null);
             DateTime combinedDateTime = new DateTime(fecha.Year, fecha.Month, fecha.Day, hora.Hour, hora.Minute, hora.Second);
 
-            Usuario userData = JsonConvert.DeserializeObject<Usuario>(jsonUserData);
-
             Paciente paciente = _pacienteServices.GetPacienteById(IdPaciente);
 
             Cita cita = new Cita();
             cita.FechaHora = combinedDateTime;
             cita.IdPaciente = IdPaciente;
-            cita.IdUsuario = userData.IdUsuario;
+            cita.IdUsuario = usuarioActual.IdUsuario;
             cita.Titulo = paciente.Nombre + " " + paciente.Apellido;
             _citaServices.Add(cita);
         }
@@ -83,7 +78,10 @@ public class CitasController : Controller
         {
             _citaServices.Delete(id);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            RegistrarError(ex);
+        }
         //var pacientes = _pacienteServices.GetAll();
         //var citas = _citaServices.GetAll();
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ClinicaDomain;
 
-public partial class Cita
+public partial class Cita : Base
 {
     public Guid IdCita { get; set; }
 

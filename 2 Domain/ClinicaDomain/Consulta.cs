@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ClinicaDomain;
 
-public partial class Consulta
+public partial class Consulta : Base
 {
     public Guid IdConsulta { get; set; }
 

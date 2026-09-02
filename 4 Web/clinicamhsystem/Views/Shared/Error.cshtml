@@ -31,8 +31,12 @@
             border-radius: 14px;
         }
 
-        .error-icon {
-            font-size: 3.5rem;
+        .error-video {
+            width: 100%;
+            max-width: 520px;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 10px;
         }
 
         .clinic-name {
@@ -52,9 +56,9 @@
         <div class="card shadow-sm error-card">
             <div class="card-body p-4 text-center">
 
-                <div class="error-icon mb-3 text-warning">
-                    🦴
-                </div>
+                <video class="error-video mb-3" autoplay loop muted playsinline preload="auto" aria-label="Doctor reparando un hueso">
+                    <source src="~/videos/error-doctor.webm" type="video/webm" />
+                </video>
 
                 <h4 class="mb-2">Uy… parece que algo se nos torció</h4>
 

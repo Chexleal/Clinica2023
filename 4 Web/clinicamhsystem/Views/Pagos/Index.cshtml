@@ -18,7 +18,7 @@
                 <thead class="table-dark">
                     <tr>
                         <th>Acciones</th>
-                        <th>Fecha</th>
+                        <th>Fecha de creación</th>
                         <th>Nombre</th>
                         <th>Apellido</th>
                         <th>Motivo de consulta</th>
@@ -40,7 +40,7 @@
                                     <a class="option btn btn-outline-info ms-2" href="@Url.Action("DescargarPdf","ContinuarConsulta",new{consultaId=item.IdConsulta})" target="_blank">Imprimir Receta</a>
                                 </div>
                             </td>
-                            <td>@item.Fecha.ToString("d")</td>
+                            <td>@((item.FechaCreacion ?? item.Fecha).ToString("d"))</td>
                             <td>@item.PacienteInformacion.Nombre</td>
                             <td>@item.PacienteInformacion.Apellido</td>
                             <td>@item.MotivoConsulta</td>

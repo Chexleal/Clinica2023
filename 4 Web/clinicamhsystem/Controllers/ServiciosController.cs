@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace clinicaWeb.Controllers;
 [SecurityFilter("Servicios")]
-public class ServiciosController : Controller
+public class ServiciosController : ErrorHandlingController
 {
     private readonly IServiciosServices _services;
 
@@ -40,8 +40,9 @@ public class ServiciosController : Controller
         {
             _services.AddServicio(servicio);
         }
-        catch
+        catch (Exception ex)
         {
+            RegistrarError(ex);
         }
         return RedirectToAction("Index");
     }
@@ -55,9 +56,10 @@ public class ServiciosController : Controller
         {
             return RedirectToAction(nameof(Index));
         }
-        catch
+        catch (Exception ex)
         {
-            return View();
+            RegistrarError(ex);
+            return View("Error");
         }
     }
 
@@ -76,9 +78,10 @@ public class ServiciosController : Controller
         {
             return RedirectToAction(nameof(Index));
         }
-        catch
+        catch (Exception ex)
         {
-            return View();
+            RegistrarError(ex);
+            return View("Error");
         }
     }
 
@@ -90,7 +93,10 @@ public class ServiciosController : Controller
         {
             _services.DeleteServicio(id);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            RegistrarError(ex);
+        }
         return RedirectToAction("Index");
     }
 }

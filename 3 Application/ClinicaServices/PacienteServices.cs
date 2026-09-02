@@ -19,9 +19,11 @@ public interface IPacienteServices
 public class PacienteServices : IPacienteServices
 {
 	private readonly ClinicaContext _dbContext;
-	public PacienteServices(ClinicaContext dbContext)
+	private readonly IErrorLogService _errorLogService;
+	public PacienteServices(ClinicaContext dbContext, IErrorLogService errorLogService)
 	{
 		_dbContext = dbContext;
+		_errorLogService = errorLogService;
 	}
 
 	public int AddPaciente(Paciente paciente)
@@ -40,8 +42,9 @@ public class PacienteServices : IPacienteServices
             _dbContext.SaveChanges();
 			return 1;
 		}
-		catch (Exception)
+		catch (Exception ex)
 		{
+			_errorLogService.Registrar(ex, "Controlado", nameof(AddPaciente));
 			return 3;
 		}
 	}

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ClinicaDomain;
 
-public partial class Paciente
+public partial class Paciente : Base
 {
    
 

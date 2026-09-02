@@ -1,6 +1,6 @@
 ﻿namespace ClinicaDomain;
 
-public class Medicamento
+public class Medicamento : Base
 {
     public Guid IdMedicamento {get; set; }
 

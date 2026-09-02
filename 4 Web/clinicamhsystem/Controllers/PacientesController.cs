@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace clinicaWeb.Controllers;
 
 [SecurityFilter("Pacientes")]
-public class PacientesController: Controller
+public class PacientesController: ErrorHandlingController
 {
 
     private readonly IPacienteServices _pacienteServices;
@@ -74,8 +74,9 @@ public class PacientesController: Controller
             _pacienteServices.AddPaciente(paciente);
             return RedirectToAction("Index");
         }
-        catch
+        catch (Exception ex)
         {
+            RegistrarError(ex);
             return View("Error");
 
         }
@@ -101,6 +102,7 @@ public class PacientesController: Controller
         }
         catch(Exception ex)
         {
+            RegistrarError(ex);
             return View("Error");
         }
     }
@@ -114,7 +116,8 @@ public class PacientesController: Controller
             _pacienteServices.DeletePaciente(id);
             return RedirectToAction("Index");
         }
-        catch {
+        catch (Exception ex) {
+            RegistrarError(ex);
             return View("Error");
         }
         //var pacientes = _pacienteServices.GetAll();

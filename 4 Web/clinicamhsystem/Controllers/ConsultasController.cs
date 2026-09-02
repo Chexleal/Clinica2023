@@ -1,6 +1,7 @@
 ﻿using ClinicaDomain;
 using clinicamhsystem.Models;
 using ClinicaServices;
+using ClinicaInfrastructure;
 using clinicaWeb.Models;
 using clinicaWeb.Security;
 using Microsoft.AspNetCore.Http;
@@ -36,7 +37,7 @@ public class ConsultasController : ErrorHandlingController
         var data = result.Data.Select(c => new
         {
             c.IdConsulta,
-                    Fecha = (c.FechaCreacion ?? c.Fecha).ToString("dd/MM/yyyy HH:mm"),
+                    Fecha = DateManager.GetDisplayDate(c.FechaCreacion, c.Fecha).ToString("dd/MM/yyyy HH:mm"),
             PacienteNombre = c.PacienteInformacion?.Nombre,
             PacienteApellido = c.PacienteInformacion?.Apellido,
             c.MotivoConsulta

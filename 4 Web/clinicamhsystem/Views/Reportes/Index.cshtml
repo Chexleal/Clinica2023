@@ -223,7 +223,7 @@
                             foreach (var consulta in Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date))
                             {
                                 <tr>
-                                    <td>@(consulta.FechaCreacion ?? consulta.Fecha)</td>
+                                    <td>@DateManager.GetDisplayDate(consulta.FechaCreacion, consulta.Fecha)</td>
                                     <td>@consulta.TiempoDuracion min</td>
                                     <td>@consulta.MotivoConsulta</td>
                                     @if (consulta.Radiografias)

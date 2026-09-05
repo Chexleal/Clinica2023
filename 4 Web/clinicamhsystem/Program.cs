@@ -22,8 +22,26 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<ClinicaContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
- 
+    // La cadena viene de configuración (nunca hardcodeada):
+    // - Azure App Service: Configuration -> Connection strings -> DefaultConnection (SQLAzure)
+    // - Local: variable de entorno ConnectionStrings__DefaultConnection o user-secrets
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        connectionString =
+            Environment.GetEnvironmentVariable("SQLAZURECONNSTR_DefaultConnection")
+            ?? Environment.GetEnvironmentVariable("SQLCONNSTR_DefaultConnection")
+            ?? Environment.GetEnvironmentVariable("CUSTOMCONNSTR_DefaultConnection");
+    }
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException(
+            "Falta la cadena de conexión 'DefaultConnection'. Configúrala con la variable de entorno 'ConnectionStrings__DefaultConnection' o como cadena de conexión 'DefaultConnection' en el App Service.");
+    }
+
+    options.UseSqlServer(connectionString);
 }, ServiceLifetime.Scoped);
 
 

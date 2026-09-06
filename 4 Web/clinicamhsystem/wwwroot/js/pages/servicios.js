@@ -12,6 +12,7 @@ function CreateTable() {
         dom: 'Bfrtip',
         "pageLength": 20,
         "language": DataTablesCommon.withLanguage({ searchPlaceholder: 'Buscar servicio' }),
-        buttons: DataTablesCommon.exportButtons('Servicios', [0, 1], true),
+        buttons: DataTablesCommon.exportButtons('Servicios', [0], true),
+        "drawCallback": function () { if (typeof initAuditTooltips === 'function') initAuditTooltips(); },
     });
 }

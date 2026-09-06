@@ -43,6 +43,11 @@ public partial class ClinicaContext : DbContext
     public virtual DbSet<Medicamento> Medicamento { get; set; }
     public virtual DbSet<ErrorLog> ErrorLogs { get; set; }
 
+    public virtual DbSet<EstudioImagen> EstudiosImagen { get; set; }
+    public virtual DbSet<ArchivoEstudio> ArchivosEstudio { get; set; }
+    public virtual DbSet<OrdenEstudio> OrdenesEstudio { get; set; }
+    public virtual DbSet<CatalogoIndicacion> CatalogoIndicaciones { get; set; }
+
     public override int SaveChanges()
     {
         AplicarAuditoria();
@@ -490,6 +495,68 @@ public partial class ClinicaContext : DbContext
             entity.Property(e => e.Nivel).HasMaxLength(20).IsUnicode(false).HasColumnName("nivel");
             entity.Property(e => e.Resuelto).HasColumnName("resuelto");
             entity.Property(e => e.Observaciones).HasMaxLength(1000).IsUnicode(false).HasColumnName("observaciones");
+        });
+
+        modelBuilder.Entity<OrdenEstudio>(entity =>
+        {
+            entity.HasKey(e => e.IdOrden).HasName("PK_OrdenEstudio");
+            entity.ToTable("Orden_estudio");
+            entity.Property(e => e.IdOrden).ValueGeneratedNever().HasColumnName("id_orden");
+            entity.Property(e => e.IdPaciente).HasColumnName("id_paciente");
+            entity.Property(e => e.IdConsulta).HasColumnName("id_consulta");
+            entity.Property(e => e.Tipo).HasColumnName("tipo");
+            entity.Property(e => e.Estado).HasColumnName("estado");
+            entity.Property(e => e.Indicacion).HasMaxLength(500).IsUnicode(false).HasColumnName("indicacion");
+            entity.Property(e => e.FechaOrden).HasColumnName("fecha_orden");
+            entity.HasOne(d => d.Paciente).WithMany().HasForeignKey(d => d.IdPaciente).HasConstraintName("FK_Orden_Paciente");
+            entity.HasOne(d => d.Consulta).WithMany().HasForeignKey(d => d.IdConsulta).IsRequired(false).HasConstraintName("FK_Orden_Consulta");
+        });
+
+        modelBuilder.Entity<EstudioImagen>(entity =>
+        {
+            entity.HasKey(e => e.IdEstudio).HasName("PK_EstudioImagen");
+            entity.ToTable("Estudio_imagen");
+            entity.Property(e => e.IdEstudio).ValueGeneratedNever().HasColumnName("id_estudio");
+            entity.Property(e => e.IdPaciente).HasColumnName("id_paciente");
+            entity.Property(e => e.IdConsulta).HasColumnName("id_consulta");
+            entity.Property(e => e.IdOrden).HasColumnName("id_orden");
+            entity.Property(e => e.Tipo).HasColumnName("tipo");
+            entity.Property(e => e.Modalidad).HasColumnName("modalidad");
+            entity.Property(e => e.Titulo).HasMaxLength(200).IsUnicode(false).HasColumnName("titulo");
+            entity.Property(e => e.Descripcion).HasMaxLength(1000).IsUnicode(false).HasColumnName("descripcion");
+            entity.Property(e => e.FechaEstudio).HasColumnName("fecha_estudio");
+            entity.HasOne(d => d.Paciente).WithMany().HasForeignKey(d => d.IdPaciente).HasConstraintName("FK_Estudio_Paciente");
+            entity.HasOne(d => d.Consulta).WithMany().HasForeignKey(d => d.IdConsulta).IsRequired(false).HasConstraintName("FK_Estudio_Consulta");
+            entity.HasOne(d => d.Orden).WithMany(p => p.Estudios).HasForeignKey(d => d.IdOrden).IsRequired(false).HasConstraintName("FK_Estudio_Orden");
+            entity.HasIndex(e => new { e.IdPaciente, e.FechaEstudio }).HasDatabaseName("IX_Estudio_Paciente_Fecha");
+        });
+
+        modelBuilder.Entity<ArchivoEstudio>(entity =>
+        {
+            entity.HasKey(e => e.IdArchivo).HasName("PK_ArchivoEstudio");
+            entity.ToTable("Archivo_estudio");
+            entity.Property(e => e.IdArchivo).ValueGeneratedNever().HasColumnName("id_archivo");
+            entity.Property(e => e.IdEstudio).HasColumnName("id_estudio");
+            entity.Property(e => e.NombreOriginal).HasMaxLength(255).IsUnicode(false).HasColumnName("nombre_original");
+            entity.Property(e => e.RutaStorage).HasMaxLength(500).IsUnicode(false).HasColumnName("ruta_storage");
+            entity.Property(e => e.MimeType).HasMaxLength(100).IsUnicode(false).HasColumnName("mime_type");
+            entity.Property(e => e.TamanoBytes).HasColumnName("tamano_bytes");
+            entity.Property(e => e.TransferSyntax).HasMaxLength(100).IsUnicode(false).HasColumnName("transfer_syntax");
+            entity.Property(e => e.NumeroSerie).HasColumnName("numero_serie");
+            entity.Property(e => e.NumeroInstancia).HasColumnName("numero_instancia");
+            entity.HasOne(d => d.Estudio).WithMany(p => p.Archivos).HasForeignKey(d => d.IdEstudio).HasConstraintName("FK_Archivo_Estudio");
+        });
+
+        modelBuilder.Entity<CatalogoIndicacion>(entity =>
+        {
+            entity.HasKey(e => e.IdCatalogo).HasName("PK_CatalogoIndicacion");
+            entity.ToTable("Catalogo_indicacion");
+            entity.Property(e => e.IdCatalogo).ValueGeneratedNever().HasColumnName("id_catalogo");
+            entity.Property(e => e.Tipo).HasColumnName("tipo");
+            entity.Property(e => e.Codigo).HasMaxLength(50).IsUnicode(false).HasColumnName("codigo");
+            entity.Property(e => e.Descripcion).HasMaxLength(300).IsUnicode(false).HasColumnName("descripcion");
+            entity.Property(e => e.Activo).HasColumnName("activo");
+            entity.HasIndex(e => new { e.Tipo, e.Activo }).HasDatabaseName("IX_Catalogo_Tipo_Activo");
         });
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes()

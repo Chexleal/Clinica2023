@@ -396,3 +396,17 @@ hr {
     text-overflow: ellipsis;
     vertical-align: middle;
 }
+
+/* Icono ⓘ de auditoría en tablas de catálogos: sutil, se intensifica al hover */
+.audit-info {
+    color: #6c757d;
+    opacity: .45;
+    cursor: help;
+    font-size: .85rem;
+    margin-right: .6rem;
+    vertical-align: middle;
+}
+
+.audit-info:hover {
+    opacity: 1;
+}

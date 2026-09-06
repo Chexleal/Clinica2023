@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -38,5 +38,11 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>-->
+
+  <!-- Secretos locales: nunca publicar ni commitear -->
+  <ItemGroup>
+    <Content Remove="appsettings.Local.json" />
+    <None Include="appsettings.Local.json" />
+  </ItemGroup>
 
 </Project>

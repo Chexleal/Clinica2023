@@ -1,0 +1,22 @@
+@using ClinicaDomain
+@model ClinicaDomain.Base
+@{
+    // Resuelve el Id según el tipo concreto (todas heredan de Base, con auditoría automática en ClinicaContext.AplicarAuditoria)
+    string idCompleto = Model switch
+    {
+        Medicamento m => m.IdMedicamento.ToString(),
+        MotivoCobro s => s.IdMotivoCobro.ToString(),
+        CatalogoIndicacion c => c.IdCatalogo.ToString(),
+        _ => ""
+    };
+    string idCorto = idCompleto.Length >= 8 ? idCompleto.Substring(0, 8) : idCompleto;
+    Func<DateTime?, string> fFecha = f => f.HasValue ? f.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm") : "—";
+    // Prefiere el nombre resuelto en memoria; cae al Guid corto si el usuario ya no existe, o "—" si no hay dato.
+    Func<string?, Guid?, string> fAutor = (nombre, guid) =>
+        !string.IsNullOrWhiteSpace(nombre) ? nombre
+        : guid.HasValue ? guid.Value.ToString().Substring(0, 8) : "—";
+    var tip = "<div class='text-start'><b>Id:</b> " + idCorto
+        + "<br><b>Creado:</b> " + fFecha(Model.FechaCreacion) + " · " + fAutor(Model.CreadoPorNombre, Model.CreadoPor)
+        + "<br><b>Modificado:</b> " + fFecha(Model.FechaModificacion) + " · " + fAutor(Model.ModificadoPorNombre, Model.ModificadoPor) + "</div>";
+}
+<span class="audit-info" data-bs-toggle="tooltip" data-bs-html="true" title="@tip"><i class="fa-solid fa-circle-info"></i></span>

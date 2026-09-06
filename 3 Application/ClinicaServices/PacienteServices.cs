@@ -1,4 +1,4 @@
-﻿using Azure.Core;
+using Azure.Core;
 using ClinicaDomain;
 using Microsoft.EntityFrameworkCore;
 using PaaS.Framework.Utils.Extensions;
@@ -15,6 +15,7 @@ public interface IPacienteServices
 	void DeletePaciente(Guid id);
     List<Consulta>? GetConsultasFiltradas(Guid servicioId);
     PagedResult<Paciente> GetPaginated(int start, int length, string search, int sortColumn, string sortDir);
+    (List<Paciente> Datos, bool HayMas) BuscarSelect(string? texto, int page, int pageSize);
 }
 public class PacienteServices : IPacienteServices
 {
@@ -58,6 +59,25 @@ public class PacienteServices : IPacienteServices
 	{
         return _dbContext.Pacientes.Where(x => !x.EstadoEliminado).ToList();
 	}
+
+    public (List<Paciente> Datos, bool HayMas) BuscarSelect(string? texto, int page, int pageSize)
+    {
+        if (page < 1) page = 1;
+        if (pageSize < 1 || pageSize > 50) pageSize = 20;
+        var query = _dbContext.Pacientes.Where(x => !x.EstadoEliminado);
+        if (!string.IsNullOrWhiteSpace(texto))
+        {
+            var t = texto.Trim();
+            query = query.Where(x => x.Nombre.Contains(t) || x.Apellido.Contains(t) || x.Dpi.Contains(t)).OrderBy(x => x.Nombre).ThenBy(x => x.Apellido);
+        }
+        else
+        {
+            query = query.OrderByDescending(x => x.FechaCreacion);
+        }
+        var toma = query.Skip((page - 1) * pageSize).Take(pageSize + 1).ToList();
+        var hayMas = toma.Count > pageSize;
+        return (toma.Take(pageSize).ToList(), hayMas);
+    }
 
     public PagedResult<Paciente> GetPaginated(int start, int length, string search, int sortColumn, string sortDir)
     {

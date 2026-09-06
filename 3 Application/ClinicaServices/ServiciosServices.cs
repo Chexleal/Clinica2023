@@ -32,7 +32,9 @@ namespace ClinicaServices
 
         public List<MotivoCobro>? GetAll()
         {
-            return _dbContext.MotivoCobros.Where(x => !x.EstadoEliminado).ToList();
+            var lista = _dbContext.MotivoCobros.Where(x => !x.EstadoEliminado).ToList();
+            AuditoriaNombres.Completar(_dbContext, lista);
+            return lista;
         }
 
         public void AddServicio(MotivoCobro servicio)

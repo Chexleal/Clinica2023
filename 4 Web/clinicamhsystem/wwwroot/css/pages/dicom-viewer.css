@@ -1,0 +1,104 @@
+/* DICOM Viewer - Fase 1 (local) - Fase 2 Azure Blob */
+#cardRadiografias .card-header h5 { font-weight: 600; }
+#dicomViewerContainer {
+    position: relative;
+    background: #000;
+    min-height: 400px;
+    border-radius: 8px;
+    overflow: hidden;
+    display: none;
+}
+#dicomImage {
+    width: 100%;
+    height: 520px;
+    position: relative;
+    background: #000;
+}
+#dicomImage canvas { display: block; }
+#dicomOverlay {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    color: #00ffff;
+    font-size: 11px;
+    font-family: Consolas, monospace;
+    pointer-events: none;
+    background: rgba(0,0,0,0.55);
+    padding: 6px 8px;
+    border-radius: 4px;
+    line-height: 1.4;
+    max-width: 55%;
+}
+#dicomInfo {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    color: #fff;
+    font-size: 11px;
+    font-family: Consolas, monospace;
+    background: rgba(0,0,0,0.55);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+#dcmPlaceholder {
+    border: 2px dashed #b0c4de;
+    border-radius: 8px;
+    background: #f8fbff;
+    transition: all 0.2s;
+}
+#dcmPlaceholder.dragover {
+    background: #e6f0ff;
+    border-color: #2d8f77;
+    transform: scale(1.01);
+}
+#dcmToolbar .btn.active {
+    background: #2d8f77 !important;
+    color: #fff !important;
+    border-color: #2d8f77 !important;
+}
+#dcmTagsContent {
+    word-break: break-all;
+}
+#dicomViewerContainer:fullscreen {
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#dicomViewerContainer:fullscreen #dicomImage {
+    height: 100vh;
+}
+.dcm-badge-wl { font-size: 11px; }
+
+#dicomViewerContainer #dcmToolbar {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 20;
+    background: rgba(0,0,0,0.6);
+    padding: 6px;
+    border-radius: 6px;
+    max-width: 100%;
+}
+#dicomViewerContainer #dcmToolbar .btn { border-color: rgba(255,255,255,0.35); }
+#dicomViewerContainer #dcmToolbar .btn.active {
+    background: #2d8f77 !important;
+    color: #fff !important;
+    border-color: #2d8f77 !important;
+}
+#dcmWlPanel {
+    position: absolute;
+    bottom: 34px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    background: rgba(0,0,0,0.65);
+    padding: 8px 12px;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 11px;
+}
+#dcmWlPanel .dcm-wl-row { display: flex; align-items: center; gap: 8px; margin: 2px 0; }
+#dcmWlPanel label { min-width: 170px; margin: 0; }
+#dcmWlPanel input[type=range] { width: 170px; accent-color: #2d8f77; }
+#dcmWlPanel small { color: #7df9d4; }

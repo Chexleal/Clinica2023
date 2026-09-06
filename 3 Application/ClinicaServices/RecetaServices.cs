@@ -17,6 +17,9 @@ public interface IRecetaServices
 
     List<Medicamento> GetAllMedicamentos ();
 
+    Medicamento CrearMedicamento(string nombre);
+    void EliminarMedicamento(Guid id);
+
     Guid DeleteDetalle(Guid idDetalleReceta);
 }
 public class RecetaServices : IRecetaServices
@@ -86,7 +89,28 @@ public class RecetaServices : IRecetaServices
 
     public List<Medicamento> GetAllMedicamentos()
     {
-        return _dbContext.Medicamento.ToList();
+        var lista = _dbContext.Medicamento.OrderBy(x => x.Nombre).ToList();
+        AuditoriaNombres.Completar(_dbContext, lista);
+        return lista;
+    }
+
+    public Medicamento CrearMedicamento(string nombre)
+    {
+        var limpio = (nombre ?? "").Trim();
+        var existente = _dbContext.Medicamento.FirstOrDefault(x => x.Nombre.ToLower() == limpio.ToLower());
+        if (existente is not null) return existente;
+        var nuevo = new Medicamento { IdMedicamento = Guid.NewGuid(), Nombre = limpio };
+        _dbContext.Medicamento.Add(nuevo);
+        _dbContext.SaveChanges();
+        return nuevo;
+    }
+
+    public void EliminarMedicamento(Guid id)
+    {
+        var med = _dbContext.Medicamento.FirstOrDefault(x => x.IdMedicamento == id);
+        if (med is null) return;
+        _dbContext.Medicamento.Remove(med);
+        _dbContext.SaveChanges();
     }
 
     public Guid DeleteDetalle(Guid idDetalleReceta)

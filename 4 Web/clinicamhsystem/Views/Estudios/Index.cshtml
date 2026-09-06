@@ -1,0 +1,229 @@
+﻿@using ClinicaDomain
+@{
+    ViewData["Title"] = "Carga de Estudios";
+    var pacienteId = ViewBag.PacienteId as Guid?;
+    var consultaId = ViewBag.ConsultaId as Guid?;
+    var pacientes = ViewBag.Pacientes as List<Paciente> ?? new();
+    var estudios = ViewBag.Estudios as List<EstudioImagen> ?? new();
+    var ordenes = ViewBag.OrdenesPendientes as List<OrdenEstudio> ?? new();
+}
+@section Links{
+    <link rel="stylesheet" href="~/css/pages/dicom-viewer.css" asp-append-version="true" />
+}
+@{
+    var todas = ViewBag.TodasPendientes as List<OrdenEstudio> ?? new();
+}
+<div class="card shadow-lg p-3 mb-4" id="cardTodasPendientes">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h5 class="mb-0"><i class="fa-solid fa-bell" style="color:#c0392b"></i> Pendientes de sacar <span class="badge bg-danger">@todas.Count</span></h5>
+    </div>
+    <div class="card-body">
+        
+        <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead class="table-light"><tr><th>Fecha</th><th>Paciente</th><th>Tipo</th><th>Indicacion</th><th></th></tr></thead>
+                <tbody id="tbodyTodas">
+                @if(!todas.Any()){
+                    <tr class="empty-row"><td colspan="5" class="text-muted small">Sin ordenes pendientes.</td></tr>
+                }
+                @foreach(var o in todas){
+                    <tr>
+                        <td><small>@o.FechaOrden.ToString("dd/MM/yyyy")</small></td>
+                        <td>@(o.Paciente != null ? o.Paciente.Nombre + " " + o.Paciente.Apellido : "-")</td>
+                        <td><span class="badge bg-info">@o.Tipo</span></td>
+                        <td><small>@o.Indicacion</small></td>
+                        <td><a href="@Url.Action("Index","Estudios", new{ pacienteId=o.IdPaciente, idOrden=o.IdOrden })" class="btn btn-sm btn-outline-primary">Atender</a></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-lg p-3 mb-4">
+    <div class="card-header bg-white">
+        <h4><i class="fa-solid fa-upload" style="color:#2d8f77"></i> Carga de Estudios <small class="text-muted" style="font-size:14px">(Archivo / Recepción)</small></h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-12 col-md-8">
+                <label class="fw-bold">Paciente</label>
+                <select id="selPacienteCarga" class="form-select">
+                    <option value="">-- Busca paciente --</option>
+                    @if(ViewBag.PacienteActual != null){
+                        <option value="@ViewBag.PacienteActual.IdPaciente" selected>@ViewBag.PacienteActual.Nombre @ViewBag.PacienteActual.Apellido - @ViewBag.PacienteActual.Dpi</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if(!pacienteId.HasValue){
+    <div class="alert alert-info"><i class="fa-solid fa-circle-info"></i> Selecciona un paciente para ver órdenes pendientes y cargar estudios.</div>
+} else {
+
+<div class="card shadow-lg p-3 mb-4" id="cardCarga">
+    <div class="card-header bg-white"><h5 class="mb-0"><i class="fa-solid fa-cloud-arrow-up" style="color:#2d8f77"></i> Cargar archivo(s)</h5></div>
+    <div class="card-body">
+        <form id="formUploadEstudioCarga" enctype="multipart/form-data" class="row g-3">
+            <input type="hidden" name="idPaciente" value="@pacienteId" />
+            <input type="hidden" name="idConsulta" value="@consultaId" />
+            <div class="col-12 col-md-3">
+                <label class="fw-bold small">Orden (opcional)</label><button type="button" id="btnLiberarOrden" class="btn btn-link btn-sm p-0 ms-2" style="display:none">cambiar</button>
+                <select name="idOrden" id="selOrdenCarga" class="form-select form-select-sm">
+                    <option value="">-- Sin orden / directa --</option>
+                    @foreach(var o in ordenes){<option value="@o.IdOrden" data-tipo="@((int)o.Tipo)">@o.Tipo - @o.Indicacion</option>}
+                </select>
+            </div>
+            <div class="col-12 col-md-2">
+                <label class="fw-bold small">Tipo</label>
+                <select name="tipo" class="form-select form-select-sm" required>
+                    <option value="1">Rx</option><option value="2">Panorámica</option><option value="3">Cefalométrica</option>
+                    <option value="4">Tomografía</option><option value="5">Resonancia</option><option value="6">Ultrasonido</option><option value="7">Laboratorio</option><option value="99">Otro</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-3">
+                <label class="fw-bold small">Título</label>
+                <input name="titulo" class="form-control form-control-sm" placeholder="Ej: Rx panorámica" maxlength="200" />
+            </div>
+            <div class="col-12 col-md-4">
+                <label class="fw-bold small">Descripción</label>
+                <input name="descripcion" class="form-control form-control-sm" placeholder="Opcional" />
+            </div>
+            <div class="col-12">
+                <label class="fw-bold small">Archivos (.dcm, .pdf, .jpg)</label>
+                <input type="file" name="files" id="filesCarga" multiple accept=".dcm,.pdf,.jpg,.jpeg,.png" class="form-control form-control-sm" required />
+            </div>
+            <div class="col-12 text-end">
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-upload"></i> Subir</button>
+            </div>
+        </form>
+        <hr class="my-3" />
+        <div id="contEstudiosCarga">
+            <div class="text-muted small"><i class="fa-solid fa-inbox"></i> Selecciona una orden para ver o cargar sus estudios.</div>
+        </div>
+    </div>
+</div>
+}
+
+@section Scripts{
+    <script src="~/js/pages/estudios-ordenes.js" asp-append-version="true"></script>
+    <script>
+        // Estudios/Index específico
+        $('#selPacienteCarga').select2({
+            width: '100%',
+            placeholder: 'Busca paciente por nombre o DPI...',
+            minimumInputLength: 0,
+            ajax: {
+                url: '/Estudios/GetPacientesSelect',
+                dataType: 'json',
+                delay: 250,
+                data: function(params){ return { q: params.term, page: params.page || 1 }; },
+                processResults: function(data){ return { results: data.results, pagination: { more: data.more } }; },
+                cache: true
+            }
+        });
+        function initSelectsCarga(){
+            $('#selOrdenCarga').select2({ width: '100%', placeholder: 'Busca orden...' });
+            $('#formUploadEstudioCarga select[name="tipo"]').select2({ width: '100%' });
+        }
+        initSelectsCarga();
+        $(function(){
+            var ordenPre = '@(ViewBag.IdOrdenSeleccionada?.ToString() ?? "")';
+            if (ordenPre) { $('#selOrdenCarga').val(ordenPre); $('#selOrdenCarga').trigger('change'); }
+        });
+        $('#selPacienteCarga').on('change', function(){
+            const pid = $(this).val();
+            if(pid) window.location = '@Url.Action("Index","Estudios")?pacienteId=' + pid;
+            else window.location = '@Url.Action("Index","Estudios")';
+        });
+        $(document).on('click','.btn-sel-orden-carga', function(){
+            var oid = $(this).data('id');
+            $('#selOrdenCarga').val(oid);
+            $('#formUploadEstudioCarga select[name="tipo"]').val($(this).data('tipo')).trigger('change');
+            $('html,body').animate({scrollTop: $('#cardCarga').offset().top-20},300);
+            $('#selOrdenCarga, #formUploadEstudioCarga select[name="tipo"]').prop('disabled', true);
+            $('#btnLiberarOrden').show();
+            $.get('/Estudios/GetEstudiosPorOrden', { idOrden: oid }, function(html){ $('#contEstudiosCarga').html(html); });
+        });
+        $('#selOrdenCarga').on('change', function(){
+            var oid = $(this).val();
+            if(!oid){
+                $('#formUploadEstudioCarga select[name="tipo"]').prop('disabled', false);
+                $('#btnLiberarOrden').hide();
+                $('#contEstudiosCarga').html('<div class="text-muted small"><i class="fa-solid fa-inbox"></i> Selecciona una orden para ver o cargar sus estudios.</div>');
+                return;
+            }
+            var tipo = $('#selOrdenCarga option:selected').data('tipo');
+            if(tipo) $('#formUploadEstudioCarga select[name="tipo"]').val(tipo).trigger('change');
+            $('#selOrdenCarga, #formUploadEstudioCarga select[name="tipo"]').prop('disabled', true);
+            $('#btnLiberarOrden').show();
+            $.get('/Estudios/GetEstudiosPorOrden', { idOrden: oid }, function(html){ $('#contEstudiosCarga').html(html); });
+        });
+        $(document).on('click', '#btnLiberarOrden', function(){
+            $('#selOrdenCarga').val('');
+            $('#selOrdenCarga, #formUploadEstudioCarga select[name="tipo"]').prop('disabled', false);
+            $('#btnLiberarOrden').hide();
+            $('#contEstudiosCarga').html('<div class="text-muted small"><i class="fa-solid fa-inbox"></i> Selecciona una orden para ver o cargar sus estudios.</div>');
+        });
+        // upload en esta vista usa /Estudios/UploadEstudio
+        $('#formUploadEstudioCarga').on('submit', function(e){
+            e.preventDefault();
+            $('#selOrdenCarga, #formUploadEstudioCarga select[name="tipo"]').prop('disabled', false);
+            const fd = new FormData(this);
+            const btn = $(this).find('button[type="submit"]').prop('disabled',true).html('<i class="fa-solid fa-spinner fa-spin"></i> Subiendo...');
+            $.ajax({
+                url: '@Url.Action("UploadEstudio","Estudios")',
+                type: 'POST', data: fd, processData:false, contentType:false,
+                success: function(html){
+                    $("#contEstudiosCarga").html(html);
+                    $("#filesCarga").val("");
+                    $("#selOrdenCarga, #formUploadEstudioCarga select[name=\"tipo\"]").prop("disabled", false); $("#btnLiberarOrden").hide();
+                    var pid = $("input[name=\"idPaciente\"]").val();
+                    $.get("/Estudios/GetPendientesRefresh", { idPaciente: pid }, function(d){
+                        var sel = $("#selOrdenCarga");
+                        if (sel.hasClass("select2-hidden-accessible")) { sel.select2("destroy"); }
+                        sel.html("<option value=\"\">-- Sin orden / directa --</option>");
+                        $.each(d.paciente, function(i,o){ sel.append("<option value=\"" + o.idOrden + "\" data-tipo=\"" + o.tipoId + "\">" + o.tipo + " - " + o.indicacion + "</option>"); });
+                        sel.select2({ width: "100%", placeholder: "Busca orden..." });
+                        var tb = "";
+                        $.each(d.todas, function(i,o){ tb += "<tr><td><small>" + o.fecha + "</small></td><td>" + o.paciente + "</td><td><span class=\"badge bg-info\">" + o.tipo + "</span></td><td><small>" + o.indicacion + "</small></td><td><a href=\"/Estudios?pacienteId=" + o.idPaciente + "\" class=\"btn btn-sm btn-outline-primary\">Atender</a></td></tr>"; });
+                        if ($("#tbodyTodas").length) $("#tbodyTodas").html(tb || "<tr class=\"empty-row\"><td colspan=\"5\" class=\"text-muted small\">Sin ordenes pendientes.</td></tr>");
+                        var pb = "";
+                        $.each(d.paciente, function(i,o){ pb += "<tr><td><small>" + o.fecha + "</small></td><td><span class=\"badge bg-info\">" + o.tipo + "</span></td><td><small>" + o.indicacion + "</small></td><td><span class=\"badge bg-warning text-dark\">Pendiente</span></td><td><button type=\"button\" class=\"btn btn-sm btn-outline-primary btn-sel-orden-carga\" data-id=\"" + o.idOrden + "\" data-tipo=\"" + o.tipoId + "\"><i class=\"fa-solid fa-check\"></i> Seleccionar</button></td></tr>"; });
+                        if ($("#tbodyPaciente").length) $("#tbodyPaciente").html(pb || "<tr class=\"empty-row\"><td colspan=\"5\" class=\"text-muted small\">Sin ordenes pendientes para este paciente.</td></tr>");
+                        $("#cardTodasPendientes .card-header .badge").text(d.todas.length);
+                    });
+                    Swal.fire({icon:"success", title:"Cargado", timer:1200, showConfirmButton:false});
+                },
+                error: function(xhr){ Swal.fire({icon:'error', title:'Error', text: xhr.responseText}); },
+                complete: function(){ btn.prop('disabled',false).html('<i class="fa-solid fa-upload"></i> Subir'); }
+            });
+        });
+        // delete en esta vista también usa Estudios controller (delegado a parcial)
+        $(document).on('click', '#contEstudiosCarga .btn-del-arch', function(){
+            const idArch=$(this).data('arch');
+            Swal.fire({title:'¿Eliminar archivo?', icon:'warning', showCancelButton:true, confirmButtonText:'Sí'}).then(r=>{
+                if(!r.isConfirmed) return;
+                $.post('@Url.Action("DeleteArchivo","Estudios")', {idArchivo:idArch}, function(html){ $('#contEstudiosCarga').html(html); });
+            });
+        });
+        $(document).on('click', '#contEstudiosCarga .btn-del-estudio', function(){
+            const idEst=$(this).data('estudio');
+            Swal.fire({title:'¿Eliminar estudio?', icon:'warning', showCancelButton:true, confirmButtonText:'Sí'}).then(r=>{
+                if(!r.isConfirmed) return;
+                $.post('@Url.Action("DeleteEstudio","Estudios")', {idEstudio:idEst}, function(html){ $('#contEstudiosCarga').html(html); });
+            });
+        });
+        $(document).on('click', '#contEstudiosCarga .btn-ver-dicom', function(){
+            const idArch=$(this).data('arch');
+            const nombre=$(this).data('nombre');
+            // abre visor en nueva pestaña de ContinuarConsulta? para no duplicar viewer aquí, solo descarga preview
+            // si quieres visor aquí también, descomenta:
+            // window.open('@Url.Action("VerArchivo","Estudios")?idArchivo='+idArch, '_blank');
+            Swal.fire({icon:'info', title:'Ver en ContinuarConsulta', text:'Abre la consulta del paciente para ver en el visor DICOM con herramientas WW/WL'});
+        });
+    </script>
+}

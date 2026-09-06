@@ -1,0 +1,44 @@
+@model List<ClinicaDomain.Medicamento>
+@{
+    ViewData["Title"] = "Catálogo Medicamentos";
+}
+<div class="card shadow-lg p-3 mb-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h4><i class="fa-solid fa-pills" style="color:#2d8f77"></i> Catálogo Medicamentos</h4>
+        <a href="@Url.Action("Index","Configuraciones")" class="btn btn-outline-secondary btn-sm">Volver a Configuraciones</a>
+    </div>
+    <div class="card-body">
+        <form method="post" action="@Url.Action("CrearMedicamento")" class="row g-2 align-items-end mb-3">
+            <div class="col-12 col-md-10">
+                <label class="fw-bold small">Nombre</label>
+                <input name="nombre" class="form-control form-control-sm" placeholder="Ej: Ibuprofeno 400mg" maxlength="300" required />
+            </div>
+            <div class="col-12 col-md-2">
+                <button type="submit" class="btn btn-dark btn-sm w-100"><i class="fa-solid fa-plus"></i> Agregar</button>
+            </div>
+        </form>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead class="table-light"><tr><th>Nombre</th><th></th></tr></thead>
+                <tbody>
+                @foreach(var m in Model.OrderBy(x => x.Nombre)){
+                    <tr>
+                        <td>@m.Nombre</td>
+                        <td class="text-end text-nowrap">
+                            <partial name="_AuditInfo" model="m" />
+                            <form method="post" action="@Url.Action("EliminarMedicamento")" style="display:inline" onsubmit="return confirm('¿Eliminar?')">
+                                <input type="hidden" name="id" value="@m.IdMedicamento" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script src="~/js/pages/audit-info.js" asp-append-version="true"></script>
+}

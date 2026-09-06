@@ -12,7 +12,7 @@ namespace clinicaWeb.Extensions;
 
 public static class WebIocExtensions
 {
-    public static void WebInjections(this IServiceCollection services)
+    public static void WebInjections(this IServiceCollection services, IConfiguration configuration)
     {
         #region Application Services
         //En esta region se definen los servicios del backend a utilizar en los controladores del frontend
@@ -28,6 +28,22 @@ public static class WebIocExtensions
         services.AddScoped<IRecetaServices, RecetaServices>();
         services.AddScoped<ICitaServices, CitaServices>();
         services.AddScoped<IErrorLogService, ErrorLogService>();
+        services.AddScoped<IEstudioImagenService, EstudioImagenService>();
+        services.AddScoped<IOrdenEstudioService, OrdenEstudioService>();
+        services.AddScoped<ICatalogoIndicacionService, CatalogoIndicacionService>();
+        // Storage: Azure Blob si hay StorageConnectionString, si no Local (wwwroot/uploads).
+        var blobConn = configuration["StorageConnectionString"];
+        var blobContainer = configuration["StorageContainerName"];
+        if (string.IsNullOrWhiteSpace(blobContainer)) blobContainer = "mhsystem-prd";
+        if (string.IsNullOrWhiteSpace(blobConn))
+        {
+            services.AddScoped<ClinicaServices.Storage.IStorageService, ClinicaServices.Storage.LocalStorageService>();
+        }
+        else
+        {
+            services.AddScoped<ClinicaServices.Storage.IStorageService>(sp =>
+                new ClinicaServices.Storage.AzureBlobStorageService(blobConn, blobContainer));
+        }
         #endregion
 
 

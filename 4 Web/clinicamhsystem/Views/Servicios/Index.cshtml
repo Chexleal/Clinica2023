@@ -1,36 +1,31 @@
-﻿@using Newtonsoft.Json;
-@*@model IEnumerable<ClinicaDomain.Consulta>*@
-@model clinicaWeb.Models.ServiciosViewModel;
+﻿@model clinicaWeb.Models.ServiciosViewModel;
 
 @{
-    ViewData["Title"] = "Servicios";
-
-    var t = ViewData["Title"];
+    ViewData["Title"] = "Catálogo Servicios";
 }
-@section Links{
-    <link rel="stylesheet" href="~/css/pages/Consultas.css" asp-append-version="true" />
-}
-@*<partial name="~/Views/Shared/_modalEdit.cshtml" />
-<partial name="Partials/_modalCrear.cshtml" />
-<partial name="Partials/_modalCrearConsulta.cshtml" />*@
-<div class="card w-100 shadow-lg mt-5">
+<div class="card shadow-lg p-3 mb-4">
 
-    <div class="card-header bg-ligth">
-        <h3 class="h3">Servicios</h3>
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h4><i class="fa-solid fa-hand-holding-medical" style="color:#2d8f77"></i> Catálogo Servicios</h4>
+        <a href="@Url.Action("Index","Configuraciones")" class="btn btn-outline-secondary btn-sm">Volver a Configuraciones</a>
     </div>
 
     <div class="card-body">
-        <p>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
-                <i class="fa-solid fa-plus fa-bounce"></i> Agregar Servicio
-            </button>         
-        </p>
+        <form method="POST" action="@Url.Action("Create","Servicios")" class="row g-2 align-items-end mb-3">
+            <div class="col-12 col-md-10">
+                <label class="fw-bold small">Servicio</label>
+                <input required name="Descripcion" id="Descripcion" class="form-control form-control-sm" placeholder="Ej: Consulta general" maxlength="300" />
+            </div>
+            <div class="col-12 col-md-2">
+                <button type="submit" class="btn btn-dark btn-sm w-100"><i class="fa-solid fa-plus"></i> Agregar</button>
+            </div>
+        </form>
         <div class="table-responsive ">
-            <table id="table" class="table table-striped ">
-                <thead class="table-dark">
+            <table id="table" class="table table-sm table-hover">
+                <thead class="table-light">
                     <tr>
                         <th>Servicio</th>
-                        <th class="">Acciones</th>
+                        <th class="text-end"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -38,46 +33,14 @@
                     {
                         <tr>
                             <td>@item.Descripcion</td>
-                            <td>
-                                <div class="options d-flex ">
-                                    <form id="eliminarForm" onsubmit="alertElminarPrevents(event)" asp-action="Eliminar">
-                                        <button class="option btn" type="button" onclick="alertElminarPrevents('@item.IdMotivoCobro')">Eliminar</button>
-                                        <input hidden id="idServicio" name="idServicio" value="@item.IdMotivoCobro" />
-                                    </form>
-                                                                    
-                                </div>
+                            <td class="text-end text-nowrap">
+                                <partial name="_AuditInfo" model="item" />
+                                <button class="btn btn-sm btn-outline-danger" type="button" onclick="alertElminarPrevents('@item.IdMotivoCobro')"><i class="fa-solid fa-trash"></i></button>
                             </td>
                         </tr>
                     }
                 </tbody>
             </table>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Crear Servicio-->
-<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Crear Servicio</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="crear" method="POST" action="@Url.Action("Create","Servicios")">
-                    <div class="row">
-                        <div class="form-group">
-                            <label class="control-label">Tipo de servicio</label>
-                            <input required name="Descripcion" id="Descripcion" class="form-control" />
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <button type="submit" class="btn btn-primary" form="crear">Agregar</button>
-            </div>
-
         </div>
     </div>
 </div>
@@ -114,5 +77,6 @@ successWithTimer('/Servicios/Index')
         }
     </script>
     <partial name="_DataTablesButtonsScripts" />
+    <script src="~/js/pages/audit-info.js" asp-append-version="true"></script>
     <script src="~/js/pages/servicios.js" asp-append-version="true"></script>
 }

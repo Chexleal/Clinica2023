@@ -19,7 +19,8 @@ public class UsuariosController : ErrorHandlingController
         "Pacientes",
         "Pagos",
         "Reportes",
-        "Servicios"
+        "Servicios",
+        "Configuraciones"
     };
 
     public UsuariosController(IUserServices userServices)

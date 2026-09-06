@@ -1,0 +1,58 @@
+﻿@model List<ClinicaDomain.EstudioImagen>
+@using ClinicaDomain
+@{
+    var soloLectura = ViewBag.EsSoloLectura as bool? ?? false;
+    // En ContinuarConsulta doctor solo visualiza, en Estudios carga sí puede eliminar
+    var controllerVer = soloLectura ? "ContinuarConsulta" : (ViewContext.RouteData.Values["controller"]?.ToString() ?? "Estudios");
+}
+@if (Model == null || !Model.Any())
+{
+    <div class="text-center py-4 text-muted"><i class="fa-solid fa-images fa-2x"></i><p class="mt-2 small">Sin estudios cargados</p></div>
+}
+else
+{
+    <div class="row g-3" id="galeriaEstudios">
+    @foreach (var est in Model)
+    {
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
+                    <span class="badge @(est.Tipo==TipoEstudio.Laboratorio?"bg-warning text-dark":"bg-primary")">@est.Tipo</span>
+                    <small class="text-muted">@est.FechaEstudio.ToString("dd/MM/yyyy")</small>
+                </div>
+                <div class="card-body py-2">
+                    <h6 class="card-title mb-1" style="font-size:14px">@est.Titulo</h6>
+                    @if(!string.IsNullOrWhiteSpace(est.Descripcion)){<p class="card-text small text-muted mb-1">@est.Descripcion</p>}
+                    @if(est.Orden!=null){<small class="text-success"><i class="fa-solid fa-link"></i> Orden @est.Orden.Tipo</small>}
+                    <div class="mt-2">
+                        <small class="text-muted"><i class="fa-solid fa-user"></i> @(est.CreadoPorNombre ?? est.CreadoPor?.ToString() ?? "-") · @est.FechaCreacion?.ToString("dd/MM/yyyy") | <i class="fa-solid fa-hard-drive"></i> @(est.Archivos.Sum(a=>a.TamanoBytes) >= 1048576 ? (est.Archivos.Sum(a=>a.TamanoBytes)/1048576.0).ToString("0.0") + " MB" : (est.Archivos.Sum(a=>a.TamanoBytes)/1024.0).ToString("0") + " KB") total</small>
+                    </div>
+                    <ul class="list-group list-group-flush mt-2">
+                    @foreach(var arch in est.Archivos)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-1 px-0" style="font-size:13px">
+                            <span class="text-truncate me-2" title="@arch.NombreOriginal">@{ var icono = arch.MimeType.Contains("dicom") ? "fa-x-ray text-info" : arch.MimeType.Contains("pdf") ? "fa-file-pdf text-danger" : arch.MimeType.StartsWith("image/") ? "fa-file-image text-success" : "fa-file-lines text-secondary"; }<i class="fa-solid @icono"></i> @arch.NombreOriginal <small class="text-muted">(@((arch.TamanoBytes/1024.0).ToString("0")) KB)</small></span>
+                            <span class="btn-group btn-group-sm">
+                                @if(arch.MimeType.Contains("dicom")){
+                                    <button type="button" class="btn btn-outline-dark btn-sm btn-ver-dicom" data-arch="@arch.IdArchivo" data-nombre="@arch.NombreOriginal" title="Ver en visor"><i class="fa-solid fa-eye"></i></button>
+                                } else {
+                                    <a href="@Url.Action("VerArchivo", controllerVer, new{idArchivo=arch.IdArchivo})" target="_blank" class="btn btn-outline-secondary btn-sm" title="Ver"><i class="fa-solid fa-eye"></i></a>
+                                }
+                                @if(!soloLectura){
+                                <button type="button" class="btn btn-outline-danger btn-sm btn-del-arch" data-arch="@arch.IdArchivo"><i class="fa-solid fa-trash"></i></button>
+                                }
+                            </span>
+                        </li>
+                    }
+                    </ul>
+                </div>
+                @if(!soloLectura){
+                <div class="card-footer bg-white py-1 text-end">
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-del-estudio" data-estudio="@est.IdEstudio"><i class="fa-solid fa-trash-can"></i> Eliminar estudio</button>
+                </div>
+                }
+            </div>
+        </div>
+    }
+    </div>
+}

@@ -1,0 +1,32 @@
+﻿@model List<ClinicaDomain.OrdenEstudio>
+@using ClinicaDomain
+@if (Model == null || !Model.Any())
+{
+    <div class="text-muted small py-2"><i class="fa-solid fa-inbox"></i> Sin órdenes</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="table-light"><tr><th>Fecha</th><th>Tipo</th><th>Indicación</th><th>Estado</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var o in Model.OrderByDescending(x=>x.FechaOrden))
+            {
+                <tr data-id="@o.IdOrden" data-tipo="@((int)o.Tipo)">
+                    <td><small>@o.FechaOrden.ToString("dd/MM/yyyy")</small></td>
+                    <td><span class="badge bg-info">@o.Tipo</span></td>
+                    <td><small>@o.Indicacion</small></td>
+                    <td>
+                        @if(o.Estado==EstadoOrden.Pendiente){<span class="badge bg-warning text-dark">Pendiente</span>}
+                        else if(o.Estado==EstadoOrden.Completada){<span class="badge bg-success">Completada</span>}
+                        else{<span class="badge bg-secondary">@o.Estado</span>}
+                    </td>
+                    <td>
+                        @if(o.Estado==EstadoOrden.Pendiente){<button type="button" class="btn btn-sm btn-outline-danger btn-del-orden" data-id="@o.IdOrden" title="Eliminar orden"><i class="fa-solid fa-trash"></i></button>}
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

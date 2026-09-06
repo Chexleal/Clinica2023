@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Secretos locales (NO se commitea, ver .gitignore).
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -50,7 +53,7 @@ builder.Host.ConfigureServices(services =>
     services.AddRazorPages();
     services.AddRazorPages().AddRazorRuntimeCompilation();
 });
-builder.Services.WebInjections();
+builder.Services.WebInjections(builder.Configuration);
 
 var app = builder.Build();
 

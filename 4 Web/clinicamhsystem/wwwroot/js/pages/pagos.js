@@ -1,6 +1,22 @@
 $(document).ready(function () {
     CreateTable();
+    // Modo página (/Ventas/Cobrar): inicializar selects al cargar, sin modal.
+    if (typeof COBRO_MODO !== 'undefined' && COBRO_MODO === 'pagina') {
+        initSelectsPagina();
+        presetPrecio(false);
+    }
 });
+
+function cobroEsPagina() {
+    return typeof COBRO_MODO !== 'undefined' && COBRO_MODO === 'pagina';
+}
+
+function submitCobro(formId, url) {
+    var f = document.getElementById(formId);
+    f.setAttribute('action', url);
+    f.setAttribute('method', 'POST');
+    f.submit();
+}
 
 function CreateTable() {
     if (!$('#table').length) return;
@@ -32,12 +48,11 @@ $('.btn-detalles').click(function () {
         type: 'POST',
         data: { idconsulta: consultaId },
         success: function (result) {
-            $('#pagarConsultaModal').find('.modal-body').html(result);
+            $('#pagarConsultaModal').find('.modal-content').html(result);
             $('#pagarConsultaModal').modal('show');
             /*                agregar();*/
-            $('#idMotivoCobro').select2({
-                dropdownParent: $('#pagarConsultaModal')
-            });
+            initSelects();
+            presetPrecio(false);
 
         },
         error: function (error) {
@@ -47,6 +62,7 @@ $('.btn-detalles').click(function () {
 });
 
 function addDetalle() {
+    if (cobroEsPagina()) { submitCobro('agregarDetalleForm', '/Ventas/AddServicio'); return; }
     var detalle = $("#agregarDetalleForm").serialize();
     //console.log("serializado: " + detalle);
     $.ajax({
@@ -55,10 +71,8 @@ function addDetalle() {
         data: detalle,
         //contentType: false,
         success: function (result) {
-            $('#pagarConsultaModal').find('.modal-body').html(result);
-            $('#idMotivoCobro').select2({
-                dropdownParent: $('#pagarConsultaModal')
-            });
+            $('#pagarConsultaModal').find('.modal-content').html(result);
+            initSelects();
 
 /*            $('#pagarConsultaModal').modal('show');*/
         },
@@ -68,22 +82,191 @@ function addDetalle() {
     });
 }
 
-function deleteDetalle(id) {
-    var idConsulta = $("#IdConsulta").val();
-    $.ajax({
-        url: '/Pagos/Eliminar',
-        type: 'POST',
-        data: { id, idConsulta },
-        success: function (result) {
-            $('#pagarConsultaModal').find('.modal-body').html(result);
-            $('#idMotivoCobro').select2({
-                dropdownParent: $('#pagarConsultaModal')
-            });
+function initSelects() {
+    if (cobroEsPagina()) { initSelectsPagina(); return; }
+    ['#idMotivoCobro', '#idProducto'].forEach(function (s) {
+        var el = $(s);
+        if (el.length && !el.hasClass('select2-hidden-accessible')) {
+            el.select2({ dropdownParent: $('#pagarConsultaModal') });
+        }
+    });
+    presetPrecioProducto(false);
+    actualizarReferencia();
+}
 
-            /*            $('#pagarConsultaModal').modal('show');*/
+ // En página no hay modal: el dropdown de select2 se ancla al contenedor de cobro.
+function initSelectsPagina() {
+    ['#idMotivoCobro', '#idProducto'].forEach(function (s) {
+        var el = $(s);
+        if (el.length && !el.hasClass('select2-hidden-accessible')) {
+            el.select2({ dropdownParent: $('.cobro-root').first() });
+        }
+    });
+    presetPrecioProducto(false);
+    actualizarReferencia();
+}
+
+function refreshModal(result) {
+    $('#pagarConsultaModal').find('.modal-content').html(result);
+    initSelects();
+    presetPrecio();
+}
+
+function presetPrecio(force) {
+    var sel = $('#idMotivoCobro option:selected');
+    var precio = sel.data('precio');
+    if (precio !== undefined && (force || !$('#ValorServicio').val())) {
+        $('#ValorServicio').val(precio);
+    }
+}
+
+$(document).on('change', '#idMotivoCobro', function () { presetPrecio(true); });
+
+function presetPrecioProducto(force) {
+    var sel = $('#idProducto option:selected');
+    var precio = parseFloat(sel.data('precio'));
+    // No prellenar ceros: si el catálogo está en 0, se deja vacío para obligar a digitarlo.
+    if (!isNaN(precio) && precio > 0 && (force || !$('#ValorProducto').val())) {
+        $('#ValorProducto').val(sel.data('precio'));
+    }
+}
+
+$(document).on('change', '#idProducto', function () { presetPrecioProducto(true); });
+
+function addProducto() {
+    if (cobroEsPagina()) { submitCobro('agregarProductoForm', '/Ventas/AddProducto'); return; }
+    var detalle = $("#agregarProductoForm").serialize();
+    $.ajax({
+        url: '/Pagos/AddProducto',
+        type: 'POST',
+        data: detalle,
+        success: refreshModal,
+        error: function (error) {
+            Swal.fire('Stock', error.responseText || 'No se pudo agregar el producto.', 'warning');
+        }
+    });
+}
+
+function addProductoExpress() {
+    if (cobroEsPagina()) { submitCobro('productoExpressForm', '/Ventas/AddProductoExpress'); return; }
+    var detalle = $("#productoExpressForm").serialize();
+    $.ajax({
+        url: '/Pagos/AddProductoExpress',
+        type: 'POST',
+        data: detalle,
+        success: refreshModal,
+        error: function (error) {
+            Swal.fire('Alta rápida', error.responseText || 'No se pudo crear el producto.', 'warning');
+        }
+    });
+}
+
+function setTipoAgregar(t) {
+    ['servicio', 'producto', 'express'].forEach(function (k) {
+        $('#panel-agregar-' + k).toggle(k === t);
+        var btn = $('#seg-agregar-' + k);
+        if (k === t) {
+            btn.removeClass('text-muted').addClass('bg-light text-dark fw-bold');
+        } else {
+            btn.removeClass('bg-light text-dark fw-bold').addClass('text-muted');
+        }
+    });
+    initSelects();
+}
+
+function setTipoExpress(t) {
+    var esProd = t === 'producto';
+    $('#panel-expres-producto').toggle(esProd);
+    $('#panel-expres-servicio').toggle(!esProd);
+    $('#seg-expres-producto').toggleClass('active', esProd);
+    $('#seg-expres-servicio').toggleClass('active', !esProd);
+}
+
+function addServicioExpress() {
+    if (cobroEsPagina()) { submitCobro('servicioExpressForm', '/Ventas/AddServicioExpress'); return; }
+    $.ajax({
+        url: '/Pagos/AddServicioExpress',
+        type: 'POST',
+        data: $("#servicioExpressForm").serialize(),
+        success: refreshModal,
+        error: function (error) {
+            Swal.fire('Servicio nuevo', error.responseText || 'No se pudo crear el servicio.', 'warning');
+        }
+    });
+}
+
+function actualizarReferencia() {
+    var exige = $('#idMetodoPago option:selected').data('ref') == 1;
+    $('#grupoReferencia').toggle(exige);
+    if (!exige) { $('#ReferenciaPago').val(''); }
+}
+
+$(document).on('change', '#idMetodoPago', actualizarReferencia);
+
+function addPago() {
+    if (cobroEsPagina()) { submitCobro('agregarPagoForm', '/Ventas/AgregarPago'); return; }
+    $.ajax({
+        url: '/Pagos/AgregarPago',
+        type: 'POST',
+        data: $("#agregarPagoForm").serialize(),
+        success: function (result) {
+            refreshModal(result);
+            actualizarReferencia();
         },
         error: function (error) {
+            Swal.fire('Pago', error.responseText || 'No se pudo registrar el pago.', 'warning');
+        }
+    });
+}
+
+function deletePago(idPago) {
+    if (cobroEsPagina()) {
+        $.post('/Ventas/EliminarPago', { idPago: idPago, idVenta: $("#IdVentaRef").val() }, function () { location.reload(); });
+        return;
+    }
+    $.ajax({
+        url: '/Pagos/EliminarPago',
+        type: 'POST',
+        data: { idPago: idPago, idConsulta: $("#IdConsulta").val() },
+        success: refreshModal,
+        error: function (error) {
             console.log(error);
+        }
+    });
+}
+
+function deleteDetalle(id) { deleteVentaDetalle(id); }
+
+function deleteVentaDetalle(id) {
+    if (cobroEsPagina()) {
+        $.post('/Ventas/EliminarDetalle', { id: id, idVenta: $("#IdVentaRef").val() }, function () { location.reload(); });
+        return;
+    }
+    var idConsulta = $("#IdConsulta").val();
+    $.ajax({
+        url: '/Pagos/EliminarVentaDetalle',
+        type: 'POST',
+        data: { id, idConsulta },
+        success: refreshModal,
+        error: function (error) {
+            console.log(error);
+        }
+    });
+}
+
+function marcarPendientePago() {
+    var resp = ($("#pendientePagoFormModal [name='responsable']").val() || '').trim();
+    if (!resp) {
+        Swal.fire('Pendiente de pago', 'Indica quién queda debiendo (responsable).', 'warning');
+        return;
+    }
+    $.ajax({
+        url: '/Pagos/PendientePago',
+        type: 'POST',
+        data: $("#pendientePagoFormModal").serialize(),
+        success: refreshModal,
+        error: function (error) {
+            Swal.fire('Pendiente de pago', error.responseText || 'No se pudo dejar pendiente de pago.', 'warning');
         }
     });
 }

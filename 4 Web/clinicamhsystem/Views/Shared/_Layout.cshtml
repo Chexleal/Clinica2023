@@ -40,16 +40,16 @@
                     var ctrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
                     var act = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
                     var isCatalogoEstudios = ctrl == "Estudios" && (act == "Catalogo" || act == "CrearCatalogo" || act == "ToggleCatalogo" || act == "EliminarCatalogo");
-                    var isConfig = ctrl == "Configuraciones" || isCatalogoEstudios || ctrl == "Servicios";
+                    var isConfig = ctrl == "Configuraciones" || isCatalogoEstudios || ctrl == "Servicios" || ctrl == "Inventario";
                     var isEstudiosCarga = ctrl == "Estudios" && !isCatalogoEstudios;
                 }
                 <a class="menu_bt @((ctrl == "Pacientes") ? "active" : "")" href="/Pacientes"> <i class="fa-solid fa-user-injured fa-xl menu_icon"></i> Pacientes</a>
                 <a class="menu_bt @((ctrl == "Consultas" || ctrl =="ContinuarConsulta") ? "active" : "")" href="/Consultas"><i class="fa-solid fa-notes-medical fa-xl menu_icon"></i>Consultas</a>
                 <a class="menu_bt @(isEstudiosCarga ? "active" : "")" href="/Estudios"><i class="fa-solid fa-x-ray fa-xl menu_icon"></i>Estudios</a>
                 <a class="menu_bt @((ctrl == "Pagos") ? "active" : "")" href="/Pagos"><i class="fa-solid fa-money-bill fa-xl menu_icon"></i> Pagar Consultas</a>
+                <a class="menu_bt @((ctrl == "Ventas") ? "active" : "")" href="/Ventas"><i class="fa-solid fa-cash-register fa-xl menu_icon"></i>Ventas Mostrador</a>
                 <a class="menu_bt @((ctrl == "Citas") ? "active" : "")" href="/Citas"><i class="fa-solid fa-calendar fa-xl menu_icon"></i>Citas</a>
                 <a class="menu_bt @((ctrl == "Reportes") ? "active" : "")" href="/Reportes"><i class="fa-regular fa-file-lines fa-xl menu_icon"></i>Reportes</a>
-                <a class="menu_bt @((ctrl == "Servicios") ? "active" : "")" href="/Servicios"><i class="fa-solid fa-hand-holding-medical fa-xl menu_icon"></i>Servicios</a>
                 <a class="menu_bt @((ctrl == "Usuarios") ? "active" : "")" href="/Usuarios"><i class="fa-solid fa-users fa-xl menu_icon"></i>Usuarios</a>
                 <a class="menu_bt @(isConfig ? "active" : "")" href="/Configuraciones"><i class="fa-solid fa-gear fa-xl menu_icon"></i>Configuraciones</a>
             </div>

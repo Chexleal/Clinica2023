@@ -1,0 +1,102 @@
+@model List<ClinicaDomain.CategoriaProducto>
+@{
+    ViewData["Title"] = "Categorías de inventario";
+}
+<div class="card shadow-lg p-3 mb-4">
+    <div class="card-header bg-white d-flex align-items-center gap-2">
+        <a href="@Url.Action("Index","Configuraciones")" class="btn btn-outline-secondary btn-sm" title="Volver a Configuraciones"><i class="fa-solid fa-arrow-left"></i></a>
+        <h4 class="mb-0"><i class="fa-solid fa-tags" style="color:#2d8f77"></i> Categorías de inventario</h4>
+    </div>
+    <div class="card-body">
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger py-2">@TempData["Error"]</div>
+        }
+        <form method="post" action="@Url.Action("CrearCategoria")" class="row g-2 align-items-end mb-3">
+            <div class="col-12 col-md-5">
+                <label class="fw-bold small">Nombre</label>
+                <input name="nombre" class="form-control form-control-sm" style="text-transform:uppercase;" placeholder="Ej: Material ortopédico" maxlength="120" required />
+            </div>
+            <div class="col-6 col-md-2">
+                <label class="fw-bold small">Tipo</label>
+                <select name="tipo" class="form-select form-select-sm">
+                    <option value="Bien">Bien</option>
+                    <option value="Servicio">Servicio</option>
+                </select>
+            </div>
+            <div class="col-6 col-md-3">
+                <label class="fw-bold small">Valores por defecto</label>
+                <div class="d-flex gap-3">
+                    <div class="form-check"><input class="form-check-input" type="checkbox" name="exigeLote" value="true" id="chkLote" /><label class="form-check-label small" for="chkLote">Exige lote</label></div>
+                    <div class="form-check"><input class="form-check-input" type="checkbox" name="exigeVencimiento" value="true" id="chkVence" /><label class="form-check-label small" for="chkVence">Exige vencimiento</label></div>
+                </div>
+            </div>
+            <div class="col-12 col-md-2">
+                <button type="submit" class="btn btn-dark btn-sm w-100"><i class="fa-solid fa-plus"></i> Agregar</button>
+            </div>
+        </form>
+        <hr class="mt-1 mb-3" />
+        <div class="table-responsive">
+            <table class="table table-sm table-hover tabla-config" data-search-placeholder="Buscar categoría" data-export-name="Categorias">
+                <thead class="table-dark"><tr><th>Nombre</th><th>Tipo</th><th>Exige</th><th>Activo</th><th></th></tr></thead>
+                <tbody>
+                @foreach(var c in Model.OrderBy(x => x.Nombre)){
+                    <tr>
+                        <td>@c.Nombre</td>
+                        <td><span class="badge @(c.Tipo == "Bien" ? "bg-primary" : "bg-info text-dark")">@c.Tipo</span></td>
+                        <td class="small text-muted">@(c.ExigeLoteDefault ? "lote" : "—")@(c.ExigeVencimientoDefault ? " +vence" : "")</td>
+                        <td>
+                            <form method="post" action="@Url.Action("ToggleCategoria")" style="display:inline">
+                                <input type="hidden" name="id" value="@c.IdCategoriaProducto" />
+                                <button type="submit" class="btn btn-sm @(c.Activo?"btn-success":"btn-secondary")">@(c.Activo?"Activa":"Inactiva")</button>
+                            </form>
+                        </td>
+                        <td class="text-end text-nowrap">
+                            <partial name="_AuditInfo" model="c" />
+                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editar-@c.IdCategoriaProducto" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                            <div class="modal fade" id="editar-@c.IdCategoriaProducto" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <form method="post" action="@Url.Action("ActualizarCategoria")">
+                                        <div class="modal-content">
+                                            <div class="modal-header"><h6 class="mb-0">Editar categoría</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                            <div class="modal-body row g-2 text-start">
+                                                <input type="hidden" name="id" value="@c.IdCategoriaProducto" />
+                                                <div class="col-12"><label class="small fw-bold">Nombre</label><input required name="nombre" value="@c.Nombre" class="form-control form-control-sm" style="text-transform:uppercase;" maxlength="120" /></div>
+                                                <div class="col-12"><label class="small fw-bold">Tipo</label>
+                                                    <select name="tipo" class="form-select form-select-sm">
+                                                        @if (c.Tipo == "Servicio")
+                                                        {
+                                                            <option value="Bien">Bien</option>
+                                                            <option value="Servicio" selected>Servicio</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="Bien" selected>Bien</option>
+                                                            <option value="Servicio">Servicio</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div class="col-12 d-flex gap-3">
+                                                    <div class="form-check"><input class="form-check-input" type="checkbox" name="exigeLote" value="true" id="lote-@c.IdCategoriaProducto" @(c.ExigeLoteDefault ? "checked" : "") /><label class="form-check-label small" for="lote-@c.IdCategoriaProducto">Exige lote</label></div>
+                                                    <div class="form-check"><input class="form-check-input" type="checkbox" name="exigeVencimiento" value="true" id="vence-@c.IdCategoriaProducto" @(c.ExigeVencimientoDefault ? "checked" : "") /><label class="form-check-label small" for="vence-@c.IdCategoriaProducto">Exige vencimiento</label></div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary btn-sm">Guardar</button></div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <partial name="_DataTablesButtonsScripts" />
+    <script src="~/js/pages/audit-info.js" asp-append-version="true"></script>
+    <script src="~/js/pages/tablas-config.js" asp-append-version="true"></script>
+}

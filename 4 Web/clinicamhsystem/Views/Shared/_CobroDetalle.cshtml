@@ -1,0 +1,423 @@
+@model clinicamhsystem.Models.DetallesPagarViewModel
+
+@{
+    // Diseño maestro de cobro (lo usa la modal de Pagar Consulta y la página de Ventas).
+    var esPagina = (ViewBag.CobroModo as string) == "pagina";
+    var venta = Model.Venta;
+    var lineas = Model.VentaDetalles ?? new List<ClinicaDomain.VentaDetalle>();
+    var subServicios = lineas.Where(x => x.TipoLinea == "Servicio").Sum(x => x.Subtotal);
+    var subProductos = lineas.Where(x => x.TipoLinea == "Producto").Sum(x => x.Subtotal);
+    var total = subServicios + subProductos;
+    string fmt(decimal v) => v.ToString("0.00");
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+    var primerPrecioProd = (Model.Productos?.FirstOrDefault()?.PrecioVenta ?? 0) > 0
+        ? Model.Productos!.First().PrecioVenta.ToString("0.00", inv) : "";
+}
+
+<style>
+    /* select2 a la misma altura exacta que form-control-sm / form-select-sm (31px) */
+    .cobro-root .select2-container { display: block !important; }
+    .cobro-root .select2-container--default .select2-selection--single {
+        height: 31px !important;
+        min-height: 31px !important;
+        border: 1px solid var(--bs-border-color, #dee2e6) !important;
+        border-radius: .25rem !important;
+        font-size: .875rem !important;
+    }
+    .cobro-root .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 29px !important;
+        font-size: .875rem !important;
+        padding-left: .5rem !important;
+        padding-right: 1.5rem !important;
+    }
+    .cobro-root .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 29px !important;
+        right: .25rem !important;
+    }
+    .cobro-root .select2-dropdown { font-size: .875rem !important; }
+</style>
+
+<div class="cobro-root">
+    @if (venta?.Estado == "Pendiente de pago")
+    {
+        var saldoPendientePago = (venta?.Total ?? 0) - (Model.Pagos?.Sum(p => p.Monto) ?? 0);
+        <div class="alert alert-warning py-2 small">
+            <i class="fa-solid fa-hand-holding-dollar me-1"></i>
+            Pendiente de pago de <b>@venta!.FiadoResponsable</b>
+            @(venta.FechaPromesa.HasValue ? $"· promesa: {venta.FechaPromesa.Value:dd/MM/yyyy}" : "")
+            · saldo Q@(fmt(saldoPendientePago))
+        </div>
+    }
+    @if (venta?.Estado == "Pendiente")
+    {
+    <!-- Formulario de ingreso -->
+    <ul class="nav nav-pills justify-content-start mb-3" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button type="button" id="seg-agregar-servicio" class="nav-link bg-light text-dark fw-bold" onclick="setTipoAgregar('servicio')">Servicio</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button type="button" id="seg-agregar-producto" class="nav-link text-muted" onclick="setTipoAgregar('producto')">Producto</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button type="button" id="seg-agregar-express" class="nav-link text-muted" onclick="setTipoAgregar('express')">Otro</button>
+        </li>
+    </ul>
+
+    <div id="panel-agregar-servicio" class="border-0">
+        <form id="agregarDetalleForm" method="POST">
+            <input hidden id="IdConsulta" name="idConsulta" value="@Model.consulta?.IdConsulta" />
+            <input hidden id="IdVentaServ" name="idVenta" value="@venta?.IdVenta" />
+            <div class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="small fw-bold" for="idMotivoCobro">Servicio</label>
+                    <select class="form-select form-select-sm select2" id="idMotivoCobro" name="idMotivoCobro" style="width:100%;">
+                        @foreach (var opcion in (Model.Servicios ?? new List<ClinicaDomain.MotivoCobro>()))
+                        {
+                            <option value="@opcion.IdMotivoCobro" data-precio="@opcion.PrecioSugerido.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)">@opcion.Descripcion (Q@(fmt(opcion.PrecioSugerido)))</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="small fw-bold" for="ProductoDesc">Detalle</label>
+                    <input name="descripcion" id="ProductoDesc" class="form-control form-control-sm" placeholder="Opcional" />
+                </div>
+                <div class="col-md-2">
+                    <label class="small fw-bold" for="ValorServicio">Valor</label>
+                    <input name="precio" id="ValorServicio" class="form-control form-control-sm" />
+                </div>
+                <div class="col-md-1">
+                    <label class="small fw-bold">Cant.</label>
+                    <input name="cantidad" class="form-control form-control-sm" value="1" />
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-primary btn-sm w-100" type="button" onclick="addDetalle()"><i class="fa-solid fa-plus me-1"></i>Agregar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div id="panel-agregar-producto" class="border-0" style="display:none;">
+        <form id="agregarProductoForm" method="POST">
+            <input hidden id="IdVentaProd" name="idVenta" value="@venta?.IdVenta" />
+            <div class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="small fw-bold" for="idProducto">Producto de inventario</label>
+                        <select class="form-select form-select-sm select2" id="idProducto" name="idProducto" style="width:100%;">
+                        @foreach (var p in (Model.Productos ?? new List<ClinicaDomain.Producto>()))
+                        {
+                            <option value="@p.IdProducto" data-precio="@p.PrecioVenta.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)">@p.Nombre - Q@(fmt(p.PrecioVenta)) (stock: @p.StockActual)</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="small fw-bold" for="ProductoDetalle">Detalle</label>
+                    <input name="descripcion" id="ProductoDetalle" class="form-control form-control-sm" placeholder="Opcional" />
+                </div>
+                <div class="col-md-2">
+                    <label class="small fw-bold" for="ValorProducto">Valor</label>
+                    <input name="precio" id="ValorProducto" class="form-control form-control-sm" value="@primerPrecioProd" />
+                </div>
+                <div class="col-md-1">
+                    <label class="small fw-bold">Cant.</label>
+                    <input name="cantidad" class="form-control form-control-sm" value="1" />
+                </div>
+                <div class="col-md-1">
+                    <label class="small fw-bold" for="EsPedidoProd">Pedido</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="esSobrePedido" value="true" id="EsPedidoProd" title="Sobre pedido: no valida ni descuenta stock" />
+                        <label class="form-check-label small" for="EsPedidoProd">S/pedido</label>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-primary btn-sm w-100" type="button" onclick="addProducto()"><i class="fa-solid fa-plus me-1"></i>Agregar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div id="panel-agregar-express" class="border-0" style="display:none;">
+        <div class="btn-group btn-group-sm mb-2" role="group" aria-label="Tipo de concepto nuevo">
+            <button type="button" id="seg-expres-producto" class="btn btn-outline-secondary active" onclick="setTipoExpress('producto')">Producto nuevo</button>
+            <button type="button" id="seg-expres-servicio" class="btn btn-outline-secondary" onclick="setTipoExpress('servicio')">Servicio nuevo</button>
+        </div>
+        <div id="panel-expres-producto">
+        <form id="productoExpressForm" method="POST">
+            <input hidden name="idVenta" value="@venta?.IdVenta" />
+            <div class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="small fw-bold">Nombre del producto nuevo</label>
+                    <input name="nombre" class="form-control form-control-sm" placeholder="Ej: Plantilla talla M" required />
+                </div>
+                <div class="col-md-2">
+                    <label class="small fw-bold">Precio venta</label>
+                    <input name="precio" type="number" step="0.01" min="0" class="form-control form-control-sm" required />
+                </div>
+                <div class="col-md-2">
+                    <label class="small fw-bold">Cantidad</label>
+                    <input name="cantidad" type="number" step="0.01" min="0.01" value="1" class="form-control form-control-sm" />
+                </div>
+                <div class="col-md-2">
+                    <label class="small fw-bold">Costo</label>
+                    <input name="costo" type="number" step="0.01" min="0" class="form-control form-control-sm" placeholder="—" />
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-primary btn-sm w-100" type="button" onclick="addProductoExpress()"><i class="fa-solid fa-plus me-1"></i>Agregar</button>
+                </div>
+            </div>
+        </form>
+        <small class="text-muted">Crea el producto, registra su entrada y lo suma a esta cuenta en un solo paso.</small>
+        </div>
+        <div id="panel-expres-servicio" style="display:none;">
+        <form id="servicioExpressForm" method="POST">
+            <input hidden name="idVenta" value="@venta?.IdVenta" />
+            <div class="row g-2 align-items-end">
+                <div class="col-md-6">
+                    <label class="small fw-bold">Descripción del servicio nuevo</label>
+                    <input name="descripcion" class="form-control form-control-sm" placeholder="Ej: Curación especial" required />
+                </div>
+                <div class="col-md-2">
+                    <label class="small fw-bold">Valor</label>
+                    <input name="precio" type="number" step="0.01" min="0" class="form-control form-control-sm" required />
+                </div>
+                <div class="col-md-2">
+                    <label class="small fw-bold">Cantidad</label>
+                    <input name="cantidad" type="number" step="0.01" min="0.01" value="1" class="form-control form-control-sm" />
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-primary btn-sm w-100" type="button" onclick="addServicioExpress()"><i class="fa-solid fa-plus me-1"></i>Agregar</button>
+                </div>
+            </div>
+        </form>
+        <small class="text-muted">Crea el servicio en el catálogo y lo suma a esta cuenta en un solo paso.</small>
+        </div>
+    </div>
+
+    <hr class="my-4" />
+    }
+
+    <!-- Ítems del listado -->
+    <div class="small fw-bold text-muted text-uppercase mt-1 mb-2">Cuenta actual (@lineas.Count)</div>
+    <ul class="list-group list-group-flush">
+        @if (!lineas.Any())
+        {
+            <li class="list-group-item border-0 text-center text-muted small py-3">
+                La cuenta está vacía. Agrega el primer concepto arriba.
+            </li>
+        }
+        @foreach (var item in lineas)
+        {
+            var esProducto = item.TipoLinea == "Producto";
+            <li class="list-group-item border-0 border-bottom d-flex align-items-center py-3">
+                <div class="bg-light rounded p-2 me-3">
+                    <i class="fa-solid @(esProducto ? "fa-box-open" : "fa-stethoscope")"></i>
+                </div>
+                <div>
+                    <div class="fw-bold">
+                        @item.Descripcion
+                        <span class="badge @(esProducto ? "bg-secondary" : "bg-light text-secondary border") ms-2">@item.TipoLinea</span>
+                        @if (esProducto && item.EsSobrePedido)
+                        {
+                            <span class="badge bg-info ms-1">sobre pedido</span>
+                        }
+                    </div>
+                    <small class="text-muted">
+                        @if (esProducto || item.Cantidad != 1)
+                        {
+                            <span>Cantidad: @item.Cantidad × Q@(fmt(item.PrecioUnitario))</span>
+                        }
+                        else
+                        {
+                            <span>Precio unitario Q@(fmt(item.PrecioUnitario))</span>
+                        }
+                    </small>
+                </div>
+                <div class="ms-auto text-end">
+                    <div class="fw-bold">Q@(fmt(item.Subtotal))</div>
+                    @if (venta?.Estado == "Pendiente")
+                    {
+                        <button class="btn btn-link text-danger p-0 ms-auto" type="button"
+                                title="Quitar concepto" onclick="deleteVentaDetalle('@item.IdVentaDetalle')">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    }
+                </div>
+            </li>
+        }
+    </ul>
+    <input hidden id="idConsulta" name="idConsulta" value="@Model.consulta?.IdConsulta" />
+    <input hidden id="IdVentaRef" name="idVentaRef" value="@venta?.IdVenta" />
+
+    <!-- Totales -->
+    <div class="bg-light rounded p-3 mt-3">
+        <div class="d-flex justify-content-between small mb-1">
+            <span class="text-muted">Subtotal servicios</span>
+            <span>Q@(fmt(subServicios))</span>
+        </div>
+        <div class="d-flex justify-content-between small mb-2">
+            <span class="text-muted">Subtotal productos</span>
+            <span>Q@(fmt(subProductos))</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-baseline">
+            <span class="fw-bold">Total</span>
+            <span class="fw-bold fs-4">Q@(fmt(total))</span>
+        </div>
+    </div>
+
+    <!-- Tipos de pago -->
+    @{
+        var pagos = Model.Pagos ?? new List<ClinicaDomain.VentaPago>();
+        var metodosDict = (Model.Metodos ?? new List<ClinicaDomain.MetodoPago>()).ToDictionary(m => m.IdMetodoPago);
+        var pagado = pagos.Sum(p => p.Monto);
+        var saldo = total - pagado;
+    }
+    <div class="border rounded-3 p-3 mt-3">
+        <div class="small fw-bold text-muted text-uppercase mb-2">Pago (@pagos.Count)</div>
+        @if (!pagos.Any())
+        {
+            <div class="small text-muted mb-2">Sin pagos registrados. Puede ser uno o varios (ej. parte en efectivo y parte con tarjeta).</div>
+        }
+        else
+        {
+            <ul class="list-group list-group-flush mb-2">
+                @foreach (var pg in pagos)
+                {
+                    var nombreMetodo = metodosDict.TryGetValue(pg.IdMetodoPago, out var mm) ? mm.Nombre : "—";
+                    <li class="list-group-item border-0 border-bottom d-flex align-items-center px-0 py-2">
+                        <div class="bg-light rounded p-2 me-3"><i class="fa-solid fa-money-bill-wave"></i></div>
+                        <div>
+                            <div class="fw-bold">@nombreMetodo</div>
+                            @if (!string.IsNullOrWhiteSpace(pg.Referencia))
+                            {
+                                <small class="text-muted">Ref: @pg.Referencia</small>
+                            }
+                        </div>
+                        <div class="ms-auto text-end">
+                            <div class="fw-bold">Q@(fmt(pg.Monto))</div>
+                            <button class="btn btn-link text-danger p-0 ms-auto" type="button"
+                                    title="Quitar pago" onclick="deletePago('@pg.IdVentaPago')">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+        <div class="d-flex justify-content-between align-items-baseline mb-2">
+            <span class="small text-muted">@(saldo > 0 ? "Saldo pendiente" : "Cambio")</span>
+            <span class="fw-bold">Q@(fmt(saldo < 0 ? -saldo : saldo))</span>
+        </div>
+        <form id="agregarPagoForm" method="POST">
+            <input hidden name="idConsulta" value="@Model.consulta?.IdConsulta" />
+            <input hidden name="idVenta" value="@venta?.IdVenta" />
+            <div class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="small fw-bold" for="idMetodoPago">Tipo de pago</label>
+                    <select class="form-select form-select-sm" id="idMetodoPago" name="metodoId" style="width:100%;">
+                        @foreach (var m in (Model.Metodos ?? new List<ClinicaDomain.MetodoPago>()))
+                        {
+                            <option value="@m.IdMetodoPago" data-ref="@(m.RequiereReferencia ? "1" : "0")">@m.Nombre</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="small fw-bold" for="MontoPago">Monto</label>
+                    <input name="monto" id="MontoPago" type="number" step="0.01" min="0.01" class="form-control form-control-sm" value="@(saldo > 0 ? saldo.ToString("0.00", inv) : "")" />
+                </div>
+                <div class="col-md-3" id="grupoReferencia" style="display:none;">
+                    <label class="small fw-bold" for="ReferenciaPago">Referencia</label>
+                    <input name="referencia" id="ReferenciaPago" class="form-control form-control-sm" placeholder="Autorización / boleta" />
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-primary btn-sm w-100" type="button" onclick="addPago()"><i class="fa-solid fa-plus me-1"></i>Pago</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Pie / acciones -->
+    @if (esPagina)
+    {
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3 pt-3 border-top">
+            <small class="text-muted">
+                <i class="fa-solid fa-lock me-1"></i>Pago registrado en caja; los productos descuentan inventario.
+            </small>
+            <div class="d-flex gap-2 ms-auto">
+                <a class="btn btn-secondary" href="@Url.Action("Index", "Ventas")">Volver</a>
+                @if (venta?.Estado == "Pendiente")
+                {
+                    <form asp-action="Anular" asp-controller="Ventas" asp-route-id="@venta?.IdVenta" class="m-0">
+                        <button class="btn btn-outline-danger" type="submit">Anular</button>
+                    </form>
+                    @if (saldo > 0)
+                    {
+                        <button class="btn btn-outline-warning" type="button" data-bs-toggle="collapse" data-bs-target="#panelPendientePago">Pendiente de pago</button>
+                    }
+                }
+                <form asp-action="Finalizar" asp-controller="Ventas" asp-route-id="@venta?.IdVenta" class="m-0">
+                    <button class="btn btn-success" type="submit" @Html.Raw(saldo > 0 ? "disabled title=\"Registra el pago para finalizar\"" : "")>Completar pago — Q@(fmt(total))</button>
+                </form>
+            </div>
+        </div>
+        @if (venta?.Estado == "Pendiente" && saldo > 0)
+        {
+            <div class="collapse mt-2" id="panelPendientePago">
+                <form asp-action="PendientePago" asp-controller="Ventas" asp-route-id="@venta?.IdVenta" method="post" class="border rounded-3 p-3 bg-light">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-6">
+                            <label class="small fw-bold">¿Quién queda debiendo?</label>
+                            <input name="responsable" class="form-control form-control-sm" placeholder="Nombre del responsable" maxlength="200" required value="@ViewBag.PacienteNombre" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="small fw-bold">Promesa de pago</label>
+                            <input name="fechaPromesa" type="date" class="form-control form-control-sm" />
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-warning btn-sm w-100" type="submit">Confirmar — Q@(fmt(saldo))</button>
+                        </div>
+                    </div>
+                    <small class="text-muted">Descuenta el inventario ahora y deja el saldo por cobrar.</small>
+                </form>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3 pt-3 border-top">
+            <small class="text-muted">
+                <i class="fa-solid fa-lock me-1"></i>Pago registrado en caja; los productos descuentan inventario.
+            </small>
+            <div class="d-flex gap-2 ms-auto">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                @if (venta?.Estado == "Pendiente" && saldo > 0)
+                {
+                    <button class="btn btn-outline-warning" type="button" data-bs-toggle="collapse" data-bs-target="#panelPendientePagoModal">Pendiente de pago</button>
+                }
+                <form asp-action="Finalizar" asp-controller="Pagos" asp-route-id="@Model.consulta?.IdConsulta" class="m-0">
+                    <button class="btn btn-success" type="submit" @Html.Raw(saldo > 0 ? "disabled title=\"Registra el pago para finalizar\"" : "")>Completar pago — Q@(fmt(total))</button>
+                </form>
+            </div>
+        </div>
+        @if (venta?.Estado == "Pendiente" && saldo > 0)
+        {
+            <div class="collapse mt-2" id="panelPendientePagoModal">
+                <form id="pendientePagoFormModal" method="POST" class="border rounded-3 p-3 bg-light">
+                    <input hidden name="idConsulta" value="@Model.consulta?.IdConsulta" />
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-6">
+                            <label class="small fw-bold">¿Quién queda debiendo?</label>
+                            <input name="responsable" class="form-control form-control-sm" placeholder="Nombre del responsable" maxlength="200" required value="@ViewBag.PacienteNombre" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="small fw-bold">Promesa de pago</label>
+                            <input name="fechaPromesa" type="date" class="form-control form-control-sm" />
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-warning btn-sm w-100" type="button" onclick="marcarPendientePago()">Confirmar — Q@(fmt(saldo))</button>
+                        </div>
+                    </div>
+                    <small class="text-muted">Descuenta el inventario ahora y deja el saldo por cobrar.</small>
+                </form>
+            </div>
+        }
+    }
+</div>

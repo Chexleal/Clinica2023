@@ -420,6 +420,28 @@ public static class StringManager
         return char.ToUpper(str[0]) + str.Substring(1);
     }
 
+    /// <summary>
+    /// Normaliza un texto de catálogo/configuración: recorta espacios, colapsa
+    /// espacios internos y lo deja en MAYÚSCULAS. Nunca retorna null.
+    /// Usar en nombres, descripciones, códigos, SKUs, unidades y lotes.
+    /// </summary>
+    public static string TextoCatalogo(this string? texto)
+    {
+        if (string.IsNullOrWhiteSpace(texto)) return string.Empty;
+        var compacto = Regex.Replace(texto.Trim(), @"\s+", " ");
+        return compacto.ToUpperInvariant();
+    }
+
+    /// <summary>
+    /// Limpia un texto libre (notas, motivos, observaciones): recorta y colapsa
+    /// espacios internos, conservando mayúsculas/minúsculas. Nunca retorna null.
+    /// </summary>
+    public static string TextoLibre(this string? texto)
+    {
+        if (string.IsNullOrWhiteSpace(texto)) return string.Empty;
+        return Regex.Replace(texto.Trim(), @"\s+", " ");
+    }
+
     public static string Decapitalize(this string str)
     {
         if (String.IsNullOrEmpty(str))

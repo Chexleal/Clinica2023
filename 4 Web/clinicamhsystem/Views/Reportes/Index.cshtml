@@ -263,10 +263,28 @@
                                                 }
                                             }
                                         }
+                                        // Nuevo: sumar líneas de servicio cobradas vía Venta (migradas + nuevas).
+                                        var vd = (ViewBag.VentaDetalles as List<ClinicaDomain.VentaDetalle>) ?? new List<ClinicaDomain.VentaDetalle>();
+                                        foreach (var d in vd.Where(x => x.TipoLinea == "Servicio" && x.IdMotivoCobro == servicio.IdMotivoCobro))
+                                        {
+                                            cantidad += (int)d.Cantidad;
+                                            total += d.Subtotal;
+                                        }
 
                                         <td>@cantidad</td>
                                         <td>@total</td>
                                     }
+                                </tr>
+                            }
+                            // Nuevo: productos + ventas libres del rango.
+                            var vdet = (ViewBag.VentaDetalles as List<ClinicaDomain.VentaDetalle>) ?? new List<ClinicaDomain.VentaDetalle>();
+                            var prodGroups = vdet.Where(x => x.TipoLinea == "Producto").GroupBy(x => x.Descripcion);
+                            foreach (var g in prodGroups)
+                            {
+                                <tr class="table-success">
+                                    <td>@g.Key (producto)</td>
+                                    <td>@g.Sum(x => x.Cantidad)</td>
+                                    <td>@g.Sum(x => x.Subtotal)</td>
                                 </tr>
                             }
                         }

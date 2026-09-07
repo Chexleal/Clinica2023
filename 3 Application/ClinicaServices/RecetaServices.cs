@@ -1,4 +1,5 @@
 ﻿using ClinicaDomain;
+using ClinicaInfrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,6 +35,7 @@ public class RecetaServices : IRecetaServices
     public void AddDetalleReceta(DetalleReceta detalleReceta)
     {
         detalleReceta.IdDetalleReceta=Guid.NewGuid();
+        detalleReceta.Medicamento = detalleReceta.Medicamento.TextoCatalogo();
         detalleReceta.BeforeSaveChanges();
         _dbContext.DetalleReceta.Add(detalleReceta);
         _dbContext.SaveChanges();
@@ -43,10 +45,12 @@ public class RecetaServices : IRecetaServices
 
     private void InsertarMedicamento(string medicamento)
     {
-        var existingMed = _dbContext.Medicamento.FirstOrDefault(x => x.Nombre == medicamento);
+        var limpio = medicamento.TextoCatalogo();
+        if (string.IsNullOrWhiteSpace(limpio)) return;
+        var existingMed = _dbContext.Medicamento.FirstOrDefault(x => x.Nombre == limpio);
         if (existingMed is null)
         {
-            _dbContext.Medicamento.Add(new Medicamento { IdMedicamento = Guid.NewGuid(), Nombre = medicamento });
+            _dbContext.Medicamento.Add(new Medicamento { IdMedicamento = Guid.NewGuid(), Nombre = limpio });
             _dbContext.SaveChanges();
         }
     }
@@ -96,7 +100,8 @@ public class RecetaServices : IRecetaServices
 
     public Medicamento CrearMedicamento(string nombre)
     {
-        var limpio = (nombre ?? "").Trim();
+        var limpio = nombre.TextoCatalogo();
+        if (string.IsNullOrWhiteSpace(limpio)) throw new ArgumentException("Nombre requerido.");
         var existente = _dbContext.Medicamento.FirstOrDefault(x => x.Nombre.ToLower() == limpio.ToLower());
         if (existente is not null) return existente;
         var nuevo = new Medicamento { IdMedicamento = Guid.NewGuid(), Nombre = limpio };

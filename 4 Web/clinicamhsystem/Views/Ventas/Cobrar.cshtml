@@ -1,0 +1,28 @@
+@model clinicamhsystem.Models.DetallesPagarViewModel
+@{
+    ViewData["Title"] = "Cobrar venta " + Model.Venta?.Folio;
+    var venta = Model.Venta;
+}
+<script>
+    var COBRO_MODO = 'pagina';
+</script>
+<div class="card shadow-lg mt-4">
+    <div class="card-header bg-white d-flex flex-wrap align-items-center gap-2">
+        <h4 class="mb-0">Cobrar <span class="badge bg-secondary ms-2">@venta?.Folio</span></h4>
+        <span class="small text-muted ms-2">Venta de mostrador (sin consulta)</span>
+        <a href="@Url.Action("Index", "Ventas")" class="btn btn-outline-secondary btn-sm ms-auto">Volver</a>
+    </div>
+    <div class="card-body">
+        @if (TempData["ErrorCobro"] is string msg && !string.IsNullOrWhiteSpace(msg))
+        {
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                @msg
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        <partial name="_CobroDetalle" model="Model" />
+    </div>
+</div>
+@section Scripts{
+    <script src="~/js/pages/pagos.js" asp-append-version="true"></script>
+}

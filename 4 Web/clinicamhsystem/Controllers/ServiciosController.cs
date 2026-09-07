@@ -99,4 +99,18 @@ public class ServiciosController : ErrorHandlingController
         }
         return RedirectToAction("Index");
     }
+
+    [HttpPost]
+    public ActionResult Actualizar(Guid id, string descripcion, decimal? precioSugerido)
+    {
+        try
+        {
+            _services.UpdateServicio(id, descripcion, precioSugerido ?? 0);
+        }
+        catch (Exception ex)
+        {
+            RegistrarError(ex);
+        }
+        return RedirectToAction("Index");
+    }
 }

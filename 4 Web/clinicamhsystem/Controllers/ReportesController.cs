@@ -15,13 +15,15 @@ public class ReportesController : Controller
     private readonly IServiciosServices _serviciosServices;
     private readonly IDetallesServices _detallesServices;
     private readonly IConsultaServices _consultaServices;
+    private readonly IVentaService _ventaService;
 
-    public ReportesController(IPacienteServices pacienteServices, IServiciosServices serviciosServices, IDetallesServices detallesServices, IConsultaServices consultaServices)
+    public ReportesController(IPacienteServices pacienteServices, IServiciosServices serviciosServices, IDetallesServices detallesServices, IConsultaServices consultaServices, IVentaService ventaService)
     {
         _pacienteServices = pacienteServices;
         _serviciosServices = serviciosServices;
         _detallesServices = detallesServices;
         _consultaServices = consultaServices;
+        _ventaService = ventaService;
     }
 
     // GET: UsuariosController
@@ -60,6 +62,12 @@ public class ReportesController : Controller
             paciente.Consulta = consultasPorPaciente[paciente.IdPaciente].ToList();
         var servicios = _serviciosServices.GetAll();
         var detalles = _detallesServices.GetByRange(from_dt, to_dt);
+        // Nuevo: ventas (consulta + mostrador) del rango. Los servicios ya migrados
+        // viven en VentaDetalle; se exponen vía ViewBag sin romper la tabla legada.
+        var ventas = _ventaService.GetPorRango(from_dt, to_dt).Where(v => v.Estado == "Pagada").ToList();
+        var ventaDetalles = ventas.SelectMany(v => _ventaService.GetDetalles(v.IdVenta)).ToList();
+        ViewBag.Ventas = ventas;
+        ViewBag.VentaDetalles = ventaDetalles;
 
         return View("Index", new ReportesViewModel { Pacientes = pacientes, Servicios = servicios, Detalles = detalles, EsServicio = true, From = from_dt, To = to_dt, Paciente = null});
     }

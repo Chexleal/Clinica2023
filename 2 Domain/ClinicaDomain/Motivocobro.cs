@@ -11,6 +11,8 @@ public partial class MotivoCobro : Base
 
     public bool EstadoEliminado { get; set; }
 
+    public decimal PrecioSugerido { get; set; }
+
     //public virtual ICollection<DetalleCobro> DetalleCobros { get; } = new List<DetalleCobro>();
 
     public void BeforeSaveChanges()

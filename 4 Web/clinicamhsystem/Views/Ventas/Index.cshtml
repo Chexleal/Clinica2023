@@ -1,0 +1,88 @@
+@model List<ClinicaDomain.Venta>
+@{
+    ViewData["Title"] = "Ventas de mostrador";
+    var pendientesPago = (List<ClinicaDomain.Venta>)ViewBag.PendientesPago;
+    var saldos = (Dictionary<Guid, decimal>)ViewBag.SaldosPendientesPago;
+}
+<div class="card w-100 shadow-lg mt-5">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="h3">Ventas libres (mostrador)</h3>
+        <form method="POST" action="@Url.Action("CrearLibre","Ventas")" class="d-flex gap-2">
+            <input name="observaciones" class="form-control form-control-sm" placeholder="Observaciones (opcional)" />
+            <button type="submit" class="btn btn-dark btn-sm text-nowrap"><i class="fa-solid fa-plus"></i> Nueva venta</button>
+        </form>
+    </div>
+    <div class="card-body">
+        <p class="text-muted small">Vía 2: venta sin consulta (ej. solo compra una plantilla). La vía 1 sigue en <a href="/Pagos">Pagar Consultas</a>. Ambas descuentan el mismo inventario al pagar.</p>
+        <div class="table-responsive">
+            <table id="table" class="table table-striped tabla-config" data-search-placeholder="Buscar venta pendiente" data-export-name="VentasPendientes">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Folio</th>
+                        <th>Fecha</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var v in Model)
+                    {
+                        <tr>
+                            <td>@v.Folio</td>
+                            <td>@v.Fecha.ToString("g")</td>
+                            <td>Q@(v.Total.ToString("0.00"))</td>
+                            <td>@v.Estado</td>
+                            <td><a class="btn btn-outline-info btn-sm" href="@Url.Action("Cobrar","Ventas",new{id=v.IdVenta})">Cobrar</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="card w-100 shadow-lg mt-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="h3">Pendientes de pago <span class="badge bg-warning text-dark">@pendientesPago.Count</span></h3>
+    </div>
+    <div class="card-body">
+        @if (!pendientesPago.Any())
+        {
+            <p class="text-muted small mb-0">Sin cuentas pendientes de pago.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-striped tabla-config" data-search-placeholder="Buscar pendiente de pago" data-export-name="PendientesPago">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Folio</th>
+                            <th>Responsable</th>
+                            <th>Promesa</th>
+                            <th>Total</th>
+                            <th>Saldo</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var v in pendientesPago)
+                        {
+                            <tr class="@(v.FechaPromesa.HasValue && v.FechaPromesa.Value.Date < DateTime.Today ? "table-danger" : "")">
+                                <td>@v.Folio<br /><small class="text-muted">@v.Fecha.ToString("g")</small></td>
+                                <td>@v.FiadoResponsable</td>
+                                <td>@(v.FechaPromesa.HasValue ? v.FechaPromesa.Value.ToString("dd/MM/yyyy") : "—")</td>
+                                <td>Q@(v.Total.ToString("0.00"))</td>
+                                <td class="fw-bold">Q@(saldos[v.IdVenta].ToString("0.00"))</td>
+                                <td><a class="btn btn-outline-warning btn-sm" href="@Url.Action("Cobrar","Ventas",new{id=v.IdVenta})">Cobrar</a></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+@section Scripts{
+    <partial name="_DataTablesButtonsScripts" />
+    <script src="~/js/pages/tablas-config.js" asp-append-version="true"></script>
+}

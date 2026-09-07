@@ -1,4 +1,5 @@
 ﻿using ClinicaDomain;
+using ClinicaInfrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,8 @@ namespace ClinicaServices
         public void DeleteServicio(Guid id);
 
         public void AddServicio(MotivoCobro servicio);
+
+        public void UpdateServicio(Guid id, string descripcion, decimal precioSugerido);
 
     }
     public class ServiciosServices : IServiciosServices
@@ -46,6 +49,7 @@ namespace ClinicaServices
 
                 servicio.IdMotivoCobro = Guid.NewGuid();
                 servicio.EstadoEliminado = false;
+                servicio.Descripcion = servicio.Descripcion.TextoCatalogo();
                 servicio.BeforeSaveChanges();
                 _dbContext.MotivoCobros.Add(servicio);
                 _dbContext.SaveChanges();
@@ -60,6 +64,16 @@ namespace ClinicaServices
                 servicio.EstadoEliminado = true;
                 _dbContext.SaveChanges();
             }
+        }
+        public void UpdateServicio(Guid id, string descripcion, decimal precioSugerido)
+        {
+            var servicio = GetServicio(id);
+            if (servicio is null) return;
+            if (string.IsNullOrWhiteSpace(descripcion)) throw new ArgumentException("Descripción requerida.");
+            servicio.Descripcion = descripcion.TextoCatalogo();
+            servicio.PrecioSugerido = precioSugerido < 0 ? 0 : precioSugerido;
+            servicio.BeforeSaveChanges();
+            _dbContext.SaveChanges();
         }
     }
 }

@@ -1,4 +1,5 @@
 using ClinicaDomain;
+using ClinicaInfrastructure;
 using Microsoft.EntityFrameworkCore;
 
 namespace ClinicaServices;
@@ -49,6 +50,8 @@ public class CatalogoIndicacionService : ICatalogoIndicacionService
     public CatalogoIndicacion Crear(CatalogoIndicacion item)
     {
         item.IdCatalogo = Guid.NewGuid();
+        item.Codigo = item.Codigo.TextoCatalogo();
+        item.Descripcion = item.Descripcion.TextoCatalogo();
         _db.CatalogoIndicaciones.Add(item);
         _db.SaveChanges();
         return item;
@@ -59,8 +62,8 @@ public class CatalogoIndicacionService : ICatalogoIndicacionService
         var db = _db.CatalogoIndicaciones.FirstOrDefault(c=>c.IdCatalogo==item.IdCatalogo);
         if(db==null) return;
         db.Tipo = item.Tipo;
-        db.Codigo = item.Codigo;
-        db.Descripcion = item.Descripcion;
+        db.Codigo = item.Codigo.TextoCatalogo();
+        db.Descripcion = item.Descripcion.TextoCatalogo();
         db.Activo = item.Activo;
         _db.SaveChanges();
     }

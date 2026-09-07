@@ -60,7 +60,7 @@
             <div class="row mt-4">
                 <div class="col col-sm col-md col-lg col-xl col-xxl">
                     <label class="fw-bold" for="antecedentes">Antecedentes: </label>
-                    <textarea class="form-control" id="antecedentes" name="antecedentes" rows="1" style="resize:vertical">@Model.Consulta.PacienteInformacion.Antecedentes</textarea>
+                    <textarea class="form-control" id="antecedentes" name="antecedentes" rows="1" maxlength="1000" style="resize:vertical">@Model.Consulta.PacienteInformacion.Antecedentes</textarea>
                 </div>
                 <div class="col col-sm col-md col-lg col-xl col-xxl">
                     <label class="fw-bold">Motivo Consulta: </label> <input class="form-control" name="MotivoConsulta" value="@Model.Consulta.MotivoConsulta">

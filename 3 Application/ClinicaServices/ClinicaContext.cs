@@ -47,6 +47,14 @@ public partial class ClinicaContext : DbContext
     public virtual DbSet<ArchivoEstudio> ArchivosEstudio { get; set; }
     public virtual DbSet<OrdenEstudio> OrdenesEstudio { get; set; }
     public virtual DbSet<CatalogoIndicacion> CatalogoIndicaciones { get; set; }
+    public virtual DbSet<CategoriaProducto> CategoriasProducto { get; set; }
+    public virtual DbSet<Producto> Productos { get; set; }
+    public virtual DbSet<LoteProducto> LotesProducto { get; set; }
+    public virtual DbSet<MovimientoInventario> MovimientosInventario { get; set; }
+    public virtual DbSet<Venta> Ventas { get; set; }
+    public virtual DbSet<VentaDetalle> VentaDetalles { get; set; }
+    public virtual DbSet<MetodoPago> MetodosPago { get; set; }
+    public virtual DbSet<VentaPago> VentaPagos { get; set; }
 
     public override int SaveChanges()
     {
@@ -275,6 +283,9 @@ public partial class ClinicaContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("descripcion");
             entity.Property(e => e.EstadoEliminado).HasColumnName("estado_eliminado");
+            entity.Property(e => e.PrecioSugerido)
+                .HasColumnType("decimal(15, 2)")
+                .HasColumnName("precio_sugerido");
 
         });
 
@@ -292,7 +303,7 @@ public partial class ClinicaContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("alergias");
             entity.Property(e => e.Antecedentes)
-                .HasMaxLength(120)
+                .HasMaxLength(1000)
                 .IsUnicode(false)
                 .HasColumnName("antecedentes");
             entity.Property(e => e.Apellido)
@@ -557,6 +568,127 @@ public partial class ClinicaContext : DbContext
             entity.Property(e => e.Descripcion).HasMaxLength(300).IsUnicode(false).HasColumnName("descripcion");
             entity.Property(e => e.Activo).HasColumnName("activo");
             entity.HasIndex(e => new { e.Tipo, e.Activo }).HasDatabaseName("IX_Catalogo_Tipo_Activo");
+        });
+
+        modelBuilder.Entity<CategoriaProducto>(entity =>
+        {
+            entity.HasKey(e => e.IdCategoriaProducto).HasName("PK_CategoriaProducto");
+            entity.ToTable("Categoria_producto");
+            entity.Property(e => e.IdCategoriaProducto).ValueGeneratedNever().HasColumnName("id_categoria_producto");
+            entity.Property(e => e.Nombre).HasMaxLength(120).IsUnicode(false).HasColumnName("nombre");
+            entity.Property(e => e.Tipo).HasMaxLength(20).IsUnicode(false).HasColumnName("tipo");
+            entity.Property(e => e.ExigeLoteDefault).HasColumnName("exige_lote_default");
+            entity.Property(e => e.ExigeVencimientoDefault).HasColumnName("exige_vencimiento_default");
+            entity.Property(e => e.Activo).HasColumnName("activo");
+        });
+
+        modelBuilder.Entity<Producto>(entity =>
+        {
+            entity.HasKey(e => e.IdProducto).HasName("PK_Producto");
+            entity.ToTable("Producto");
+            entity.Property(e => e.IdProducto).ValueGeneratedNever().HasColumnName("id_producto");
+            entity.Property(e => e.Sku).HasMaxLength(50).IsUnicode(false).HasColumnName("sku");
+            entity.Property(e => e.Nombre).HasMaxLength(200).IsUnicode(false).HasColumnName("nombre");
+            entity.Property(e => e.IdCategoriaProducto).HasColumnName("id_categoria_producto");
+            entity.Property(e => e.UnidadMedida).HasMaxLength(30).IsUnicode(false).HasColumnName("unidad_medida");
+            entity.Property(e => e.PrecioVenta).HasColumnType("decimal(15, 2)").HasColumnName("precio_venta");
+            entity.Property(e => e.CostoUltimo).HasColumnType("decimal(15, 2)").HasColumnName("costo_ultimo");
+            entity.Property(e => e.StockActual).HasColumnType("decimal(18, 2)").HasColumnName("stock_actual");
+            entity.Property(e => e.StockMinimo).HasColumnType("decimal(18, 2)").HasColumnName("stock_minimo");
+            entity.Property(e => e.RequiereLote).HasColumnName("requiere_lote");
+            entity.Property(e => e.RequiereVencimiento).HasColumnName("requiere_vencimiento");
+            entity.Property(e => e.EsSobrePedido).HasColumnName("es_sobre_pedido");
+            entity.Property(e => e.Activo).HasColumnName("activo");
+            entity.HasIndex(e => e.Nombre).HasDatabaseName("IX_Producto_Nombre");
+        });
+
+        modelBuilder.Entity<LoteProducto>(entity =>
+        {
+            entity.HasKey(e => e.IdLote).HasName("PK_LoteProducto");
+            entity.ToTable("Lote_producto");
+            entity.Property(e => e.IdLote).ValueGeneratedNever().HasColumnName("id_lote");
+            entity.Property(e => e.IdProducto).HasColumnName("id_producto");
+            entity.Property(e => e.CodigoLote).HasMaxLength(80).IsUnicode(false).HasColumnName("codigo_lote");
+            entity.Property(e => e.FechaVencimiento).HasColumnName("fecha_vencimiento");
+            entity.Property(e => e.Stock).HasColumnType("decimal(18, 2)").HasColumnName("stock");
+            entity.Property(e => e.CostoUnitario).HasColumnType("decimal(15, 2)").HasColumnName("costo_unitario");
+            entity.Property(e => e.Activo).HasColumnName("activo");
+            entity.HasIndex(e => new { e.IdProducto, e.FechaVencimiento }).HasDatabaseName("IX_Lote_Producto_Vence");
+        });
+
+        modelBuilder.Entity<MovimientoInventario>(entity =>
+        {
+            entity.HasKey(e => e.IdMovimiento).HasName("PK_MovimientoInventario");
+            entity.ToTable("Movimiento_inventario");
+            entity.Property(e => e.IdMovimiento).ValueGeneratedNever().HasColumnName("id_movimiento");
+            entity.Property(e => e.Fecha).HasColumnName("fecha");
+            entity.Property(e => e.IdProducto).HasColumnName("id_producto");
+            entity.Property(e => e.IdLote).HasColumnName("id_lote");
+            entity.Property(e => e.Tipo).HasMaxLength(30).IsUnicode(false).HasColumnName("tipo");
+            entity.Property(e => e.Cantidad).HasColumnType("decimal(18, 2)").HasColumnName("cantidad");
+            entity.Property(e => e.CostoUnitario).HasColumnType("decimal(15, 2)").HasColumnName("costo_unitario");
+            entity.Property(e => e.IdVenta).HasColumnName("id_venta");
+            entity.Property(e => e.IdConsulta).HasColumnName("id_consulta");
+            entity.Property(e => e.Motivo).HasMaxLength(300).IsUnicode(false).HasColumnName("motivo");
+            entity.HasIndex(e => new { e.IdProducto, e.Fecha }).HasDatabaseName("IX_Movimiento_Producto_Fecha");
+        });
+
+        modelBuilder.Entity<Venta>(entity =>
+        {
+            entity.HasKey(e => e.IdVenta).HasName("PK_Venta");
+            entity.ToTable("Venta");
+            entity.Property(e => e.IdVenta).ValueGeneratedNever().HasColumnName("id_venta");
+            entity.Property(e => e.Folio).HasMaxLength(30).IsUnicode(false).HasColumnName("folio");
+            entity.Property(e => e.Fecha).HasColumnName("fecha");
+            entity.Property(e => e.IdPaciente).HasColumnName("id_paciente");
+            entity.Property(e => e.IdConsulta).HasColumnName("id_consulta");
+            entity.Property(e => e.Total).HasColumnType("decimal(15, 2)").HasColumnName("total");
+            entity.Property(e => e.Estado).HasMaxLength(20).IsUnicode(false).HasColumnName("estado");
+            entity.Property(e => e.Observaciones).HasMaxLength(300).IsUnicode(false).HasColumnName("observaciones");
+            entity.Property(e => e.FiadoResponsable).HasMaxLength(200).IsUnicode(false).HasColumnName("fiado_responsable");
+            entity.Property(e => e.FechaPromesa).HasColumnName("fecha_promesa");
+            entity.HasIndex(e => e.Folio).IsUnique().HasDatabaseName("UQ_Venta_Folio");
+            entity.HasIndex(e => e.IdConsulta).HasDatabaseName("IX_Venta_Consulta");
+        });
+
+        modelBuilder.Entity<VentaDetalle>(entity =>
+        {
+            entity.HasKey(e => e.IdVentaDetalle).HasName("PK_VentaDetalle");
+            entity.ToTable("Venta_detalle");
+            entity.Property(e => e.IdVentaDetalle).ValueGeneratedNever().HasColumnName("id_venta_detalle");
+            entity.Property(e => e.IdVenta).HasColumnName("id_venta");
+            entity.Property(e => e.TipoLinea).HasMaxLength(20).IsUnicode(false).HasColumnName("tipo_linea");
+            entity.Property(e => e.IdMotivoCobro).HasColumnName("id_motivo_cobro");
+            entity.Property(e => e.IdProducto).HasColumnName("id_producto");
+            entity.Property(e => e.IdLote).HasColumnName("id_lote");
+            entity.Property(e => e.Descripcion).HasMaxLength(250).IsUnicode(false).HasColumnName("descripcion");
+            entity.Property(e => e.Cantidad).HasColumnType("decimal(18, 2)").HasColumnName("cantidad");
+            entity.Property(e => e.PrecioUnitario).HasColumnType("decimal(15, 2)").HasColumnName("precio_unitario");
+            entity.Property(e => e.Subtotal).HasColumnType("decimal(15, 2)").HasColumnName("subtotal");
+            entity.Property(e => e.EsSobrePedido).HasColumnName("es_sobre_pedido");
+        });
+
+        modelBuilder.Entity<MetodoPago>(entity =>
+        {
+            entity.HasKey(e => e.IdMetodoPago).HasName("PK_MetodoPago");
+            entity.ToTable("Metodo_pago");
+            entity.Property(e => e.IdMetodoPago).ValueGeneratedNever().HasColumnName("id_metodo_pago");
+            entity.Property(e => e.Nombre).HasMaxLength(80).IsUnicode(false).HasColumnName("nombre");
+            entity.Property(e => e.RequiereReferencia).HasColumnName("requiere_referencia");
+            entity.Property(e => e.Activo).HasColumnName("activo");
+        });
+
+        modelBuilder.Entity<VentaPago>(entity =>
+        {
+            entity.HasKey(e => e.IdVentaPago).HasName("PK_VentaPago");
+            entity.ToTable("Venta_pago");
+            entity.Property(e => e.IdVentaPago).ValueGeneratedNever().HasColumnName("id_venta_pago");
+            entity.Property(e => e.IdVenta).HasColumnName("id_venta");
+            entity.Property(e => e.IdMetodoPago).HasColumnName("id_metodo_pago");
+            entity.Property(e => e.Monto).HasColumnType("decimal(15, 2)").HasColumnName("monto");
+            entity.Property(e => e.Referencia).HasMaxLength(80).IsUnicode(false).HasColumnName("referencia");
+            entity.Property(e => e.Fecha).HasColumnName("fecha");
+            entity.HasIndex(e => e.IdVenta).HasDatabaseName("IX_VentaPago_Venta");
         });
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes()

@@ -1,0 +1,140 @@
+@model List<ClinicaDomain.Producto>
+@{
+    ViewData["Title"] = "Inventario";
+    var categorias = (List<ClinicaDomain.CategoriaProducto>)ViewBag.Categorias;
+    var porVencer = (List<ClinicaDomain.LoteProducto>)ViewBag.PorVencer;
+}
+<div class="card shadow-lg p-3 mb-4 mt-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h4 class="mb-0"><i class="fa-solid fa-boxes-stacked" style="color:#2d8f77"></i> Inventario</h4>
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("Index","Configuraciones")" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-arrow-left"></i> Configuraciones</a>
+            <a href="@Url.Action("Categorias","Configuraciones")" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-tags"></i> Categorías</a>
+        </div>
+    </div>
+    <div class="card-body">
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger py-2">@TempData["Error"]</div>
+        }
+        @if (porVencer.Any())
+        {
+            <div class="alert alert-danger py-2"><b>Próximos a vencer (30 días):</b> @string.Join(", ", porVencer.Select(l => l.CodigoLote + " " + l.FechaVencimiento?.ToString("d")))</div>
+        }
+        <div class="row">
+            <div class="col-12">
+                <h6>Productos</h6>
+                <form method="POST" action="@Url.Action("CrearProducto","Inventario")" class="row g-2 mb-3">
+                    <div class="col-3"><label class="fw-bold small">Nombre</label><input required name="Nombre" class="form-control form-control-sm" style="text-transform:uppercase;" placeholder="Nombre" /></div>
+                    <div class="col-2"><label class="fw-bold small">SKU</label><input name="Sku" class="form-control form-control-sm" style="text-transform:uppercase;" placeholder="SKU" /></div>
+                    <div class="col-2">
+                        <label class="fw-bold small">Categoría</label>
+                        <select name="IdCategoriaProducto" class="form-select form-select-sm">
+                            @foreach (var c in categorias.Where(x => x.Tipo == "Bien"))
+                            {
+                                <option value="@c.IdCategoriaProducto">@c.Nombre</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-2"><label class="fw-bold small">Precio venta</label><input name="PrecioVenta" type="number" step="0.01" class="form-control form-control-sm" placeholder="Precio" /></div>
+                    <div class="col-1"><label class="fw-bold small">Stock mín</label><input name="StockMinimo" type="number" step="1" min="0" class="form-control form-control-sm" placeholder="Mín" title="Stock mínimo" /></div>
+                    <div class="col-2"><label class="fw-bold small d-block">&nbsp;</label><button class="btn btn-dark btn-sm w-100">Agregar</button></div>
+                    <div class="col-12 small text-muted"><label class="fw-bold small text-dark">Unidad:</label> <input name="UnidadMedida" class="form-control form-control-sm d-inline w-auto" style="text-transform:uppercase;" placeholder="pieza/par/caja" /></div>
+                </form>
+                <div class="table-responsive">
+                    <table id="table" class="table table-sm table-hover tabla-config" data-search-placeholder="Buscar producto" data-export-name="Inventario">
+                        <thead class="table-dark"><tr><th>Producto</th><th>Unidad</th><th>Precio</th><th>Stock</th><th>Control</th><th></th></tr></thead>
+                        <tbody>
+                            @foreach (var p in Model)
+                            {
+                                <tr>
+                                    <td>@p.Nombre <small class="text-muted">@p.Sku</small></td>
+                                    <td class="small text-muted">@p.UnidadMedida</td>
+                                    <td>Q@(p.PrecioVenta.ToString("0.00"))</td>
+                                    <td>
+                                        <span class="badge @(p.StockActual <= p.StockMinimo ? "bg-warning" : "bg-success")">@((int)p.StockActual)</span>
+                                        @if (p.StockActual <= p.StockMinimo)
+                                        {
+                                            <i class="fa-solid fa-triangle-exclamation text-warning ms-1" title="Stock bajo (mínimo: @((int)p.StockMinimo))"></i>
+                                        }
+                                    </td>
+                                    <td class="small">@((p.RequiereLote ? "lote" : "—") + (p.RequiereVencimiento ? " +vence" : ""))</td>
+                                    <td class="text-nowrap">
+                                        <a class="btn btn-sm btn-outline-info" href="@Url.Action("Kardex","Inventario",new{id=p.IdProducto})">Kardex</a>
+                                        <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#entrada-@p.IdProducto">Entrada</button>
+                                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editar-@p.IdProducto" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                                        <div class="modal fade" id="editar-@p.IdProducto" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <form method="POST" action="@Url.Action("ActualizarProducto","Inventario")">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header"><h6>Editar - @p.Nombre</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                                        <div class="modal-body row g-2 text-start">
+                                                            <input hidden name="IdProducto" value="@p.IdProducto" />
+                                                            <div class="col-12"><label class="small fw-bold">Nombre *</label><input required name="Nombre" value="@p.Nombre" maxlength="200" class="form-control form-control-sm" style="text-transform:uppercase;" /></div>
+                                                            <div class="col-6"><label class="small">SKU</label><input name="Sku" value="@p.Sku" maxlength="50" class="form-control form-control-sm" style="text-transform:uppercase;" /></div>
+                                                            <div class="col-6"><label class="small">Unidad</label><input name="UnidadMedida" value="@p.UnidadMedida" maxlength="30" placeholder="pieza/par/caja" class="form-control form-control-sm" style="text-transform:uppercase;" /></div>
+                                                            <div class="col-12"><label class="small">Categoría</label>
+                                                                <select name="IdCategoriaProducto" class="form-select form-select-sm">
+                                                                    @foreach (var c in categorias.Where(x => x.Tipo == "Bien"))
+                                                                    {
+                                                                        @if (c.IdCategoriaProducto == p.IdCategoriaProducto)
+                                                                        {
+                                                                            <option value="@c.IdCategoriaProducto" selected>@c.Nombre</option>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <option value="@c.IdCategoriaProducto">@c.Nombre</option>
+                                                                        }
+                                                                    }
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-6"><label class="small">Precio venta</label><input name="PrecioVenta" type="number" step="0.01" min="0" value="@p.PrecioVenta.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)" class="form-control form-control-sm" /></div>
+                                                            <div class="col-6"><label class="small">Stock mínimo</label><input name="StockMinimo" type="number" step="1" min="0" value="@((int)p.StockMinimo)" class="form-control form-control-sm" /></div>
+                                                            <div class="col-12 d-flex gap-3">
+                                                                <div class="form-check"><input class="form-check-input" type="checkbox" name="RequiereLote" value="true" id="lote-@p.IdProducto" @(p.RequiereLote ? "checked" : "") /><label class="form-check-label small" for="lote-@p.IdProducto">Exige lote</label></div>
+                                                                <div class="form-check"><input class="form-check-input" type="checkbox" name="RequiereVencimiento" value="true" id="vence-@p.IdProducto" @(p.RequiereVencimiento ? "checked" : "") /><label class="form-check-label small" for="vence-@p.IdProducto">Exige vencimiento</label></div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary btn-sm">Guardar</button></div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                        <div class="modal fade" id="entrada-@p.IdProducto" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <form method="POST" action="@Url.Action("Entrada","Inventario")">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header"><h6>Entrada - @p.Nombre</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                                        <div class="modal-body row g-2">
+                                                            <input hidden name="productoId" value="@p.IdProducto" />
+                                                            <div class="col-4"><label class="small">Cantidad</label><input required name="cantidad" type="number" step="0.01" min="0.01" class="form-control form-control-sm" /></div>
+                                                            <div class="col-4"><label class="small">Costo unit.</label><input required name="costo" type="number" step="0.01" min="0" class="form-control form-control-sm" /></div>
+                                                            <div class="col-4"><label class="small">Motivo</label><input name="motivo" class="form-control form-control-sm" placeholder="Compra..." /></div>
+                                                            @if (p.RequiereLote)
+                                                            {
+                                                                <div class="col-6"><label class="small">Lote *</label><input required name="codigoLote" class="form-control form-control-sm" style="text-transform:uppercase;" /></div>
+                                                                @if (p.RequiereVencimiento)
+                                                                {
+                                                                    <div class="col-6"><label class="small">Vence *</label><input required name="vencimiento" type="date" class="form-control form-control-sm" /></div>
+                                                                }
+                                                            }
+                                                        </div>
+                                                        <div class="modal-footer"><button class="btn btn-primary btn-sm">Guardar entrada</button></div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts{
+    <partial name="_DataTablesButtonsScripts" />
+    <script src="~/js/pages/tablas-config.js" asp-append-version="true"></script>
+}

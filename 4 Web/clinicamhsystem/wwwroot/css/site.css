@@ -326,8 +326,23 @@ hr {
     /* Estilos */
 }
 
-.dataTables_filter input {
-    width: 300%;
+.card-body .dataTables_wrapper .dataTables_filter {
+    float: none;
+    text-align: left;
+    margin-bottom: 10px;
+}
+
+.card-body .dataTables_wrapper .dataTables_filter label {
+    display: block;
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.card-body .dataTables_wrapper .dataTables_filter input {
+    width: 100%;
+    max-width: 100%;
+    display: block;
+    margin-left: 0;
 }
 
 .dataTables_wrapper .dataTables_filter input {
@@ -351,8 +366,21 @@ hr {
     }
 
 .dataTables_wrapper .dt-buttons {
-    position:absolute;
+    position: static;
+    float: left;
+    margin-bottom: 10px;
+}
 
+/* Separa la barra (botones + buscador) del inicio de la tabla */
+.card-body .dataTables_wrapper > .row {
+    margin-bottom: 12px;
+}
+
+/* Limpia floats del header de DataTables para que la tabla no se descuadre */
+.dataTables_wrapper::after {
+    content: "";
+    display: table;
+    clear: both;
 }
 
 .active {

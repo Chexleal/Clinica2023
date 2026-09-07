@@ -19,6 +19,7 @@ public interface IPacienteServices
 }
 public class PacienteServices : IPacienteServices
 {
+	private const int MaxAntecedentesLength = 1000;
 	private readonly ClinicaContext _dbContext;
 	private readonly IErrorLogService _errorLogService;
 	public PacienteServices(ClinicaContext dbContext, IErrorLogService errorLogService)
@@ -122,6 +123,9 @@ public class PacienteServices : IPacienteServices
 
     public void UpdatePaciente(Paciente paciente)
     {
+        if (paciente.Antecedentes?.Length > MaxAntecedentesLength)
+            throw new ArgumentException($"Los antecedentes superan el máximo de {MaxAntecedentesLength} caracteres.", nameof(paciente));
+
         var pacienteDB = GetPacienteById(paciente.IdPaciente);
         if (pacienteDB is not null)
         {
@@ -148,6 +152,9 @@ public class PacienteServices : IPacienteServices
 
     public void UpdateAntecedentes(Guid pacienteId, string? antecedentes)
     {
+        if (antecedentes?.Length > MaxAntecedentesLength)
+            throw new ArgumentException($"Los antecedentes superan el máximo de {MaxAntecedentesLength} caracteres.", nameof(antecedentes));
+
         var paciente = GetPacienteById(pacienteId);
         if (paciente is not null)
         {

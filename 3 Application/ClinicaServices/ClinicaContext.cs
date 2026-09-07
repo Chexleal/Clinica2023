@@ -292,7 +292,7 @@ public partial class ClinicaContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("alergias");
             entity.Property(e => e.Antecedentes)
-                .HasMaxLength(120)
+                .HasMaxLength(1000)
                 .IsUnicode(false)
                 .HasColumnName("antecedentes");
             entity.Property(e => e.Apellido)

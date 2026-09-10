@@ -17,6 +17,10 @@
         {
             <div class="alert alert-danger py-2">@TempData["Error"]</div>
         }
+        @if (TempData["Ok"] != null)
+        {
+            <div class="alert alert-success py-2">@TempData["Ok"]</div>
+        }
         @if (porVencer.Any())
         {
             <div class="alert alert-danger py-2"><b>Próximos a vencer (30 días):</b> @string.Join(", ", porVencer.Select(l => l.CodigoLote + " " + l.FechaVencimiento?.ToString("d")))</div>

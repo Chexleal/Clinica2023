@@ -1,135 +1,19 @@
 ﻿@using ClinicaDomain;
-@using Microsoft.Extensions.Caching.Memory;
-@using Newtonsoft.Json;
 @model clinicaWeb.Models.CitasViewModel;
 
-@section Links{
-    <link rel="stylesheet" href="~/css/pages/calendario.css" asp-append-version="true" />
-}
+@* Parcial reutilizable: /Citas/Index y modal #modalCalendario en ContinuarConsulta.
+   No usar @section aquí. El CSS va en Index via Links y el init en calendario.js o ShowCalendario. *@
 
-<full-calendar shadow options='{
-    "headerToolbar": {
-      "left": "prev,next today",
-      "center": "title",
-      "right": "dayGridMonth,dayGridWeek,dayGridDay"
-    }
-  }' />
-<script>
-    var citasPacientes = @Html.Raw(Json.Serialize(Model.Citas.ToList())); // Convertir datos del modelo a JSON
-
-    var eventos = []; // Array para almacenar los eventos
-    // Iterar sobre cada elemento de la lista y crear eventos
-    citasPacientes.forEach(function (item) {
-        var evento = {
-            title: item.titulo,
-            start: item.fechaHora,
-            end: item.fechaHora,
-            id: item.idCita,
-            customRender: true
-        };
-        eventos.push(evento);
-    });
-    var calendar;
-    function Loadcalendar() {
-        //$('#modalCalendario').on('shown.bs.modal', function () {
-        //document.addEventListener('DOMContentLoaded', function () {
-        var calendarEl = document.getElementById('calendar');
-        calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            height: 'auto',
-            //contentHeight: 'auto',
-            locale: 'es',
-            editable: false,
-            selectable: false,
-            fixedWeekCount: false,
-            headerToolbar: {
-                left: 'prev next today',
-                center: 'title',
-                right: 'dayGridMonth timeGridWeek listWeek'
-            },
-            events: eventos,
-            dateClick: function (data) {
-                AddCita(data.dateStr);
-            },
-            eventClick: function (data) {
-                //console.log(data);
-            },
-            eventDidMount: function (info) {
-                var eventElement = info.el;
-                var deleteButton = document.createElement('button');
-                deleteButton.classList.add('delete-button');
-
-                deleteButton.addEventListener('click', function () {
-                    Swal.fire({
-                        title: '¿Está seguro de eliminar a esta cita?',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'Si',
-                        cancelButtonText: 'No'
-                    }).then((result) => {
-                        var eventId = info.event.id;
-
-                        if (result.isConfirmed) {
-
-                            $.ajax({
-                                url: '/Citas/Eliminar',
-                                type: 'POST',
-                                data: { id: eventId },
-                                success: function (result) {
-                                    successWithTimer();
-                                },
-                                error: function (error) {
-                                    failWithTimer();
-                                    console.log(error);
-                                }
-                            });
-                            if ($("#Destiny").val() == "citas") {
-                                calendar.getEventById(eventId).remove();
-                                calendar.render();
-                            } else {
-
-                                $('#modalCalendario').modal('toggle');
-                                $("#modalCalendario").find('.modal-body').html("");
-                            }
-                        }
-                    })
-                });
-
-                eventElement.appendChild(deleteButton);
-            },
-
-            eventWillUnmount: function (info) {
-                var eventElement = info.el;
-                var deleteButton = eventElement.querySelector('.delete-button');
-                //deleteButton.removeEventListener('click');
-
-                deleteButton.remove();
-            }
-        });
-
-        calendar.render();
-        calendar.setOption('aspectRatio', 1.8);
-    }
-
-    function AddCita(date) {
-        $('#addCitaModal').modal('show');
-        $('#Fecha').val(date);
-    }
-
-</script>
-
-<div class="container">
-    <div id='calendar'>
-    </div>
+<div class="calendario-wrap">
+    <div id="calendar"></div>
 </div>
 
-
 <!-- Modal Agregar Cita -->
-<div class="modal fade" id="addCitaModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="addCitaModal" tabindex="-1" aria-labelledby="tituloCita" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="titulo">Agregar cita</h5>
+                <h5 class="modal-title" id="tituloCita">Agregar cita</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
@@ -139,7 +23,7 @@
                     <div class="form-group">
                         @if (Model.Paciente == null)
                         {
-                            <label class="control-label">Paciente</label>
+                            <label class="control-label" for="selectPaciente">Paciente</label>
                             <select required name="IdPaciente" class="form-control select2" id="selectPaciente">
                                 @foreach (var paciente in Model.Pacientes)
                                 {
@@ -154,13 +38,13 @@
                         }
                     </div>
                     <div class="row mt-2">
-                        <div class="col col-sm col-md col-lg col-xl col-xxl">
+                        <div class="col">
                             <div class="form-group mb-3">
                                 <label for="Fecha" class="form-label">Fecha</label>
                                 <input required type="date" name="Fecha" id="Fecha" class="form-control" />
                             </div>
                         </div>
-                        <div class="col col-sm col-md col-lg col-xl col-xxl">
+                        <div class="col">
                             <div class="form-group mb-3">
                                 <label for="Hora" class="form-label">Hora</label>
                                 <input required type="time" min="00:00" max="22:59" name="Hora" id="Hora" class="form-control" />
@@ -176,3 +60,120 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Datos del servidor (tolera PascalCase y camelCase al serializar)
+    var citasPacientes = @Html.Raw(Json.Serialize(Model.Citas.ToList()));
+    var calendar = null;
+
+    function buildEventos() {
+        var eventos = [];
+        (citasPacientes || []).forEach(function (item) {
+            var titulo = item.titulo ?? item.Titulo ?? 'Cita';
+            var inicio = item.fechaHora ?? item.FechaHora ?? item.fecha ?? item.Fecha;
+            var id = item.idCita ?? item.IdCita ?? item.id ?? item.Id;
+            if (!inicio || !id) return;
+            var start = new Date(inicio);
+            // FullCalendar v6 no pinta eventos con start == end en vistas semana/día: dar 30 min por defecto
+            var end = new Date(start.getTime() + 30 * 60000);
+            eventos.push({ id: String(id), title: titulo, start: start, end: end });
+        });
+        return eventos;
+    }
+
+    // Idempotente: se puede llamar desde /Citas y desde el modal de ContinuarConsulta
+    function Loadcalendar() {
+        var calendarEl = document.getElementById('calendar');
+        if (!calendarEl || typeof FullCalendar === 'undefined') return;
+
+        if (calendar) {
+            try { calendar.destroy(); } catch (e) { /* noop */ }
+            calendar = null;
+        }
+        // Si el parcial se recargó dentro de un modal, el div puede duplicarse: limpiar restos
+        calendarEl.innerHTML = '';
+
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            height: 'auto',
+            locale: 'es',
+            navLinks: true,
+            nowIndicator: true,
+            fixedWeekCount: false,
+            editable: false,
+            selectable: false,
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+            },
+            buttonText: {
+                today: 'Hoy',
+                month: 'Mes',
+                week: 'Semana',
+                day: 'Día',
+                list: 'Lista'
+            },
+            events: buildEventos(),
+            dateClick: function (data) {
+                AddCita(data.dateStr);
+            },
+            eventClick: function () { /* reservado: futuro detalle de cita */ },
+            eventDidMount: function (info) {
+                var eventElement = info.el;
+                if (eventElement.querySelector('.delete-button')) return;
+                var deleteButton = document.createElement('button');
+                deleteButton.type = 'button';
+                deleteButton.classList.add('delete-button');
+                deleteButton.title = 'Eliminar cita';
+                deleteButton.setAttribute('aria-label', 'Eliminar cita');
+                deleteButton.addEventListener('click', function (ev) {
+                    ev.stopPropagation();
+                    var eventId = info.event.id;
+                    Swal.fire({
+                        title: '¿Está seguro de eliminar esta cita?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí',
+                        cancelButtonText: 'No'
+                    }).then((result) => {
+                        if (!result.isConfirmed) return;
+                        $.ajax({
+                            url: '/Citas/Eliminar',
+                            type: 'POST',
+                            data: { id: eventId },
+                            success: function () {
+                                var evObj = calendar ? calendar.getEventById(eventId) : null;
+                                if (evObj) evObj.remove();
+                                if ($("#Destiny").val() !== "citas") {
+                                    $('#modalCalendario').modal('hide');
+                                    $("#modalCalendario").find('.modal-body').html("");
+                                }
+                                if (typeof successWithTimer === 'function') successWithTimer();
+                            },
+                            error: function (error) {
+                                if (typeof failWithTimer === 'function') failWithTimer();
+                                console.log(error);
+                            }
+                        });
+                    });
+                });
+                eventElement.appendChild(deleteButton);
+            }
+        });
+
+        calendar.render();
+        // Al estar dentro de un modal oculto, recalcular tamaños al mostrarse
+        try { calendar.updateSize(); } catch (e) { /* noop */ }
+    }
+
+    function AddCita(date) {
+        var modal = $('#addCitaModal');
+        if (modal.length === 0) return;
+        modal.modal('show');
+        if (date) {
+            // dateClick entrega YYYY-MM-DD (día). En vistas semana/día puede traer hora: recortar solo fecha
+            $('#Fecha').val(String(date).substring(0, 10));
+        }
+    }
+</script>

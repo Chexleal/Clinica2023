@@ -97,7 +97,7 @@ public class PagosController : ErrorHandlingController
 
 
     [HttpPost]
-    public IActionResult AddDetalle(Guid idConsulta, Guid idMotivoCobro, decimal cantidad, string? precio, string? descripcion)
+    public IActionResult AddDetalle(Guid idConsulta, Guid idMotivoCobro, decimal cantidad, string? precio, string? descripcion, string? descuento = null, string? motivoDescuento = null)
     {
         try
         {
@@ -116,7 +116,7 @@ public class PagosController : ErrorHandlingController
             }
             var venta = _ventaService.GetOrCreatePorConsulta(idConsulta);
             _ventaService.AddServicio(venta.IdVenta, idMotivoCobro,
-                cantidad <= 0 ? 1 : cantidad, precioParsed, descripcion);
+                cantidad <= 0 ? 1 : cantidad, precioParsed, descripcion, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento);
         }
         catch (Exception ex)
         {
@@ -126,7 +126,7 @@ public class PagosController : ErrorHandlingController
     }
 
     [HttpPost]
-    public IActionResult AddProducto(Guid idVenta, Guid idProducto, decimal cantidad, Guid? loteId, string? precio, string? descripcion, bool esSobrePedido = false)
+    public IActionResult AddProducto(Guid idVenta, Guid idProducto, decimal cantidad, Guid? loteId, string? precio, string? descripcion, bool esSobrePedido = false, string? descuento = null, string? motivoDescuento = null)
     {
         try
         {
@@ -140,7 +140,7 @@ public class PagosController : ErrorHandlingController
                     return Content($"Valor no válido: '{precio}'. Usa solo números, ej. 120.50");
                 }
             }
-            _ventaService.AddProducto(idVenta, idProducto, cantidad <= 0 ? 1 : cantidad, loteId, precioParsed, descripcion, esSobrePedido);
+            _ventaService.AddProducto(idVenta, idProducto, cantidad <= 0 ? 1 : cantidad, loteId, precioParsed, descripcion, esSobrePedido, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento);
             var venta = _ventaService.GetVenta(idVenta);
             return PartialView("Detalles", ArmarModelo(venta!.IdConsulta!.Value));
         }
@@ -153,11 +153,11 @@ public class PagosController : ErrorHandlingController
     }
 
     [HttpPost]
-    public IActionResult AddProductoExpress(Guid idVenta, string nombre, decimal precio, decimal cantidad, decimal? costo)
+    public IActionResult AddProductoExpress(Guid idVenta, string nombre, decimal precio, decimal cantidad, decimal? costo, string? descuento = null, string? motivoDescuento = null)
     {
         try
         {
-            _ventaService.AgregarProductoExpress(idVenta, nombre, precio, cantidad <= 0 ? 1 : cantidad, costo);
+            _ventaService.AgregarProductoExpress(idVenta, nombre, precio, cantidad <= 0 ? 1 : cantidad, costo, null, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento);
             var venta = _ventaService.GetVenta(idVenta);
             return PartialView("Detalles", ArmarModelo(venta!.IdConsulta!.Value));
         }
@@ -170,11 +170,11 @@ public class PagosController : ErrorHandlingController
     }
 
     [HttpPost]
-    public IActionResult AddServicioExpress(Guid idVenta, string descripcion, decimal precio, decimal cantidad)
+    public IActionResult AddServicioExpress(Guid idVenta, string descripcion, decimal precio, decimal cantidad, string? descuento = null, string? motivoDescuento = null)
     {
         try
         {
-            _ventaService.AgregarServicioExpress(idVenta, descripcion, precio, cantidad <= 0 ? 1 : cantidad);
+            _ventaService.AgregarServicioExpress(idVenta, descripcion, precio, cantidad <= 0 ? 1 : cantidad, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento);
             var venta = _ventaService.GetVenta(idVenta);
             return PartialView("Detalles", ArmarModelo(venta!.IdConsulta!.Value));
         }
@@ -184,6 +184,22 @@ public class PagosController : ErrorHandlingController
             Response.StatusCode = 400;
             return Content(ex.Message);
         }
+    }
+
+    [HttpPost]
+    public IActionResult AplicarDescuento(Guid id, Guid idConsulta, string? descuento, string? motivoDescuento)
+    {
+        try
+        {
+            _ventaService.AplicarDescuento(id, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento);
+        }
+        catch (Exception ex)
+        {
+            RegistrarError(ex);
+            Response.StatusCode = 400;
+            return Content(ex.Message);
+        }
+        return PartialView("Detalles", ArmarModelo(idConsulta));
     }
 
     [HttpPost]

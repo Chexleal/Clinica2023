@@ -74,7 +74,7 @@ public class VentasController : ErrorHandlingController
     }
 
     [HttpPost]
-    public ActionResult AddServicio(Guid idVenta, Guid idMotivoCobro, decimal cantidad, string? precio, string? descripcion)
+    public ActionResult AddServicio(Guid idVenta, Guid idMotivoCobro, decimal cantidad, string? precio, string? descripcion, string? descuento, string? motivoDescuento)
     {
         try
         {
@@ -84,14 +84,15 @@ public class VentasController : ErrorHandlingController
                 precioParsed = ParsePrecioFlexible(precio);
                 if (precioParsed is null) throw new ArgumentException($"Valor no válido: '{precio}'.");
             }
-            _ventas.AddServicio(idVenta, idMotivoCobro, cantidad <= 0 ? 1 : cantidad, precioParsed, descripcion);
+            var descParsed = ParsePrecioFlexible(descuento) ?? 0;
+            _ventas.AddServicio(idVenta, idMotivoCobro, cantidad <= 0 ? 1 : cantidad, precioParsed, descripcion, descParsed, motivoDescuento);
         }
         catch (Exception ex) { RegistrarError(ex); TempData["ErrorCobro"] = ex.Message; }
         return RedirectToAction("Cobrar", new { id = idVenta });
     }
 
     [HttpPost]
-    public ActionResult AddProducto(Guid idVenta, Guid idProducto, decimal cantidad, Guid? loteId, string? precio, string? descripcion, bool esSobrePedido = false)
+    public ActionResult AddProducto(Guid idVenta, Guid idProducto, decimal cantidad, Guid? loteId, string? precio, string? descripcion, bool esSobrePedido = false, string? descuento = null, string? motivoDescuento = null)
     {
         try
         {
@@ -101,24 +102,33 @@ public class VentasController : ErrorHandlingController
                 precioParsed = ParsePrecioFlexible(precio);
                 if (precioParsed is null) throw new ArgumentException($"Valor no válido: '{precio}'.");
             }
-            _ventas.AddProducto(idVenta, idProducto, cantidad <= 0 ? 1 : cantidad, loteId, precioParsed, descripcion, esSobrePedido);
+            var descParsed = ParsePrecioFlexible(descuento) ?? 0;
+            _ventas.AddProducto(idVenta, idProducto, cantidad <= 0 ? 1 : cantidad, loteId, precioParsed, descripcion, esSobrePedido, descParsed, motivoDescuento);
         }
         catch (Exception ex) { RegistrarError(ex); TempData["ErrorCobro"] = ex.Message; }
         return RedirectToAction("Cobrar", new { id = idVenta });
     }
 
     [HttpPost]
-    public ActionResult AddProductoExpress(Guid idVenta, string nombre, decimal precio, decimal cantidad, decimal? costo)
+    public ActionResult AddProductoExpress(Guid idVenta, string nombre, decimal precio, decimal cantidad, decimal? costo, string? descuento = null, string? motivoDescuento = null)
     {
-        try { _ventas.AgregarProductoExpress(idVenta, nombre, precio, cantidad <= 0 ? 1 : cantidad, costo); }
+        try { _ventas.AgregarProductoExpress(idVenta, nombre, precio, cantidad <= 0 ? 1 : cantidad, costo, null, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento); }
         catch (Exception ex) { RegistrarError(ex); TempData["ErrorCobro"] = ex.Message; }
         return RedirectToAction("Cobrar", new { id = idVenta });
     }
 
     [HttpPost]
-    public ActionResult AddServicioExpress(Guid idVenta, string descripcion, decimal precio, decimal cantidad)
+    public ActionResult AddServicioExpress(Guid idVenta, string descripcion, decimal precio, decimal cantidad, string? descuento = null, string? motivoDescuento = null)
     {
-        try { _ventas.AgregarServicioExpress(idVenta, descripcion, precio, cantidad <= 0 ? 1 : cantidad); }
+        try { _ventas.AgregarServicioExpress(idVenta, descripcion, precio, cantidad <= 0 ? 1 : cantidad, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento); }
+        catch (Exception ex) { RegistrarError(ex); TempData["ErrorCobro"] = ex.Message; }
+        return RedirectToAction("Cobrar", new { id = idVenta });
+    }
+
+    [HttpPost]
+    public ActionResult AplicarDescuento(Guid id, Guid idVenta, string? descuento, string? motivoDescuento)
+    {
+        try { _ventas.AplicarDescuento(id, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento); }
         catch (Exception ex) { RegistrarError(ex); TempData["ErrorCobro"] = ex.Message; }
         return RedirectToAction("Cobrar", new { id = idVenta });
     }
@@ -160,6 +170,18 @@ public class VentasController : ErrorHandlingController
     {
         try { _ventas.DejarPendientePago(id, responsable, fechaPromesa); }
         catch (Exception ex) { RegistrarError(ex); TempData["ErrorCobro"] = ex.Message; return RedirectToAction("Cobrar", new { id }); }
+        return RedirectToAction("Index");
+    }
+
+    [HttpGet]
+    public ActionResult GuardarTemporal(Guid id)
+    {
+        // Guardado temporal: las líneas, descuentos y pagos ya persisten con cada
+        // acción como venta "Pendiente". Solo se confirma y se vuelve al listado.
+        var venta = _ventas.GetVenta(id);
+        TempData["GuardadoTemporal"] = venta is null
+            ? "Cuenta guardada — queda pendiente de cobro."
+            : $"Cuenta {venta.Folio} guardada — queda pendiente de cobro.";
         return RedirectToAction("Index");
     }
 

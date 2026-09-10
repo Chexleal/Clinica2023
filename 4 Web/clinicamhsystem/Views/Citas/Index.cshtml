@@ -6,13 +6,13 @@
     <link rel="stylesheet" href="~/css/pages/calendario.css" asp-append-version="true" />
 }
 
-<div class="card w-80 shadow-lg mt-5" id="citas">
+<div class="card w-100 shadow-lg mt-4" id="citas">
 
-    <div class="card-header bg-ligth">
+    <div class="card-header bg-light">
         <h3 class="titulo">Citas</h3>
     </div>
     <div class="card-body">
-        @Html.Partial("_calendar")
+        @await Html.PartialAsync("_calendar", Model)
 </div>
 </div>
 

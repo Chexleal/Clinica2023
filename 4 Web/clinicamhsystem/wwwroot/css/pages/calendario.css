@@ -1,38 +1,161 @@
-﻿body {
+﻿/* Calendario Citas — tema del sistema (FullCalendar v6) */
+
+.calendario-wrap {
+    width: 100%;
+    overflow-x: auto;
 }
 
+#calendar {
+    min-width: 320px;
+    font-size: 0.95rem;
+}
+
+/* Toolbar */
+.fc .fc-toolbar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.fc .fc-toolbar-title {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: #222;
+}
+
+.fc .fc-button {
+    background-color: #0077c0;
+    border: none;
+    color: #fff;
+    font-size: 0.85rem;
+    padding: 0.4em 0.8em;
+    border-radius: 0.375rem;
+    text-transform: capitalize;
+}
+
+.fc .fc-button:hover:not(:disabled) {
+    background-color: #005f9a;
+    color: #fff;
+}
+
+.fc .fc-button:disabled,
+.fc .fc-button.fc-button-active {
+    background-color: #005f9a;
+    color: #fff;
+    opacity: 1;
+}
+
+.fc .fc-button:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 119, 192, 0.25);
+}
+
+/* Encabezado días */
+.fc .fc-col-header-cell {
+    background-color: #f2f2f2;
+    font-weight: 600;
+}
+
+.fc .fc-col-header-cell a {
+    color: #222;
+    text-decoration: none;
+}
+
+.fc .fc-daygrid-day-number,
+.fc .fc-daygrid-day-number:hover {
+    color: #222;
+    text-decoration: none;
+}
+
+.fc .fc-day-today {
+    background-color: rgba(139, 194, 242, 0.25) !important;
+}
+
+/* Eventos: fondo oscuro para contraste AA con texto blanco */
 .fc-event {
     position: relative;
+    background-color: #005f9a;
+    border: 1px solid #004a79;
+    border-radius: 0.375rem;
+    padding-right: 1.6rem;
+    cursor: pointer;
+    color: #fff;
 }
 
-    .fc-event .fc-time {
-        display: inline-block;
-        margin-right: 10px;
-    }
+.fc-event:hover {
+    background-color: #004a79;
+    border-color: #00395e;
+}
 
-    .fc-event .delete-button {
-        position: absolute;
-        right: 0;
-        top: 0;
-        height: 50%;
-        background-color:transparent;
-        border: none;
-        margin: 0px;
-    }
+.fc-event .fc-event-time,
+.fc-event .fc-event-title,
+.fc-event .fc-list-event-title,
+.fc-event .fc-list-event-time {
+    color: #fff;
+    font-weight: 500;
+}
+
+.fc-event .fc-event-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Botón eliminar dentro del evento */
+.fc-event .delete-button {
+    position: absolute;
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1.4rem;
+    height: 1.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    line-height: 1;
+}
 
 .delete-button::before {
     content: "\f014";
     font-family: "Font Awesome 6 Free";
-    //font-weight: 900;
-    /* Otros estilos opcionales */
-    color: red;
-    font-size: 110%;
+    font-weight: 900;
+    color: #fff;
+    font-size: 0.85rem;
 }
 
-.fc-view-container{
-    width: auto !important; 
+.delete-button:hover::before {
+    color: #ffd7d7;
 }
 
-.card-body{
+/* Vista lista */
+.fc .fc-list-event:hover td {
+    background-color: rgba(139, 194, 242, 0.25);
+}
 
+/* Modal */
+#addCitaModal .modal-content {
+    border-radius: 0.5rem;
+}
+
+#addCitaModal .select2-container {
+    width: 100% !important;
+}
+
+/* Responsive: en móvil la toolbar se apila y el calendario permite scroll */
+@media (max-width: 767px) {
+    .fc .fc-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .fc .fc-toolbar-chunk {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
 }

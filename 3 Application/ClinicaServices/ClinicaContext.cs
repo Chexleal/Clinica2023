@@ -665,6 +665,9 @@ public partial class ClinicaContext : DbContext
             entity.Property(e => e.Cantidad).HasColumnType("decimal(18, 2)").HasColumnName("cantidad");
             entity.Property(e => e.PrecioUnitario).HasColumnType("decimal(15, 2)").HasColumnName("precio_unitario");
             entity.Property(e => e.Subtotal).HasColumnType("decimal(15, 2)").HasColumnName("subtotal");
+            entity.Property(e => e.DescuentoMonto).HasColumnType("decimal(15, 2)").HasColumnName("descuento_monto");
+            entity.Property(e => e.DescuentoMotivo).HasMaxLength(200).IsUnicode(false).HasColumnName("descuento_motivo");
+            entity.Property(e => e.DescuentoOtorgadoPor).HasColumnName("descuento_otorgado_por");
             entity.Property(e => e.EsSobrePedido).HasColumnName("es_sobre_pedido");
         });
 

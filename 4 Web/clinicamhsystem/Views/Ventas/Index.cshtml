@@ -12,6 +12,20 @@
             <button type="submit" class="btn btn-dark btn-sm text-nowrap"><i class="fa-solid fa-plus"></i> Nueva venta</button>
         </form>
     </div>
+    @if (TempData["GuardadoTemporal"] is string msgGuardado && !string.IsNullOrWhiteSpace(msgGuardado))
+    {
+        <div class="alert alert-success alert-dismissible fade show m-3 mb-0" role="alert">
+            <i class="fa-solid fa-floppy-disk me-1"></i>@msgGuardado
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    else if (Context.Request.Query.TryGetValue("guardado", out var folioGuardado) && !string.IsNullOrWhiteSpace(folioGuardado))
+    {
+        <div class="alert alert-success alert-dismissible fade show m-3 mb-0" role="alert">
+            <i class="fa-solid fa-floppy-disk me-1"></i>Cuenta @folioGuardado guardada — queda pendiente de cobro.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
     <div class="card-body">
         <p class="text-muted small">Vía 2: venta sin consulta (ej. solo compra una plantilla). La vía 1 sigue en <a href="/Pagos">Pagar Consultas</a>. Ambas descuentan el mismo inventario al pagar.</p>
         <div class="table-responsive">

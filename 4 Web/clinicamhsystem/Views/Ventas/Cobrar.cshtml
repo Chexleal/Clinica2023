@@ -10,7 +10,8 @@
     <div class="card-header bg-white d-flex flex-wrap align-items-center gap-2">
         <h4 class="mb-0">Cobrar <span class="badge bg-secondary ms-2">@venta?.Folio</span></h4>
         <span class="small text-muted ms-2">Venta de mostrador (sin consulta)</span>
-        <a href="@Url.Action("Index", "Ventas")" class="btn btn-outline-secondary btn-sm ms-auto">Volver</a>
+        <a href="@Url.Action("Index", "Ventas", new { guardado = venta?.Folio })" class="btn btn-outline-primary btn-sm ms-auto"><i class="fa-solid fa-floppy-disk me-1"></i>Guardar temporal</a>
+        <a href="@Url.Action("Index", "Ventas", new { guardado = venta?.Folio })" class="btn btn-outline-secondary btn-sm">Volver</a>
     </div>
     <div class="card-body">
         @if (TempData["ErrorCobro"] is string msg && !string.IsNullOrWhiteSpace(msg))

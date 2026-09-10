@@ -49,23 +49,63 @@ public class InventarioController : ErrorHandlingController
             actual.Nombre = p.Nombre.Trim();
             actual.IdCategoriaProducto = p.IdCategoriaProducto;
             actual.UnidadMedida = p.UnidadMedida;
-            actual.PrecioVenta = p.PrecioVenta;
-            actual.CostoUltimo = p.CostoUltimo;
-            actual.StockMinimo = p.StockMinimo;
+            // NOTA: el form de edición no envía CostoUltimo/StockActual/Activo:
+            // no sobrescribirlos (antes se reseteaba CostoUltimo a 0 en cada edición).
+            // Parseo robusto de decimales: el binder depende de la cultura del servidor
+            // (punto vs coma). Si el binder dejó 0 pero el form traía otro valor,
+            // re-parsear el crudo aceptando ambos separadores.
+            actual.PrecioVenta = ParseDecimalForm("PrecioVenta", p.PrecioVenta);
+            actual.StockMinimo = ParseDecimalForm("StockMinimo", p.StockMinimo);
             actual.RequiereLote = p.RequiereLote;
             actual.RequiereVencimiento = p.RequiereVencimiento;
             actual.EsSobrePedido = false; // LEGADO: ya sin uso, se normaliza
             _productos.Actualizar(actual);
+            TempData["Ok"] = $"Precio de '{actual.Nombre}' actualizado a Q{actual.PrecioVenta:0.00}.";
         }
         catch (Exception ex) { RegistrarError(ex); TempData["Error"] = ex.Message; }
         return RedirectToAction("Index");
+    }
+
+    /// <summary>
+    /// Re-parsea un decimal del form aceptando punto o coma como separador,
+    /// para no depender de la cultura del servidor. Si el campo viene vacío,
+    /// conserva el valor ya bindeado; si trae texto inválido, lanza error visible.
+    /// </summary>
+    private decimal ParseDecimalForm(string fieldName, decimal boundValue)
+    {
+        var raw = Request.Form[fieldName].ToString()?.Trim();
+        if (string.IsNullOrWhiteSpace(raw)) return boundValue;
+        if (TryParseDecimalFlexible(raw, out var parsed)) return parsed;
+        // Si el binder ya había parseado algo distinto de cero, respetarlo;
+        // si no, el valor es realmente inválido: avisar en vez de guardar 0 silencioso.
+        if (boundValue != 0) return boundValue;
+        throw new ArgumentException($"Valor inválido en '{fieldName}': '{raw}'.");
+    }
+
+    private static bool TryParseDecimalFlexible(string raw, out decimal value)
+    {
+        // Intento 1: cultura invariante (punto decimal, lo que envía input type=number).
+        if (decimal.TryParse(raw, System.Globalization.NumberStyles.Number,
+                System.Globalization.CultureInfo.InvariantCulture, out value))
+            return true;
+        // Intento 2: cultura actual del servidor.
+        if (decimal.TryParse(raw, System.Globalization.NumberStyles.Number,
+                System.Globalization.CultureInfo.CurrentCulture, out value))
+            return true;
+        // Intento 3: normalizar coma a punto (usuarios es-GT que escriben "12,50").
+        var normalized = raw.Replace(',', '.');
+        if (decimal.TryParse(normalized, System.Globalization.NumberStyles.Number,
+                System.Globalization.CultureInfo.InvariantCulture, out value))
+            return true;
+        value = 0;
+        return false;
     }
 
     [HttpPost]
     public ActionResult CambiarActivoProducto(Guid id, bool activo)
     {
         try { _productos.CambiarActivo(id, activo); }
-        catch (Exception ex) { RegistrarError(ex); }
+        catch (Exception ex) { RegistrarError(ex); TempData["Error"] = ex.Message; }
         return RedirectToAction("Index");
     }
 
@@ -74,7 +114,7 @@ public class InventarioController : ErrorHandlingController
         string? codigoLote, DateTime? vencimiento, string? motivo)
     {
         try { _movimientos.RegistrarEntrada(productoId, cantidad, costo, codigoLote, vencimiento, motivo); }
-        catch (Exception ex) { RegistrarError(ex); }
+        catch (Exception ex) { RegistrarError(ex); TempData["Error"] = ex.Message; }
         return RedirectToAction("Index");
     }
 
@@ -82,7 +122,7 @@ public class InventarioController : ErrorHandlingController
     public ActionResult Ajuste(Guid productoId, decimal cantidad, string motivo)
     {
         try { _movimientos.RegistrarAjuste(productoId, cantidad, motivo); }
-        catch (Exception ex) { RegistrarError(ex); }
+        catch (Exception ex) { RegistrarError(ex); TempData["Error"] = ex.Message; }
         return RedirectToAction("Index");
     }
 

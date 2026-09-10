@@ -112,20 +112,25 @@ function ShowCalendario(id) {
         data: { pacienteId: id },
         type: "POST",
         success: function (res) {
-            //$('#modalCalendario').find('.modal-body').html(res);
-            //$('#modalCalendario').modal('show');
-
-            //$('#modalCalendario').on('shown.bs.modal', Loadcalendar);
-            //Loadcalendar()
-
-            //$('#modalCalendario').modal('show');
             $('#modalCalendario').find('.modal-body').html(res);
             $('#modalCalendario').modal('show');
-            $('#modalCalendario').on('shown.bs.modal', Loadcalendar);
+            // Evitar acumulados si se abre varias veces
+            $('#modalCalendario').off('shown.bs.modal.calendario').on('shown.bs.modal.calendario', function () {
+                if (typeof Loadcalendar === 'function') Loadcalendar();
+                var $sp = $('#selectPaciente');
+                if ($sp.length && $.fn.select2) {
+                    if ($sp.hasClass('select2-hidden-accessible')) { try { $sp.select2('destroy'); } catch (e) { /* noop */ } }
+                    $sp.select2({ dropdownParent: $('#addCitaModal') });
+                }
+            });
+            // Si el modal ya está visible (reapertura rápida), renderizar de una vez
+            if ($('#modalCalendario').hasClass('show') && typeof Loadcalendar === 'function') {
+                Loadcalendar();
+            }
             $("#Destiny").val("consultas");
 
 
-            $('#cita-form').submit(function (e) {
+            $('#cita-form').off('submit.calendario').on('submit.calendario', function (e) {
                 // Detiene el envío del formulario normal
                 e.preventDefault();
 
@@ -135,12 +140,12 @@ function ShowCalendario(id) {
                 // Envía la solicitud AJAX
                 $.ajax({
                     type: 'POST',
-                    url: "Citas/Add",
+                    url: "/Citas/Add",
                     data: datos,
                     success: function (response) {
                         // Maneja la respuesta del servidor
-                        $('#addCitaModal').modal('toggle');
-                        $('#modalCalendario').modal('toggle');
+                        $('#addCitaModal').modal('hide');
+                        $('#modalCalendario').modal('hide');
                         $("#modalCalendario").find('.modal-body').html("");
                     }
                 });

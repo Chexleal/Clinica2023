@@ -237,6 +237,34 @@ function deletePago(idPago) {
 
 function deleteDetalle(id) { deleteVentaDetalle(id); }
 
+function aplicarDescuento(idVentaDetalle) {
+    var monto = ($('#descMonto-' + idVentaDetalle).val() || '0').trim();
+    var motivo = ($('#descMotivo-' + idVentaDetalle).val() || '').trim();
+    if (cobroEsPagina()) {
+        var f = document.createElement('form');
+        f.method = 'POST';
+        f.action = '/Ventas/AplicarDescuento';
+        f.innerHTML = '<input hidden name="id" value="' + idVentaDetalle + '">'
+            + '<input hidden name="idVenta" value="' + $("#IdVentaRef").val() + '">'
+            + '<input hidden name="descuento">'
+            + '<input hidden name="motivoDescuento">';
+        f.querySelector('[name=descuento]').value = monto;
+        f.querySelector('[name=motivoDescuento]').value = motivo;
+        document.body.appendChild(f);
+        f.submit();
+        return;
+    }
+    $.ajax({
+        url: '/Pagos/AplicarDescuento',
+        type: 'POST',
+        data: { id: idVentaDetalle, idConsulta: $("#IdConsulta").val(), descuento: monto, motivoDescuento: motivo },
+        success: refreshModal,
+        error: function (error) {
+            Swal.fire('Descuento', error.responseText || 'No se pudo aplicar el descuento.', 'warning');
+        }
+    });
+}
+
 function deleteVentaDetalle(id) {
     if (cobroEsPagina()) {
         $.post('/Ventas/EliminarDetalle', { id: id, idVenta: $("#IdVentaRef").val() }, function () { location.reload(); });
@@ -253,6 +281,34 @@ function deleteVentaDetalle(id) {
         }
     });
 }
+
+function guardarTemporal() {
+    // Las líneas, descuentos y pagos ya se guardan en BD con cada acción
+    // (la venta queda "Pendiente"); este botón solo cierra y confirma.
+    // El toast lo muestra el evento hidden de la modal.
+}
+
+$(document).on('hidden.bs.modal', '#pagarConsultaModal', function () {
+    // Cerrar la modal = guardado temporal: todo lo agregado queda en BD
+    // como venta "Pendiente" (sin marcar pagada). Solo se confirma en UI.
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            toast: true, position: 'top-end', icon: 'success',
+            title: 'Cuenta guardada — queda pendiente de cobro',
+            showConfirmButton: false, timer: 2500
+        });
+    }
+});
+
+$(document).on('shown.bs.collapse', '#panelPendientePago, #panelPendientePagoModal', function () {
+    // Llevar al usuario hasta el formulario de pendiente de pago y enfocar el responsable.
+    var panel = this;
+    if (panel.scrollIntoView) {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    var input = panel.querySelector("input[name='responsable']");
+    if (input) { setTimeout(function () { input.focus(); }, 350); }
+});
 
 function marcarPendientePago() {
     var resp = ($("#pendientePagoFormModal [name='responsable']").val() || '').trim();

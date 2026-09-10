@@ -37,26 +37,49 @@ public class CitasController : ErrorHandlingController
     }
 
     [HttpPost]
-    public ActionResult Add(Guid IdPaciente, string destiny)
+    public ActionResult Add(Guid IdPaciente, string destiny, string Fecha, string Hora)
     {
-
-        if (_currentUser.Usuario is { } usuarioActual)
+        if (_currentUser.Usuario is not { } usuarioActual)
         {
-            string fecha_str = Request.Form["fecha"];
-            string hora_str = Request.Form["hora"];
+            return RedirectToAction("Index");
+        }
 
-            DateOnly fecha = DateOnly.ParseExact(fecha_str, "yyyy-MM-dd", null);
-            TimeOnly hora = TimeOnly.ParseExact(hora_str, "HH:mm", null);
-            DateTime combinedDateTime = new DateTime(fecha.Year, fecha.Month, fecha.Day, hora.Hour, hora.Minute, hora.Second);
+        string fecha_str = Fecha ?? Request.Form["Fecha"];
+        string hora_str = Hora ?? Request.Form["Hora"];
+        if (string.IsNullOrWhiteSpace(fecha_str) || string.IsNullOrWhiteSpace(hora_str))
+        {
+            return BadRequest("Fecha y hora son requeridas.");
+        }
 
-            Paciente paciente = _pacienteServices.GetPacienteById(IdPaciente);
+        if (!DateOnly.TryParseExact(fecha_str, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out var fecha))
+        {
+            return BadRequest("Fecha inválida.");
+        }
+        if (!TimeOnly.TryParseExact(hora_str, "HH:mm", null, System.Globalization.DateTimeStyles.None, out var hora))
+        {
+            return BadRequest("Hora inválida.");
+        }
+        DateTime combinedDateTime = new DateTime(fecha.Year, fecha.Month, fecha.Day, hora.Hour, hora.Minute, 0);
 
-            Cita cita = new Cita();
-            cita.FechaHora = combinedDateTime;
-            cita.IdPaciente = IdPaciente;
-            cita.IdUsuario = usuarioActual.IdUsuario;
-            cita.Titulo = paciente.Nombre + " " + paciente.Apellido;
-            _citaServices.Add(cita);
+        Paciente paciente = _pacienteServices.GetPacienteById(IdPaciente);
+        if (paciente is null)
+        {
+            return NotFound("Paciente no encontrado.");
+        }
+
+        Cita cita = new Cita
+        {
+            FechaHora = combinedDateTime,
+            IdPaciente = IdPaciente,
+            IdUsuario = usuarioActual.IdUsuario,
+            Titulo = paciente.Nombre + " " + paciente.Apellido
+        };
+        _citaServices.Add(cita);
+
+        bool esAjax = string.Equals(Request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.OrdinalIgnoreCase);
+        if (esAjax)
+        {
+            return Json(new { ok = true, id = cita.IdCita, titulo = cita.Titulo, fechaHora = cita.FechaHora });
         }
 
         return RedirectToAction("Index");

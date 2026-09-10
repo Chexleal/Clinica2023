@@ -12,6 +12,7 @@
 }
 @{
     var todas = ViewBag.TodasPendientes as List<OrdenEstudio> ?? new();
+    var mostrarCargaDirecta = pacienteId.HasValue && ViewBag.IdOrdenSeleccionada == null;
 }
 <div class="card shadow-lg p-3 mb-4" id="cardTodasPendientes">
     <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -41,20 +42,22 @@
     </div>
 </div>
 
-<div class="card shadow-lg p-3 mb-4">
-    <div class="card-header bg-white">
-        <h4><i class="fa-solid fa-upload" style="color:#2d8f77"></i> Carga de Estudios <small class="text-muted" style="font-size:14px">(Archivo / Recepción)</small></h4>
-    </div>
-    <div class="card-body">
-        <div class="row g-3 align-items-end">
-            <div class="col-12 col-md-8">
-                <label class="fw-bold">Paciente</label>
-                <select id="selPacienteCarga" class="form-select">
-                    <option value="">-- Busca paciente --</option>
-                    @if(ViewBag.PacienteActual != null){
-                        <option value="@ViewBag.PacienteActual.IdPaciente" selected>@ViewBag.PacienteActual.Nombre @ViewBag.PacienteActual.Apellido - @ViewBag.PacienteActual.Dpi</option>
-                    }
-                </select>
+<div class="mb-3">
+    <button class="btn btn-link btn-sm text-muted text-decoration-none p-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCargaDirecta" aria-expanded='@(mostrarCargaDirecta ? "true" : "false")' aria-controls="collapseCargaDirecta">
+        <i class="fa-regular fa-circle-question"></i> ¿El estudio no pertenece a una consulta? <u>Da clic aquí para cargarlo por Archivo / Recepción</u>
+    </button>
+    <div class='collapse @(mostrarCargaDirecta ? "show" : "")' id="collapseCargaDirecta">
+        <div class="card card-body bg-light border shadow-none py-2 px-3 mt-2">
+            <div class="row g-2 align-items-end">
+                <div class="col-12 col-md-6 col-lg-5">
+                    <label class="small text-muted">Paciente <span class="fw-normal">(Archivo / Recepción)</span></label>
+                    <select id="selPacienteCarga" class="form-select form-select-sm">
+                        <option value="">-- Busca paciente --</option>
+                        @if(ViewBag.PacienteActual != null){
+                            <option value="@ViewBag.PacienteActual.IdPaciente" selected>@ViewBag.PacienteActual.Nombre @ViewBag.PacienteActual.Apellido - @ViewBag.PacienteActual.Dpi</option>
+                        }
+                    </select>
+                </div>
             </div>
         </div>
     </div>
@@ -189,7 +192,7 @@
                         $.each(d.paciente, function(i,o){ sel.append("<option value=\"" + o.idOrden + "\" data-tipo=\"" + o.tipoId + "\">" + o.tipo + " - " + o.indicacion + "</option>"); });
                         sel.select2({ width: "100%", placeholder: "Busca orden..." });
                         var tb = "";
-                        $.each(d.todas, function(i,o){ tb += "<tr><td><small>" + o.fecha + "</small></td><td>" + o.paciente + "</td><td><span class=\"badge bg-info\">" + o.tipo + "</span></td><td><small>" + o.indicacion + "</small></td><td><a href=\"/Estudios?pacienteId=" + o.idPaciente + "\" class=\"btn btn-sm btn-outline-primary\">Atender</a></td></tr>"; });
+                        $.each(d.todas, function(i,o){ tb += "<tr><td><small>" + o.fecha + "</small></td><td>" + o.paciente + "</td><td><span class=\"badge bg-info\">" + o.tipo + "</span></td><td><small>" + o.indicacion + "</small></td><td><a href=\"/Estudios?pacienteId=" + o.idPaciente + "&idOrden=" + o.idOrden + "\" class=\"btn btn-sm btn-outline-primary\">Atender</a></td></tr>"; });
                         if ($("#tbodyTodas").length) $("#tbodyTodas").html(tb || "<tr class=\"empty-row\"><td colspan=\"5\" class=\"text-muted small\">Sin ordenes pendientes.</td></tr>");
                         var pb = "";
                         $.each(d.paciente, function(i,o){ pb += "<tr><td><small>" + o.fecha + "</small></td><td><span class=\"badge bg-info\">" + o.tipo + "</span></td><td><small>" + o.indicacion + "</small></td><td><span class=\"badge bg-warning text-dark\">Pendiente</span></td><td><button type=\"button\" class=\"btn btn-sm btn-outline-primary btn-sel-orden-carga\" data-id=\"" + o.idOrden + "\" data-tipo=\"" + o.tipoId + "\"><i class=\"fa-solid fa-check\"></i> Seleccionar</button></td></tr>"; });

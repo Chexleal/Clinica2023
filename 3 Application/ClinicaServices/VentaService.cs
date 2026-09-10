@@ -13,8 +13,10 @@ public interface IVentaService
     List<Venta> GetPendientesPago(int top = 100);
     List<Venta> GetPorRango(DateTime from, DateTime to);
     List<VentaDetalle> GetDetalles(Guid idVenta);
-    VentaDetalle AddServicio(Guid idVenta, Guid motivoCobroId, decimal cantidad, decimal? precioUnitario = null, string? descripcion = null);
-    VentaDetalle AddProducto(Guid idVenta, Guid productoId, decimal cantidad, Guid? loteId = null, decimal? precioUnitario = null, string? descripcion = null, bool esSobrePedido = false);
+    VentaDetalle AddServicio(Guid idVenta, Guid motivoCobroId, decimal cantidad, decimal? precioUnitario = null, string? descripcion = null, decimal descuentoMonto = 0, string? motivoDescuento = null);
+    VentaDetalle AddProducto(Guid idVenta, Guid productoId, decimal cantidad, Guid? loteId = null, decimal? precioUnitario = null, string? descripcion = null, bool esSobrePedido = false, decimal descuentoMonto = 0, string? motivoDescuento = null);
+    /// <summary>Aplica o edita el descuento de una línea pendiente (motivo obligatorio si monto &gt; 0). Registra quién lo otorgó.</summary>
+    VentaDetalle AplicarDescuento(Guid idVentaDetalle, decimal descuentoMonto, string? motivoDescuento);
     void RemoveDetalle(Guid idVentaDetalle);
     void Pagar(Guid idVenta);
     void Anular(Guid idVenta);
@@ -28,15 +30,16 @@ public interface IVentaService
     void DejarPendientePago(Guid idVenta, string responsable, DateTime? fechaPromesa);
     VentaDetalle? AgregarDesdeReceta(Guid idVenta, string nombreMedicamento, decimal cantidad);
     /// <summary>Alta rápida desde caja: crea el producto (sin lote) + entrada + línea de venta en una sola operación.</summary>
-    VentaDetalle AgregarProductoExpress(Guid idVenta, string nombre, decimal precioVenta, decimal cantidad, decimal? costoUnitario = null, Guid? idCategoria = null);
+    VentaDetalle AgregarProductoExpress(Guid idVenta, string nombre, decimal precioVenta, decimal cantidad, decimal? costoUnitario = null, Guid? idCategoria = null, decimal descuentoMonto = 0, string? motivoDescuento = null);
     /// <summary>Servicio no catalogado: crea el MotivoCobro (si no existe) + línea de venta. No toca inventario.</summary>
-    VentaDetalle AgregarServicioExpress(Guid idVenta, string descripcion, decimal precio, decimal cantidad);
+    VentaDetalle AgregarServicioExpress(Guid idVenta, string descripcion, decimal precio, decimal cantidad, decimal descuentoMonto = 0, string? motivoDescuento = null);
 }
 
 public class VentaService : IVentaService
 {
     private readonly ClinicaContext _db;
-    public VentaService(ClinicaContext db) { _db = db; }
+    private readonly ICurrentUser? _currentUser;
+    public VentaService(ClinicaContext db, ICurrentUser? currentUser = null) { _db = db; _currentUser = currentUser; }
 
     private string NuevoFolio()
     {
@@ -106,10 +109,10 @@ public class VentaService : IVentaService
         _db.Ventas.FirstOrDefault(v => v.IdVenta == idVenta);
 
     public List<Venta> GetPendientes(int top = 100) =>
-        _db.Ventas.Where(v => v.Estado == "Pendiente").OrderByDescending(v => v.Fecha).Take(top).ToList();
+        _db.Ventas.Where(v => v.Estado == "Pendiente" && v.IdConsulta == null).OrderByDescending(v => v.Fecha).Take(top).ToList();
 
     public List<Venta> GetPendientesPago(int top = 100) =>
-        _db.Ventas.Where(v => v.Estado == "Pendiente de pago").OrderBy(v => v.FechaPromesa == null ? 1 : 0).ThenBy(v => v.FechaPromesa).ThenByDescending(v => v.Fecha).Take(top).ToList();
+        _db.Ventas.Where(v => v.Estado == "Pendiente de pago" && v.IdConsulta == null).OrderBy(v => v.FechaPromesa == null ? 1 : 0).ThenBy(v => v.FechaPromesa).ThenByDescending(v => v.Fecha).Take(top).ToList();
 
     public List<Venta> GetPorRango(DateTime from, DateTime to)
     {
@@ -118,10 +121,44 @@ public class VentaService : IVentaService
         return _db.Ventas.Where(v => v.Fecha >= f && v.Fecha < t && v.Estado != "Anulada").ToList();
     }
 
-    public List<VentaDetalle> GetDetalles(Guid idVenta) =>
-        _db.VentaDetalles.Where(d => d.IdVenta == idVenta).ToList();
+    public List<VentaDetalle> GetDetalles(Guid idVenta)
+    {
+        var lineas = _db.VentaDetalles.Where(d => d.IdVenta == idVenta).ToList();
+        CompletarNombresDescuento(lineas);
+        return lineas;
+    }
 
-    public VentaDetalle AddServicio(Guid idVenta, Guid motivoCobroId, decimal cantidad, decimal? precioUnitario = null, string? descripcion = null)
+    /// <summary>Valida monto/motivo y calcula el subtotal neto. Motivo obligatorio si hay descuento.</summary>
+    private static (decimal monto, string? motivo) ValidarDescuento(decimal bruto, decimal descuentoMonto, string? motivoDescuento)
+    {
+        if (descuentoMonto < 0) throw new ArgumentException("El descuento no puede ser negativo.");
+        if (descuentoMonto == 0) return (0, null);
+        if (descuentoMonto > bruto)
+            throw new ArgumentException($"El descuento (Q{descuentoMonto:0.00}) no puede ser mayor al bruto (Q{bruto:0.00}).");
+        motivoDescuento = (motivoDescuento ?? "").Trim();
+        if (string.IsNullOrWhiteSpace(motivoDescuento))
+            throw new ArgumentException("Indica el motivo del descuento.");
+        if (motivoDescuento.Length > 200) motivoDescuento = motivoDescuento[..200];
+        return (descuentoMonto, motivoDescuento);
+    }
+
+    private void CompletarNombresDescuento(List<VentaDetalle> lineas)
+    {
+        try
+        {
+            var ids = lineas.Where(l => l.DescuentoOtorgadoPor.HasValue)
+                .Select(l => l.DescuentoOtorgadoPor!.Value).Distinct().ToList();
+            if (!ids.Any()) return;
+            var nombres = _db.Usuarios.Where(u => ids.Contains(u.IdUsuario))
+                .ToDictionary(u => u.IdUsuario, u => (u.Nombre + " " + u.Apellido).Trim());
+            foreach (var l in lineas)
+                if (l.DescuentoOtorgadoPor.HasValue && nombres.TryGetValue(l.DescuentoOtorgadoPor.Value, out var n))
+                    l.DescuentoOtorgadoPorNombre = n;
+        }
+        catch { }
+    }
+
+    public VentaDetalle AddServicio(Guid idVenta, Guid motivoCobroId, decimal cantidad, decimal? precioUnitario = null, string? descripcion = null, decimal descuentoMonto = 0, string? motivoDescuento = null)
     {
         if (cantidad <= 0) throw new ArgumentException("Cantidad debe ser mayor a cero.");
         var venta = GetVenta(idVenta) ?? throw new InvalidOperationException("Venta no encontrada.");
@@ -129,6 +166,8 @@ public class VentaService : IVentaService
         var servicio = _db.MotivoCobros.FirstOrDefault(m => m.IdMotivoCobro == motivoCobroId)
             ?? throw new InvalidOperationException("Servicio no encontrado.");
         var precio = precioUnitario ?? servicio.PrecioSugerido;
+        var bruto = cantidad * precio;
+        var (desc, motivo) = ValidarDescuento(bruto, descuentoMonto, motivoDescuento);
         var detalle = new VentaDetalle
         {
             IdVentaDetalle = Guid.NewGuid(),
@@ -138,7 +177,10 @@ public class VentaService : IVentaService
             Descripcion = descripcion.TextoLibre() is { Length: > 0 } d ? d : servicio.Descripcion,
             Cantidad = cantidad,
             PrecioUnitario = precio,
-            Subtotal = cantidad * precio
+            Subtotal = bruto - desc,
+            DescuentoMonto = desc,
+            DescuentoMotivo = motivo,
+            DescuentoOtorgadoPor = desc > 0 ? _currentUser?.Usuario?.IdUsuario : null
         };
         _db.VentaDetalles.Add(detalle);
         RecalcularTotal(venta);
@@ -147,7 +189,7 @@ public class VentaService : IVentaService
         return detalle;
     }
 
-    public VentaDetalle AddProducto(Guid idVenta, Guid productoId, decimal cantidad, Guid? loteId = null, decimal? precioUnitario = null, string? descripcion = null, bool esSobrePedido = false)
+    public VentaDetalle AddProducto(Guid idVenta, Guid productoId, decimal cantidad, Guid? loteId = null, decimal? precioUnitario = null, string? descripcion = null, bool esSobrePedido = false, decimal descuentoMonto = 0, string? motivoDescuento = null)
     {
         if (cantidad <= 0) throw new ArgumentException("Cantidad debe ser mayor a cero.");
         if (precioUnitario.HasValue && precioUnitario.Value < 0) throw new ArgumentException("Precio no válido.");
@@ -178,6 +220,8 @@ public class VentaService : IVentaService
             if (lote.Stock < cantidad) throw new InvalidOperationException($"El lote {lote.CodigoLote} solo tiene {lote.Stock}.");
         }
 
+        var brutoProd = cantidad * precioFinal;
+        var (descProd, motivoProd) = ValidarDescuento(brutoProd, descuentoMonto, motivoDescuento);
         var detalle = new VentaDetalle
         {
             IdVentaDetalle = Guid.NewGuid(),
@@ -188,7 +232,10 @@ public class VentaService : IVentaService
             Descripcion = descripcion.TextoLibre() is { Length: > 0 } d ? d : producto.Nombre,
             Cantidad = cantidad,
             PrecioUnitario = precioFinal,
-            Subtotal = cantidad * precioFinal,
+            Subtotal = brutoProd - descProd,
+            DescuentoMonto = descProd,
+            DescuentoMotivo = motivoProd,
+            DescuentoOtorgadoPor = descProd > 0 ? _currentUser?.Usuario?.IdUsuario : null,
             EsSobrePedido = esSobrePedido
         };
         _db.VentaDetalles.Add(detalle);
@@ -206,6 +253,24 @@ public class VentaService : IVentaService
             ?? _db.Productos.FirstOrDefault(p => p.Activo && p.Nombre.ToLower().Contains(nombre));
         if (producto is null) return null; // no hay match: la compra no es obligatoria en clínica
         return AddProducto(idVenta, producto.IdProducto, cantidad);
+    }
+
+    public VentaDetalle AplicarDescuento(Guid idVentaDetalle, decimal descuentoMonto, string? motivoDescuento)
+    {
+        var detalle = _db.VentaDetalles.FirstOrDefault(d => d.IdVentaDetalle == idVentaDetalle)
+            ?? throw new InvalidOperationException("Línea no encontrada.");
+        var venta = GetVenta(detalle.IdVenta) ?? throw new InvalidOperationException("Venta no encontrada.");
+        if (venta.Estado != "Pendiente") throw new InvalidOperationException("Solo se puede modificar una venta pendiente.");
+        var bruto = detalle.Cantidad * detalle.PrecioUnitario;
+        var (desc, motivo) = ValidarDescuento(bruto, descuentoMonto, motivoDescuento);
+        detalle.DescuentoMonto = desc;
+        detalle.DescuentoMotivo = motivo;
+        detalle.DescuentoOtorgadoPor = desc > 0 ? _currentUser?.Usuario?.IdUsuario : null;
+        detalle.Subtotal = bruto - desc;
+        RecalcularTotal(venta);
+        SincronizarConsulta(venta);
+        _db.SaveChanges();
+        return detalle;
     }
 
     public void RemoveDetalle(Guid idVentaDetalle)
@@ -234,7 +299,7 @@ public class VentaService : IVentaService
             ?? _db.MetodosPago.FirstOrDefault(m => m.Activo);
         if (efectivo is null)
             throw new InvalidOperationException("No hay tipos de pago configurados.");
-        if (!GetPagos(idVenta).Any())
+        if (!GetPagos(idVenta).Any() && venta.Total > 0)
             AgregarPago(idVenta, efectivo.IdMetodoPago, venta.Total, null);
         AplicarCobro(venta, "Pagada");
     }
@@ -463,7 +528,7 @@ public class VentaService : IVentaService
         _db.SaveChanges();
     }
 
-    public VentaDetalle AgregarProductoExpress(Guid idVenta, string nombre, decimal precioVenta, decimal cantidad, decimal? costoUnitario = null, Guid? idCategoria = null)
+    public VentaDetalle AgregarProductoExpress(Guid idVenta, string nombre, decimal precioVenta, decimal cantidad, decimal? costoUnitario = null, Guid? idCategoria = null, decimal descuentoMonto = 0, string? motivoDescuento = null)
     {
         nombre = nombre.TextoCatalogo();
         if (string.IsNullOrWhiteSpace(nombre)) throw new ArgumentException("Nombre del producto requerido.");
@@ -533,7 +598,7 @@ public class VentaService : IVentaService
 
             tx.Commit();
             // Fuera de la tx interna: agrega la línea (valida stock, que ya existe por la entrada).
-            return AddProducto(idVenta, producto.IdProducto, cantidad);
+            return AddProducto(idVenta, producto.IdProducto, cantidad, null, null, null, false, descuentoMonto, motivoDescuento);
         }
         catch
         {
@@ -542,7 +607,7 @@ public class VentaService : IVentaService
         }
     }
 
-    public VentaDetalle AgregarServicioExpress(Guid idVenta, string descripcion, decimal precio, decimal cantidad)
+    public VentaDetalle AgregarServicioExpress(Guid idVenta, string descripcion, decimal precio, decimal cantidad, decimal descuentoMonto = 0, string? motivoDescuento = null)
     {
         descripcion = descripcion.TextoCatalogo();
         if (string.IsNullOrWhiteSpace(descripcion)) throw new ArgumentException("Describe el servicio.");
@@ -565,6 +630,6 @@ public class VentaService : IVentaService
             _db.MotivoCobros.Add(servicio);
             _db.SaveChanges();
         }
-        return AddServicio(idVenta, servicio.IdMotivoCobro, cantidad, precio, descripcion);
+        return AddServicio(idVenta, servicio.IdMotivoCobro, cantidad, precio, descripcion, descuentoMonto, motivoDescuento);
     }
 }

@@ -166,7 +166,20 @@ public class ProductoService : IProductoService
         if (!p.RequiereLote) p.RequiereVencimiento = false;
         p.EsSobrePedido = false; // LEGADO: columna aún en BD, ya sin uso
         p.BeforeSaveChanges();
-        _db.SaveChanges();
+        // Blindaje: si la entidad llegara detached (o tracking deshabilitado),
+        // marcarla explícitamente como modificada para que el UPDATE sí se genere.
+        // Antes, un SaveChanges sobre entidad detached terminaba en "recarga sin
+        // mensaje y sin cambio", que es el síntoma reportado.
+        var entry = _db.Entry(p);
+        if (entry.State == EntityState.Detached)
+        {
+            _db.Productos.Attach(p);
+            entry.State = EntityState.Modified;
+        }
+        var habiaCambios = _db.ChangeTracker.HasChanges();
+        var filas = _db.SaveChanges();
+        if (habiaCambios && filas == 0)
+            throw new InvalidOperationException("No se pudo guardar el cambio de precio (0 filas afectadas).");
     }
 
     public void CambiarActivo(Guid id, bool activo)

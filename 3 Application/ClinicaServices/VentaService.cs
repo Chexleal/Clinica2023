@@ -112,7 +112,7 @@ public class VentaService : IVentaService
         _db.Ventas.Where(v => v.Estado == "Pendiente" && v.IdConsulta == null).OrderByDescending(v => v.Fecha).Take(top).ToList();
 
     public List<Venta> GetPendientesPago(int top = 100) =>
-        _db.Ventas.Where(v => v.Estado == "Pendiente de pago" && v.IdConsulta == null).OrderBy(v => v.FechaPromesa == null ? 1 : 0).ThenBy(v => v.FechaPromesa).ThenByDescending(v => v.Fecha).Take(top).ToList();
+        _db.Ventas.Where(v => v.Estado == "Pendiente de pago").OrderBy(v => v.FechaPromesa == null ? 1 : 0).ThenBy(v => v.FechaPromesa).ThenByDescending(v => v.Fecha).Take(top).ToList();
 
     public List<Venta> GetPorRango(DateTime from, DateTime to)
     {

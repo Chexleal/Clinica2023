@@ -3,6 +3,12 @@
     background-color: transparent !important;
 }
 
+/* site.css trae ".active { color: white }"; el panel activo del tab hereda
+   ese blanco y los labels se vuelven invisibles. Se restaura texto oscuro. */
+#myTabsContent .tab-pane.active {
+    color: #212529;
+}
+
 .btn-total{
     background-color: transparent;
     border: none;
@@ -21,4 +27,43 @@
 
 .dataTables_filter{
     visibility:hidden;
+}
+
+.btn-micro {
+    width: 30px;
+    font-weight: bold;
+}
+
+tr.shown .btn-micro {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
+.micro-wrap {
+    background-color: #f8f9fa;
+    border-left: 3px solid #0d6efd;
+}
+
+.micro-table {
+    background-color: #fff;
+}
+
+/* Micro: alternar fondo muy sutil por grupo de fecha */
+.micro-fecha-a td {
+    background-color: #f4f7fb;
+}
+
+.micro-fecha-b td {
+    background-color: #ffffff;
+}
+
+.grafica-servicios-wrap {
+    position: relative;
+    height: 320px;
+    padding: 10px 20px 0 20px;
+}
+
+#graficaIngresosServicios {
+    width: 100% !important;
+    height: 100% !important;
 }

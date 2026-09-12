@@ -13,66 +13,35 @@
     <div class="card-body">
         <!-- Tabs -->
 
+        @{
+            // Primera pestaña: Por Servicios. Segunda: Por Paciente.
+            // Activa Paciente solo tras buscar un paciente; en el resto (incluido inicio) activa Servicios.
+            var mostrarPaciente = Model.Paciente != null;
+        }
         <ul class="nav nav-tabs" id="myTabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="tab1-tab" data-bs-toggle="tab" data-bs-target="#tab1" type="button" role="tab" aria-controls="tab1" aria-selected="true">Por Paciente</button>
+                <button class="nav-link @(!mostrarPaciente ? "active" : "")" id="tab-servicios-tab" data-bs-toggle="tab" data-bs-target="#tab-servicios" type="button" role="tab" aria-controls="tab-servicios" aria-selected="@(!mostrarPaciente ? "true" : "false")">Por Servicios</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tab2-tab" data-bs-toggle="tab" data-bs-target="#tab2" type="button" role="tab" aria-controls="tab2" aria-selected="false">Por Servicios</button>
+                <button class="nav-link @(mostrarPaciente ? "active" : "")" id="tab-paciente-tab" data-bs-toggle="tab" data-bs-target="#tab-paciente" type="button" role="tab" aria-controls="tab-paciente" aria-selected="@(mostrarPaciente ? "true" : "false")">Por Paciente</button>
             </li>
         </ul>
 
         <!-- Contenido de los tabs -->
         <div class="tab-content" id="myTabsContent">
-            <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
-                <form id="paciente-search" method="POST" action="@Url.Action("Paciente","Reportes")">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label class="control-label">Del</label>
-                                <input required class="form-control" type="date" name="from_dt" id="from" />
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label class="control-label">Al</label>
-                                <input required class="form-control" type="date" name="to_dt" id="to" />
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label class="control-label">Paciente</label>
-                                <select required name="IdPaciente" id="idPaciente" class="form-control select2">
-                                    <option></option>
-                                    @foreach (var paciente in Model.Pacientes)
-                                    {
-                                        <option value="@paciente.IdPaciente">@paciente.Nombre @paciente.Apellido - @paciente.Dpi</option>
-                                    }
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-3 d-flex">
-                            <div class="form-group">
-                                <label class="control-label"></label>
-                                <button type="submit" id="paciente-search" class="form-control btn btn-primary d-inline-block">Buscar</button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="tab2-tab">
+            <div class="tab-pane fade @(!mostrarPaciente ? "show active" : "")" id="tab-servicios" role="tabpanel" aria-labelledby="tab-servicios-tab">
                 <form id="servicios-search" method="POST" action="@Url.Action("Servicios","Reportes")">
                     <div class="row">
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label class="control-label">Del</label>
-                                <input required class="form-control" type="date" name="from_dt" id="from" />
+                                <input required class="form-control" type="date" name="from_dt" id="from_servicios" value="@(Model.From == default(DateTime) ? "" : Model.From.ToString("yyyy-MM-dd"))" />
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label class="control-label">Al</label>
-                                <input required class="form-control" type="date" name="to_dt" id="to" />
+                                <input required class="form-control" type="date" name="to_dt" id="to_servicios" value="@(Model.To == default(DateTime) ? "" : Model.To.ToString("yyyy-MM-dd"))" />
                             </div>
                         </div>
                         @*<div class="col-md-3">
@@ -87,10 +56,60 @@
                         </select>
                         </div>
                         </div>*@
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="control-label">&nbsp;</label>
+                                <div class="d-flex align-items-center gap-2 mt-2">
+                                    <input type="checkbox" id="chkSinIngresos" style="width:18px;height:18px;accent-color:#0d6efd;" @(Model.IncluirSinIngresos ? "checked" : null) />
+                                    <label for="chkSinIngresos" class="control-label mb-0">Incluir servicios sin ingresos</label>
+                                </div>
+                                <input type="hidden" name="incluirSinIngresos" id="hidSinIngresos" value="@(Model.IncluirSinIngresos ? "true" : "false")" />
+                            </div>
+                        </div>
                         <div class="col-md-3 d-flex">
                             <div class="form-group">
                                 <label class="control-label"></label>
                                 <button type="submit" class="form-control btn btn-primary d-inline-block">Buscar</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="tab-pane fade @(mostrarPaciente ? "show active" : "")" id="tab-paciente" role="tabpanel" aria-labelledby="tab-paciente-tab">
+                <form id="paciente-search" method="POST" action="@Url.Action("Paciente","Reportes")">
+                    <input type="hidden" name="incluirSinIngresos" value="@(Model.IncluirSinIngresos ? "true" : "false")" />
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="control-label">Del</label>
+                                <input required class="form-control" type="date" name="from_dt" id="from_paciente" value="@(Model.From == default(DateTime) ? "" : Model.From.ToString("yyyy-MM-dd"))" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="control-label">Al</label>
+                                <input required class="form-control" type="date" name="to_dt" id="to_paciente" value="@(Model.To == default(DateTime) ? "" : Model.To.ToString("yyyy-MM-dd"))" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="control-label">Paciente</label>
+                                <select required name="IdPaciente" id="idPaciente" class="form-control select2">
+                                    <option></option>
+                                    @{
+                                        var pacientesDropdown = (ViewBag.PacientesDropdown as List<Paciente>) ?? Model.Pacientes;
+                                        foreach (var paciente in pacientesDropdown)
+                                        {
+                                            <option value="@paciente.IdPaciente" selected="@(Model.Paciente != null && Model.Paciente.IdPaciente == paciente.IdPaciente ? "selected" : null)">@paciente.Nombre @paciente.Apellido - @paciente.Dpi</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3 d-flex">
+                            <div class="form-group">
+                                <label class="control-label"></label>
+                                <button type="submit" id="paciente-search" class="form-control btn btn-primary d-inline-block">Buscar</button>
                             </div>
                         </div>
                     </div>
@@ -168,19 +187,33 @@
                 }
             }
 
+            @if (Model.EsServicio)
+            {
+                <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                    <span class="text-muted small">Vista <strong>macro</strong>: resumen por servicio. Vista <strong>micro</strong>: pulse <strong>+</strong> para ver el detalle por fecha / paciente / origen.</span>
+                    <button type="button" id="expandAllMicro" class="btn btn-sm btn-outline-primary ms-auto">Ver micro (expandir todo)</button>
+                    <button type="button" id="collapseAllMicro" class="btn btn-sm btn-outline-secondary">Ver macro (colapsar todo)</button>
+                </div>
+            }
+            @{
+                // Almacén vista micro (macro = resumen). Se llena en el tbody y se renderiza en divs ocultos FUERA de la tabla.
+                var microStore = new Dictionary<string, List<(DateTime Fecha, string Paciente, string Origen, decimal Cantidad, decimal Subtotal)>>();
+                var microTitulos = new Dictionary<string, string>();
+            }
             <table id="table" class="table table-striped ">
                 <thead class="table-dark">
                     @{
                         if (Model.EsServicio)
                         {
                             <tr>
+                                <th></th>
                                 <th>Descripción</th>
                                 <th>Cantidad</th>
                                 <th>Total</th>
                             </tr>
                             <script>
                                 var custom_file_name = "Resumen Servicios (@Model.From.ToString("dd-MM-yyyy") - @Model.To.ToString("dd-MM-yyyy"))"
-                                var num_columns = [0, 1, 2]
+                                var num_columns = [1, 2, 3]
                                 var encabezado = document.getElementById("tabla-encabezado").textContent;
                                 var titulo = "Resumen de ingresos por servicios"
                                 var fechas = "Del  @Model.From.ToString("dd/MM/yyyy")       Al  @Model.To.ToString("dd/MM/yyyy")"
@@ -218,6 +251,8 @@
                 </thead>
                 <tbody>
                     @{
+                        var granCantidadFoot = 0;
+                        var granTotalFoot = 0.0M;
                         if (Model.Paciente != null)
                         {
                             foreach (var consulta in Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date))
@@ -244,56 +279,226 @@
                         }
                         else if (Model.EsServicio)
                         {
+                            // Lookups para la vista micro: consulta -> (fecha, paciente), venta -> (fecha, folio, paciente).
+                            var consultasPorId = Model.Pacientes
+                                .SelectMany(p => (p.Consulta ?? new List<Consulta>()).Select(c => new { C = c, P = p }))
+                                .GroupBy(x => x.C.IdConsulta)
+                                .ToDictionary(g => g.Key, g => g.First());
+                            var todasVentas = (ViewBag.Ventas as List<ClinicaDomain.Venta>) ?? new List<ClinicaDomain.Venta>();
+                            var ventasPorId = todasVentas.GroupBy(v => v.IdVenta).ToDictionary(g => g.Key, g => g.First());
+                            var todosVentaDetalles = (ViewBag.VentaDetalles as List<ClinicaDomain.VentaDetalle>) ?? new List<ClinicaDomain.VentaDetalle>();
+                            var pacientesMap = (ViewBag.PacientesMap as Dictionary<Guid, string>) ?? new Dictionary<Guid, string>();
+                            var granCantidad = 0;
+                            var granTotal = 0.0M;
+                            microStore.Clear();
+                            microTitulos.Clear();
                             foreach (var servicio in Model.Servicios)
                             {
-                                <tr>
-                                    <td>@servicio.Descripcion</td>
-
-                                    @{
-                                        var cantidad = 0;
-                                        var total = 0.0M;
-                                        @foreach (var paciente in Model.Pacientes)
+                                var cantidad = 0;
+                                var total = 0.0M;
+                                var micro = new List<(DateTime Fecha, string Paciente, string Origen, int Cantidad, decimal Subtotal)>();
+                                @foreach (var paciente in Model.Pacientes)
+                                {
+                                    foreach (var consulta in (paciente.Consulta ?? new List<Consulta>()).Where(x => x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date))
+                                    {
+                                        @foreach (var detalle in (Model.Detalles ?? new List<DetalleCobro>()).Where(x => x.IdMotivoCobro == servicio.IdMotivoCobro && x.IdConsulta == consulta.IdConsulta))
                                         {
-                                            foreach (var consulta in paciente.Consulta.Where(x => x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date))
-                                            {
-                                                @foreach (var detalle in Model.Detalles.Where(x => x.IdMotivoCobro == servicio.IdMotivoCobro && x.IdConsulta == consulta.IdConsulta))
-                                                {
-                                                    cantidad += detalle.Cantidad;
-                                                    total += detalle.Subtotal;
-                                                }
-                                            }
+                                            cantidad += detalle.Cantidad;
+                                            total += detalle.Subtotal;
+                                            micro.Add((consulta.Fecha, $"{paciente.Nombre} {paciente.Apellido}", "Consulta", detalle.Cantidad, detalle.Subtotal));
                                         }
-                                        // Nuevo: sumar líneas de servicio cobradas vía Venta (migradas + nuevas).
-                                        var vd = (ViewBag.VentaDetalles as List<ClinicaDomain.VentaDetalle>) ?? new List<ClinicaDomain.VentaDetalle>();
-                                        foreach (var d in vd.Where(x => x.TipoLinea == "Servicio" && x.IdMotivoCobro == servicio.IdMotivoCobro))
-                                        {
-                                            cantidad += (int)d.Cantidad;
-                                            total += d.Subtotal;
-                                        }
-
-                                        <td>@cantidad</td>
-                                        <td>@total</td>
                                     }
+                                }
+                                foreach (var d in todosVentaDetalles.Where(x => x.TipoLinea == "Servicio" && x.IdMotivoCobro == servicio.IdMotivoCobro))
+                                {
+                                    cantidad += (int)d.Cantidad;
+                                    total += d.Subtotal;
+                                    DateTime fVenta = Model.From;
+                                    string nomPaciente = "Mostrador";
+                                    string origen = "Venta";
+                                    if (ventasPorId.TryGetValue(d.IdVenta, out var v))
+                                    {
+                                        fVenta = v.Fecha;
+                                        origen = string.IsNullOrWhiteSpace(v.Folio) ? "Venta" : $"Venta {v.Folio}";
+                                        origen += v.IdConsulta != null ? " (consulta)" : " (mostrador)";
+                                        if (v.IdPaciente != null && pacientesMap.TryGetValue(v.IdPaciente.Value, out var nom))
+                                        {
+                                            nomPaciente = nom;
+                                        }
+                                        else if (v.IdConsulta != null && consultasPorId.TryGetValue(v.IdConsulta.Value, out var cc))
+                                        {
+                                            nomPaciente = $"{cc.P.Nombre} {cc.P.Apellido}";
+                                        }
+                                    }
+                                    micro.Add((fVenta, nomPaciente, origen, (int)d.Cantidad, d.Subtotal));
+                                }
+                                micro = micro.OrderBy(m => m.Fecha).ToList();
+                                // Check apagado (default): ocultar servicios sin movimientos en el rango.
+                                if (cantidad == 0 && !Model.IncluirSinIngresos)
+                                {
+                                    continue;
+                                }
+                                granCantidad += cantidad;
+                                granTotal += total;
+                                var microId = $"micro-{servicio.IdMotivoCobro}";
+                                microStore[microId] = micro.Select(m => (m.Fecha, m.Paciente, m.Origen, (decimal)m.Cantidad, m.Subtotal)).ToList();
+                                microTitulos[microId] = servicio.Descripcion;
+                                <tr class="macro-row">
+                                    <td>
+                                        @if (cantidad > 0)
+                                        {
+                                            <button type="button" class="btn-micro btn btn-sm btn-outline-primary" data-micro="@microId" title="Ver detalle">+</button>
+                                        }
+                                    </td>
+                                    <td>@servicio.Descripcion</td>
+                                    <td>@cantidad</td>
+                                    <td>Q @total</td>
                                 </tr>
                             }
-                            // Nuevo: productos + ventas libres del rango.
-                            var vdet = (ViewBag.VentaDetalles as List<ClinicaDomain.VentaDetalle>) ?? new List<ClinicaDomain.VentaDetalle>();
-                            var prodGroups = vdet.Where(x => x.TipoLinea == "Producto").GroupBy(x => x.Descripcion);
+                            // Productos + ventas libres del rango, también con micro.
+                            var prodGroups = todosVentaDetalles.Where(x => x.TipoLinea == "Producto").GroupBy(x => x.Descripcion).ToList();
+                            var prodIdx = 0;
                             foreach (var g in prodGroups)
                             {
-                                <tr class="table-success">
+                                var prodCantidad = g.Sum(x => x.Cantidad);
+                                var prodTotal = g.Sum(x => x.Subtotal);
+                                granCantidad += (int)prodCantidad;
+                                granTotal += prodTotal;
+                                var prodMicroId = $"micro-prod-{prodIdx}";
+                                prodIdx++;
+                                var prodMicro = new List<(DateTime Fecha, string Paciente, string Origen, decimal Cantidad, decimal Subtotal)>();
+                                foreach (var d in g.OrderBy(x => ventasPorId.ContainsKey(x.IdVenta) ? ventasPorId[x.IdVenta].Fecha : DateTime.MaxValue))
+                                {
+                                    var fV = Model.From;
+                                    var nP = "Mostrador";
+                                    var oR = "Venta";
+                                    if (ventasPorId.TryGetValue(d.IdVenta, out var vv))
+                                    {
+                                        fV = vv.Fecha;
+                                        oR = string.IsNullOrWhiteSpace(vv.Folio) ? "Venta" : $"Venta {vv.Folio}";
+                                        oR += vv.IdConsulta != null ? " (consulta)" : " (mostrador)";
+                                        if (vv.IdPaciente != null && pacientesMap.TryGetValue(vv.IdPaciente.Value, out var nn))
+                                        {
+                                            nP = nn;
+                                        }
+                                        else if (vv.IdConsulta != null && consultasPorId.TryGetValue(vv.IdConsulta.Value, out var ccc))
+                                        {
+                                            nP = $"{ccc.P.Nombre} {ccc.P.Apellido}";
+                                        }
+                                    }
+                                    prodMicro.Add((fV, nP, oR, d.Cantidad, d.Subtotal));
+                                }
+                                microStore[prodMicroId] = prodMicro;
+                                microTitulos[prodMicroId] = $"{g.Key} (producto)";
+                                <tr class="macro-row table-success">
+                                    <td><button type="button" class="btn-micro btn btn-sm btn-outline-primary" data-micro="@prodMicroId" title="Ver detalle">+</button></td>
                                     <td>@g.Key (producto)</td>
-                                    <td>@g.Sum(x => x.Cantidad)</td>
-                                    <td>@g.Sum(x => x.Subtotal)</td>
+                                    <td>@prodCantidad</td>
+                                    <td>Q @prodTotal</td>
                                 </tr>
                             }
+                            granCantidadFoot = granCantidad;
+                            granTotalFoot = granTotal;
                         }
                     }
                 </tbody>
+                @if (Model.EsServicio)
+                {
+                    <tfoot class="table-dark fw-bold">
+                        <tr>
+                            <td></td>
+                            <td>Total general</td>
+                            <td>@granCantidadFoot</td>
+                            <td>Q @granTotalFoot</td>
+                        </tr>
+                    </tfoot>
+                }
             </table>
+            @if (Model.EsServicio && microStore.Count > 0)
+            {
+                <div style="display:none;" aria-hidden="true">
+                    @foreach (var kv in microStore)
+                    {
+                        var titulo = microTitulos.ContainsKey(kv.Key) ? microTitulos[kv.Key] : kv.Key;
+                        <div id="@kv.Key">
+                            <div class="micro-wrap p-2">
+                                <div class="small text-muted mb-1">Micro: @titulo — @kv.Value.Count movimiento(s)</div>
+                                <table class="table table-sm table-bordered mb-0 micro-table">
+                                    <thead class="table-light">
+                                        <tr><th>Fecha</th><th>Paciente</th><th>Origen</th><th>Cantidad</th><th>Subtotal</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            var tonoA = false;
+                                            DateTime? fechaGrupo = null;
+                                        }
+                                        @foreach (var m in kv.Value)
+                                        {
+                                            if (fechaGrupo == null || m.Fecha.Date != fechaGrupo.Value)
+                                            {
+                                                tonoA = !tonoA;
+                                                fechaGrupo = m.Fecha.Date;
+                                            }
+                                            <tr class="@(tonoA ? "micro-fecha-a" : "micro-fecha-b")">
+                                                <td>@m.Fecha.ToString("dd/MM/yyyy")</td>
+                                                <td>@m.Paciente</td>
+                                                <td>@m.Origen</td>
+                                                <td>@m.Cantidad</td>
+                                                <td>Q @m.Subtotal</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
         </div>
     </div>
 </div>
+
+@if (Model.EsServicio)
+{
+    // Gráfico de barras APILADAS: cada día se divide por servicio (detalle micro ya calculado) + segmento Productos.
+    var diasRango = new List<DateTime>();
+    for (var dd = Model.From.Date; dd <= Model.To.Date; dd = dd.AddDays(1)) { diasRango.Add(dd); }
+    var diasLabels = diasRango.Select(x => x.ToString("dd/MM")).ToList();
+    var paletaChart = new[] { "#B39DDB", "#F48FB1", "#80DEEA", "#A5D6A7", "#FFCC80", "#90CAF9", "#CE93D8", "#80CBC4" };
+    var dsList = new List<object>();
+    var idxColor = 0;
+    foreach (var kv in microStore)
+    {
+        if (kv.Key.StartsWith("micro-prod-")) { continue; }
+        var porDia = diasRango.Select(dt => kv.Value.Where(m => m.Fecha.Date == dt).Sum(m => m.Subtotal)).ToList();
+        if (porDia.All(v => v == 0)) { continue; }
+        var tituloDs = microTitulos.ContainsKey(kv.Key) ? microTitulos[kv.Key] : kv.Key;
+        dsList.Add(new { label = tituloDs, data = porDia, backgroundColor = paletaChart[idxColor % paletaChart.Length] });
+        idxColor++;
+    }
+    var prodMovs = microStore.Where(kv => kv.Key.StartsWith("micro-prod-")).SelectMany(kv => kv.Value).ToList();
+    if (prodMovs.Count > 0)
+    {
+        var porDiaProd = diasRango.Select(dt => prodMovs.Where(m => m.Fecha.Date == dt).Sum(m => m.Subtotal)).ToList();
+        if (porDiaProd.Any(v => v != 0))
+        {
+            dsList.Add(new { label = "Productos", data = porDiaProd, backgroundColor = paletaChart[idxColor % paletaChart.Length] });
+        }
+    }
+    <div class="card w-100 shadow-lg mt-5" id="grafica-card">
+        <div class="card-header bg-ligth">
+            <h3 class="titulo">Ingresos por día</h3>
+        </div>
+        <div class="card-body pt-0">
+            <div class="small text-muted mb-1">Cada barra se divide por servicio (detalle). Pase el cursor para ver el desglose.</div>
+            <input type="hidden" id="labelsIngresosDia" value='@Html.Raw(JsonConvert.SerializeObject(diasLabels))'>
+            <input type="hidden" id="datasetsIngresosDia" value='@Html.Raw(JsonConvert.SerializeObject(dsList))'>
+            <div class="grafica-servicios-wrap">
+                <canvas id="graficaIngresosServicios"></canvas>
+            </div>
+        </div>
+    </div>
+}
 
 <!-- Modal Detalles total -->
 <div class="modal fade" id="detallesTotalModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -311,5 +516,6 @@
 
 @section Scripts{
     <partial name="_DataTablesButtonsScripts" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.0.1/chart.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="~/js/pages/reportes.js" asp-append-version="true"></script>
 }

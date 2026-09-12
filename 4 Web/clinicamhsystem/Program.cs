@@ -1,6 +1,7 @@
 using ClinicaServices;
 using clinicaWeb.Extensions;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Localization;
 //using DinkToPdf;
 //using DinkToPdf.Contracts;
 using Microsoft.EntityFrameworkCore;
@@ -56,6 +57,18 @@ builder.Host.ConfigureServices(services =>
 builder.Services.WebInjections(builder.Configuration);
 
 var app = builder.Build();
+
+// Fechas, monedas y validaciones en español (Guatemala): evita que el servidor en inglés
+// muestre fechas como M/d/yyyy. Los formatos explícitos dd/MM/yyyy ya quedan fijos.
+var culturaEsGt = new System.Globalization.CultureInfo("es-GT");
+System.Globalization.CultureInfo.DefaultThreadCurrentCulture = culturaEsGt;
+System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = culturaEsGt;
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture(culturaEsGt),
+    SupportedCultures = new List<System.Globalization.CultureInfo> { culturaEsGt },
+    SupportedUICultures = new List<System.Globalization.CultureInfo> { culturaEsGt }
+});
 
 // Configure the HTTP request pipeline.
 app.UseExceptionHandler("/Home/Error");

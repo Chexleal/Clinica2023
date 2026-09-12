@@ -40,7 +40,7 @@
                                     <a class="option btn btn-outline-info ms-2" href="@Url.Action("DescargarPdf","ContinuarConsulta",new{consultaId=item.IdConsulta})" target="_blank">Imprimir Receta</a>
                                 </div>
                             </td>
-                            <td>@DateManager.GetDisplayDate(item.FechaCreacion, item.Fecha).ToString("d")</td>
+                            <td>@DateManager.GetDisplayDate(item.FechaCreacion, item.Fecha).ToString("dd/MM/yyyy", System.Globalization.CultureInfo.GetCultureInfo("es-GT"))</td>
                             <td>@item.PacienteInformacion.Nombre</td>
                             <td>@item.PacienteInformacion.Apellido</td>
                             <td>@item.MotivoConsulta</td>

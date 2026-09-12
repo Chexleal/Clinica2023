@@ -37,7 +37,7 @@ public class ReportesController : Controller
     }
 
     [HttpPost]
-    public ActionResult Paciente(Guid IdPaciente, DateTime from_dt, DateTime to_dt)
+    public ActionResult Paciente(Guid IdPaciente, DateTime from_dt, DateTime to_dt, bool incluirSinIngresos = false)
     {
 
         //DateTime from_dt = DateTime.ParseExact(from, "yyyy-MM-dd", null);
@@ -49,11 +49,11 @@ public class ReportesController : Controller
         paciente.Consulta = _consultaServices.GetAllByPacienteId(paciente.IdPaciente, from_dt, to_dt);
         //var consultas = _pacienteServices.GetConsultasFiltradas();   
 
-        return View("Index",new ReportesViewModel { Pacientes = pacientes, Servicios = servicios, Paciente = paciente, From = from_dt, To = to_dt, EsServicio = false});
+        return View("Index",new ReportesViewModel { Pacientes = pacientes, Servicios = servicios, Paciente = paciente, From = from_dt, To = to_dt, EsServicio = false, IncluirSinIngresos = incluirSinIngresos });
     }
 
     [HttpPost]
-    public ActionResult Servicios(DateTime from_dt, DateTime to_dt)
+    public ActionResult Servicios(DateTime from_dt, DateTime to_dt, bool incluirSinIngresos = false)
     {
         var consultas = _consultaServices.GetAllByRangeWithPaciente(from_dt, to_dt);
         var pacientes = consultas.Select(c => c.PacienteInformacion).DistinctBy(p => p.IdPaciente).ToList();
@@ -68,8 +68,15 @@ public class ReportesController : Controller
         var ventaDetalles = ventas.SelectMany(v => _ventaService.GetDetalles(v.IdVenta)).ToList();
         ViewBag.Ventas = ventas;
         ViewBag.VentaDetalles = ventaDetalles;
+        // Mapa IdPaciente -> "Nombre Apellido" para resolver el paciente de cada venta
+        // (incluye pacientes sin consulta en el rango y ventas de mostrador).
+        ViewBag.PacientesMap = _pacienteServices.GetAll()
+            .ToDictionary(p => p.IdPaciente, p => $"{p.Nombre} {p.Apellido}");
+        // Dropdown de "Por Paciente" debe seguir mostrando el catálogo completo
+        // aunque Model.Pacientes se reutiliza filtrado para el reporte.
+        ViewBag.PacientesDropdown = _pacienteServices.GetAll();
 
-        return View("Index", new ReportesViewModel { Pacientes = pacientes, Servicios = servicios, Detalles = detalles, EsServicio = true, From = from_dt, To = to_dt, Paciente = null});
+        return View("Index", new ReportesViewModel { Pacientes = pacientes, Servicios = servicios, Detalles = detalles, EsServicio = true, From = from_dt, To = to_dt, Paciente = null, IncluirSinIngresos = incluirSinIngresos });
     }
 
     [HttpPost]

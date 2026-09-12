@@ -29,7 +29,7 @@
                     @foreach (var item in Model.Consultas.Where(x => x.Terminada))
                     {
                         <tr>
-                            <td>@DateManager.GetDisplayDate(item.FechaCreacion, item.Fecha).ToString("d")</td>
+                            <td>@DateManager.GetDisplayDate(item.FechaCreacion, item.Fecha).ToString("dd/MM/yyyy", System.Globalization.CultureInfo.GetCultureInfo("es-GT"))</td>
                             <td>@item.PacienteInformacion.Nombre</td>
                             <td>@item.PacienteInformacion.Apellido</td>
                             <td>@item.MotivoConsulta</td>

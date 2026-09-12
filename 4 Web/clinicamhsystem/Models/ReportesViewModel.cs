@@ -15,5 +15,8 @@ namespace clinicaWeb.Models
 
         public DateTime From { get; set; }
         public DateTime To { get; set; }
+
+        /// <summary>Por Servicios: incluir filas sin movimientos en el rango. Default apagado.</summary>
+        public bool IncluirSinIngresos { get; set; }
     }
 }

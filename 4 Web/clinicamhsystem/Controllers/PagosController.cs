@@ -53,7 +53,7 @@ public class PagosController : ErrorHandlingController
         ViewBag.PacienteNombre = paciente is null ? "—" : $"{paciente.Nombre} {paciente.Apellido}".Trim();
         ViewBag.AtencionFecha = consulta is null
             ? "—"
-            : DateManager.GetDisplayDate(consulta.FechaCreacion, consulta.Fecha).ToString("dd/MM/yyyy HH:mm");
+            : DateManager.GetDisplayDate(consulta.FechaCreacion, consulta.Fecha).ToString("dd/MM/yyyy HH:mm", System.Globalization.CultureInfo.GetCultureInfo("es-GT"));
         // Se mantiene Detalles (legado) vacío para compatibilidad con reportes antiguos.
         return new DetallesPagarViewModel
         {

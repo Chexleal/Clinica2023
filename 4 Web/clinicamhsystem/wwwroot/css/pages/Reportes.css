@@ -12,7 +12,7 @@
 .btn-total{
     background-color: transparent;
     border: none;
-    color:dodgerblue;
+    color:#0077c0;
     text-decoration: underline;
 }
 
@@ -35,17 +35,33 @@
 }
 
 tr.shown .btn-micro {
-    background-color: #0d6efd;
+    background-color: #0077c0;
+    border-color: #0077c0;
     color: #fff;
 }
 
 .micro-wrap {
     background-color: #f8f9fa;
-    border-left: 3px solid #0d6efd;
+    border-left: 3px solid #0077c0;
 }
 
 .micro-table {
     background-color: #fff;
+}
+
+/* Filas de productos: tinte azul sutil de la app (antes verde table-success) */
+.fila-producto td {
+    background-color: #e9f2f9;
+}
+
+/* Tabs del área: pestaña activa en azul de la app */
+#myTabs .nav-link {
+    color: #495057;
+}
+
+#myTabs .nav-link.active {
+    color: #0077c0;
+    font-weight: 600;
 }
 
 /* Micro: alternar fondo muy sutil por grupo de fecha */

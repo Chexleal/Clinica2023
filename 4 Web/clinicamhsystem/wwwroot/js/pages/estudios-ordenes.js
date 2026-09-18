@@ -39,11 +39,11 @@ $(function(){
         e.preventDefault();
         const form = this;
         const fd = new FormData(form);
-        // validación tamaño (100MB)
+        // validación tamaño (250MB)
         const files = $('#filesEstudio')[0].files;
         if(!files.length){ Swal.fire({icon:'warning', title:'Selecciona archivo'}); return; }
         let total = 0; for(let f of files) total += f.size;
-        if(total > 100*1024*1024){ Swal.fire({icon:'warning', title:'Muy grande', text:'Máx 100MB'}); return; }
+        if(total > 250*1024*1024){ Swal.fire({icon:'warning', title:'Muy grande', text:'Máx 250MB'}); return; }
 
         const btn = $(form).find('button[type="submit"]');
         btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Subiendo...');
@@ -75,19 +75,86 @@ $(function(){
         });
     });
 
-    // Ver DICOM en visor (desde storage)
-    $(document).on('click', '#contEstudios .btn-ver-dicom, #contEstudiosModal .btn-ver-dicom', function(){
-        const idArch = $(this).data('arch');
-        const nombre = $(this).data('nombre');
-        const url = `/ContinuarConsulta/GetArchivoBytes?idArchivo=${idArch}`;
-        // usar viewer global
-        if(window.DicomViewer && window.DicomViewer.loadFromUrl){
-            window.DicomViewer.loadFromUrl(url, nombre);
-            $('html, body').animate({scrollTop: $('#cardRadiografias').offset().top - 20}, 300);
+    // Ver DICOM en visor (desde storage) - clic o programático (dock/side/modaI)
+    function verDicomEnVisor(idArch, nombre) {
+        if (!idArch) return;
+        if (window.DicomViewer && window.DicomViewer.loadFromArch) {
+            window.DicomViewer.loadFromArch(idArch, nombre);
+        } else if (window.DicomViewer && window.DicomViewer.loadFromUrl) {
+            const url = `/ContinuarConsulta/GetArchivoBytes?idArchivo=${idArch}`;
+            window.DicomViewer.loadFromUrl(url, nombre, idArch);
+            const card = document.getElementById('cardRadiografias');
+            if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } else {
             window.open(`/ContinuarConsulta/VerArchivo?idArchivo=${idArch}`, '_blank');
         }
+    }
+    $(document).on('click', '#contEstudios .btn-ver-dicom, #contEstudiosModal .btn-ver-dicom, #rxSideList .rx-side-item', function(){
+        const idArch = $(this).data('arch');
+        const nombre = $(this).data('nombre');
+        verDicomEnVisor(idArch, nombre);
     });
+
+    // Drag source: RX hacia el visor (HTML5 DnD)
+    $(document).on('dragstart', '.rx-drag-source, .rx-side-item', function(e){
+        const idArch = $(this).data('arch');
+        const nombre = $(this).data('nombre') || 'estudio.dcm';
+        try {
+            const payload = JSON.stringify({ idArch: idArch, nombre: nombre });
+            const dt = e.originalEvent.dataTransfer;
+            dt.setData('text/rx-arch', payload);
+            dt.setData('text/plain', payload);
+            dt.effectAllowed = 'copy';
+        } catch (err) { /* noop */ }
+        $(this).addClass('dragging');
+    });
+    $(document).on('dragend', '.rx-drag-source, .rx-side-item', function(){
+        $(this).removeClass('dragging');
+    });
+
+    // ===== Lista cuadrada sobre el visor + playlist =====
+    function collectRxFromModal() {
+        const items = [];
+        $('#contEstudiosModal .btn-ver-dicom').each(function(){
+            const idArch = $(this).data('arch');
+            const nombre = $(this).data('nombre') || 'estudio.dcm';
+            if (idArch) items.push({ idArch: String(idArch), nombre: String(nombre) });
+        });
+        // dedup por idArch manteniendo orden
+        const seen = new Set();
+        return items.filter(x => !seen.has(x.idArch) && (seen.add(x.idArch), true));
+    }
+    function shortName(n, max = 26) {
+        if (!n) return 'RX';
+        // recorta extensión para que quepa en la fila
+        const base = n.replace(/\.(dcm|dicom)$/i, '');
+        const label = base || n;
+        return label.length > max ? label.substring(0, max - 1) + '…' : label;
+    }
+    function rebuildRxDock() {
+        const side = $('#rxSideList');
+        if (!side.length) return;
+        const items = collectRxFromModal();
+        // playlist del visor
+        if (window.DicomViewer && window.DicomViewer.setPlaylist) window.DicomViewer.setPlaylist(items);
+        if (!items.length) {
+            side.html('<span class="text-muted small">Sin RX.</span>');
+            const c = $('#dcmCounter'); if (c.length) c.text('0/0');
+            return;
+        }
+        side.html(items.map((x, i) =>
+            `<button type="button" class="rx-side-item" draggable="true" data-arch="${x.idArch}" data-nombre="${$('<div>').text(x.nombre).html()}" title="${$('<div>').text(x.nombre).html()}&#10;Clic para ver • Arrastra al visor"><span class="rx-chip-num">${i + 1}</span><i class="fa-solid fa-x-ray text-info"></i><span class="rx-thumb-name">${$('<div>').text(shortName(x.nombre)).html()}</span><i class="fa-solid fa-grip-vertical rx-thumb-grip"></i></button>`
+        ).join(''));
+    }
+    window.RxDock = { rebuild: rebuildRxDock, ver: verDicomEnVisor };
+    // build inicial (el modal ya viene renderizado desde servidor)
+    rebuildRxDock();
+    // re-build si el modal cambia por AJAX posterior
+    setTimeout(rebuildRxDock, 800);
+
+    // Botones del visor: prev-next
+    $(document).on('click', '#btnDcmPrev', function(){ if (window.DicomViewer) window.DicomViewer.prev(); });
+    $(document).on('click', '#btnDcmNext', function(){ if (window.DicomViewer) window.DicomViewer.next(); });
 
     // Eliminar archivo
     $(document).on('click', '#contEstudios .btn-del-arch, #contEstudiosModal .btn-del-arch', function(){

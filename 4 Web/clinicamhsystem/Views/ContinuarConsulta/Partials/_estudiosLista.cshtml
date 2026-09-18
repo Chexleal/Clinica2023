@@ -27,14 +27,14 @@ else
                     <div class="mt-2">
                         <small class="text-muted"><i class="fa-solid fa-user"></i> @(est.CreadoPorNombre ?? est.CreadoPor?.ToString() ?? "-") · @est.FechaCreacion?.ToString("dd/MM/yyyy") | <i class="fa-solid fa-hard-drive"></i> @(est.Archivos.Sum(a=>a.TamanoBytes) >= 1048576 ? (est.Archivos.Sum(a=>a.TamanoBytes)/1048576.0).ToString("0.0") + " MB" : (est.Archivos.Sum(a=>a.TamanoBytes)/1024.0).ToString("0") + " KB") total</small>
                     </div>
-                    <ul class="list-group list-group-flush mt-2">
+                    <ul class="list-group list-group-flush mt-2 rx-arch-list">
                     @foreach(var arch in est.Archivos)
                     {
-                        <li class="list-group-item d-flex justify-content-between align-items-center py-1 px-0" style="font-size:13px">
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-1 px-0 rx-arch-item" style="font-size:13px" data-arch="@arch.IdArchivo" data-nombre="@arch.NombreOriginal" data-mime="@arch.MimeType">
                             <span class="text-truncate me-2" title="@arch.NombreOriginal">@{ var icono = arch.MimeType.Contains("dicom") ? "fa-x-ray text-info" : arch.MimeType.Contains("pdf") ? "fa-file-pdf text-danger" : arch.MimeType.StartsWith("image/") ? "fa-file-image text-success" : "fa-file-lines text-secondary"; }<i class="fa-solid @icono"></i> @arch.NombreOriginal <small class="text-muted">(@((arch.TamanoBytes/1024.0).ToString("0")) KB)</small></span>
                             <span class="btn-group btn-group-sm">
                                 @if(arch.MimeType.Contains("dicom")){
-                                    <button type="button" class="btn btn-outline-dark btn-sm btn-ver-dicom" data-arch="@arch.IdArchivo" data-nombre="@arch.NombreOriginal" title="Ver en visor"><i class="fa-solid fa-eye"></i></button>
+                                    <button type="button" class="btn btn-outline-dark btn-sm btn-ver-dicom rx-drag-source" draggable="true" data-arch="@arch.IdArchivo" data-nombre="@arch.NombreOriginal" title="Clic para ver • Arrastra al visor"><i class="fa-solid fa-eye"></i> <i class="fa-solid fa-grip-vertical text-muted"></i></button>
                                 } else {
                                     <a href="@Url.Action("VerArchivo", controllerVer, new{idArchivo=arch.IdArchivo})" target="_blank" class="btn btn-outline-secondary btn-sm" title="Ver"><i class="fa-solid fa-eye"></i></a>
                                 }

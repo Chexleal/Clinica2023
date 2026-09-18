@@ -10,12 +10,43 @@
 }
 #dicomImage {
     width: 100%;
-    height: 520px;
+    height: 700px;
     position: relative;
     background: #000;
 }
 #dicomImage canvas { display: block; }
-#dicomOverlay {
+#dicomImageB {
+    width: 100%;
+    height: 700px;
+    position: relative;
+    background: #000;
+}
+#dicomImageB canvas { display: block; }
+/* Comparar A/B: dos vistas lado a lado */
+#dcmPanes { display: block; }
+.dcm-pane { position: relative; min-width: 0; border: 2px solid transparent; border-radius: 6px; }
+.dcm-pane.active { border-color: #2d8f77; }
+.dcm-pane-label {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 15;
+    background: rgba(0,0,0,.6);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 12px;
+    border-radius: 10px;
+    pointer-events: none;
+}
+.dcm-pane.active .dcm-pane-label { background: #2d8f77; }
+#dicomViewerContainer.compare #dcmPanes { display: flex; gap: 8px; }
+#dicomViewerContainer.compare .dcm-pane { flex: 1 1 0; }
+#dicomViewerContainer.compare #dicomImage,
+#dicomViewerContainer.compare #dicomImageB { height: 560px; }
+#dicomViewerContainer.compare #dcmToolbar { max-width: 60%; }
+#dicomOverlay, #dicomOverlayB {
     position: absolute;
     top: 8px;
     left: 8px;
@@ -45,6 +76,11 @@
     border-radius: 8px;
     background: #f8fbff;
     transition: all 0.2s;
+    min-height: 700px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 #dcmPlaceholder.dragover {
     background: #e6f0ff;
@@ -62,10 +98,21 @@
 #dicomViewerContainer:fullscreen {
     background: #000;
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: center;
 }
-#dicomViewerContainer:fullscreen #dicomImage {
+#dicomViewerContainer:fullscreen #dcmPanes {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    height: 100vh;
+}
+#dicomViewerContainer:fullscreen .dcm-pane {
+    flex: 1 1 0;
+    height: 100vh;
+}
+#dicomViewerContainer:fullscreen #dicomImage,
+#dicomViewerContainer:fullscreen #dicomImageB {
     height: 100vh;
 }
 .dcm-badge-wl { font-size: 11px; }
@@ -102,3 +149,66 @@
 #dcmWlPanel label { min-width: 170px; margin: 0; }
 #dcmWlPanel input[type=range] { width: 170px; accent-color: #2d8f77; }
 #dcmWlPanel small { color: #7df9d4; }
+
+/* ===== Lista RX a la izquierda del visor (ContinuarConsulta) ===== */
+.rx-side-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 700px;
+    overflow-y: auto;
+    border: 1px solid #e3e8ef;
+    border-radius: 8px;
+    background: #f8fbff;
+    padding: 8px;
+}
+.rx-side-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 12px;
+    text-align: left;
+    cursor: grab;
+    user-select: none;
+}
+.rx-side-item:active { cursor: grabbing; }
+.rx-side-item .rx-thumb-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.rx-side-item .rx-thumb-grip { color: #94a3b8; }
+.rx-chip-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #2d8f77;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+}
+.rx-side-item:hover { border-color: #2d8f77; }
+.rx-side-item.active { border-color: #2d8f77; background: #e6f4ef; font-weight: 600; }
+.rx-side-item.dragging { opacity: .5; }
+#dicomViewerContainer.dcm-dragover {
+    outline: 3px dashed #2d8f77;
+    outline-offset: -6px;
+}
+#cardRadiografias.dcm-highlight {
+    animation: dcmFlash 1.4s ease;
+}
+@keyframes dcmFlash {
+    0% { box-shadow: 0 0 0 0 rgba(45,143,119,.55); }
+    100% { box-shadow: 0 0 0 14px rgba(45,143,119,0); }
+}
+.rx-drag-source { cursor: grab; }

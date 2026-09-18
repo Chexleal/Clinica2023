@@ -60,7 +60,7 @@
                             <div class="form-group">
                                 <label class="control-label">&nbsp;</label>
                                 <div class="d-flex align-items-center gap-2 mt-2">
-                                    <input type="checkbox" id="chkSinIngresos" style="width:18px;height:18px;accent-color:#0d6efd;" @(Model.IncluirSinIngresos ? "checked" : null) />
+                                    <input type="checkbox" id="chkSinIngresos" style="width:18px;height:18px;accent-color:#0077c0;" @(Model.IncluirSinIngresos ? "checked" : null) />
                                     <label for="chkSinIngresos" class="control-label mb-0">Incluir servicios sin ingresos</label>
                                 </div>
                                 <input type="hidden" name="incluirSinIngresos" id="hidSinIngresos" value="@(Model.IncluirSinIngresos ? "true" : "false")" />
@@ -124,7 +124,7 @@
 <!-- Reportes section -->
 <div class="card w-100 shadow-lg mt-5" id="reporte">
 
-    <div class="card-header bg-ligth">
+    <div class="card-header bg-white">
         <h3 class="titulo">Reporte</h3>
     </div>
     <div class="card-body">
@@ -190,8 +190,12 @@
             @if (Model.EsServicio)
             {
                 <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
-                    <span class="text-muted small">Vista <strong>macro</strong>: resumen por servicio. Vista <strong>micro</strong>: pulse <strong>+</strong> para ver el detalle por fecha / paciente / origen.</span>
-                    <button type="button" id="expandAllMicro" class="btn btn-sm btn-outline-primary ms-auto">Ver micro (expandir todo)</button>
+                    <span class="text-muted small">Vista <strong>macro</strong>: resumen. Vista <strong>micro</strong>: pulse <strong>+</strong> para ver el detalle.</span>
+                    <div class="btn-group ms-auto" role="group" aria-label="Vista del reporte">
+                        <button type="button" id="vistaServicioBtn" class="btn btn-sm btn-primary">Por servicio</button>
+                        <button type="button" id="vistaDiaBtn" class="btn btn-sm btn-outline-primary">Por día</button>
+                    </div>
+                    <button type="button" id="expandAllMicro" class="btn btn-sm btn-outline-secondary">Ver micro (expandir todo)</button>
                     <button type="button" id="collapseAllMicro" class="btn btn-sm btn-outline-secondary">Ver macro (colapsar todo)</button>
                 </div>
             }
@@ -199,7 +203,10 @@
                 // Almacén vista micro (macro = resumen). Se llena en el tbody y se renderiza en divs ocultos FUERA de la tabla.
                 var microStore = new Dictionary<string, List<(DateTime Fecha, string Paciente, string Origen, decimal Cantidad, decimal Subtotal)>>();
                 var microTitulos = new Dictionary<string, string>();
+                // Vista inversa: macro por día, micro resumido por servicio.
+                var microDiaStore = new Dictionary<string, List<(string Servicio, decimal Cantidad, decimal Subtotal)>>();
             }
+            <div id="vistaServicio">
             <table id="table" class="table table-striped ">
                 <thead class="table-dark">
                     @{
@@ -390,7 +397,7 @@
                                 }
                                 microStore[prodMicroId] = prodMicro;
                                 microTitulos[prodMicroId] = $"{g.Key} (producto)";
-                                <tr class="macro-row table-success">
+                                <tr class="macro-row fila-producto">
                                     <td><button type="button" class="btn-micro btn btn-sm btn-outline-primary" data-micro="@prodMicroId" title="Ver detalle">+</button></td>
                                     <td>@g.Key (producto)</td>
                                     <td>@prodCantidad</td>
@@ -414,6 +421,66 @@
                     </tfoot>
                 }
             </table>
+            </div><!-- /vistaServicio -->
+            @if (Model.EsServicio)
+            {
+                // Vista inversa: macro por día (solo días con movimiento), micro resumido por servicio.
+                <div id="vistaDia" style="display:none;">
+                    <table id="tableDia" class="table table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th></th>
+                                <th>Fecha</th>
+                                <th>Cantidad</th>
+                                <th>Total</th>
+                            </tr>
+                            <script>
+                                var custom_file_name_dia = "Resumen Por Dia (@Model.From.ToString("dd-MM-yyyy") - @Model.To.ToString("dd-MM-yyyy"))"
+                                var num_columns_dia = [1, 2, 3]
+                            </script>
+                        </thead>
+                        <tbody>
+                            @{
+                                var diasConMov = microStore.SelectMany(kv => kv.Value.Select(m => m.Fecha.Date)).Distinct().OrderBy(f => f).ToList();
+                                var granCantDia = 0M;
+                                var granTotDia = 0M;
+                                foreach (var dia in diasConMov)
+                                {
+                                    var filasDia = new List<(string Servicio, decimal Cantidad, decimal Subtotal)>();
+                                    foreach (var kv in microStore)
+                                    {
+                                        var esProd = kv.Key.StartsWith("micro-prod-");
+                                        var nombreFila = esProd ? "Productos" : (microTitulos.ContainsKey(kv.Key) ? microTitulos[kv.Key] : kv.Key);
+                                        var movsDia = kv.Value.Where(m => m.Fecha.Date == dia).ToList();
+                                        if (movsDia.Count == 0) { continue; }
+                                        filasDia.Add((nombreFila, movsDia.Sum(m => m.Cantidad), movsDia.Sum(m => m.Subtotal)));
+                                    }
+                                    var cantDia = filasDia.Sum(f => f.Cantidad);
+                                    var totDia = filasDia.Sum(f => f.Subtotal);
+                                    granCantDia += cantDia;
+                                    granTotDia += totDia;
+                                    var microDiaId = $"micro-dia-{dia:yyyyMMdd}";
+                                    microDiaStore[microDiaId] = filasDia;
+                                    <tr class="macro-row">
+                                        <td><button type="button" class="btn-micro-dia btn btn-sm btn-outline-primary" data-micro="@microDiaId" title="Ver detalle">+</button></td>
+                                        <td>@dia.ToString("dd/MM/yyyy")</td>
+                                        <td>@cantDia</td>
+                                        <td>Q @totDia</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                        <tfoot class="table-dark fw-bold">
+                            <tr>
+                                <td></td>
+                                <td>Total general</td>
+                                <td>@granCantDia</td>
+                                <td>Q @granTotDia</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            }
             @if (Model.EsServicio && microStore.Count > 0)
             {
                 <div style="display:none;" aria-hidden="true">
@@ -445,6 +512,29 @@
                                                 <td>@m.Origen</td>
                                                 <td>@m.Cantidad</td>
                                                 <td>Q @m.Subtotal</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+                    @foreach (var kvd in microDiaStore)
+                    {
+                        <div id="@kvd.Key">
+                            <div class="micro-wrap p-2">
+                                <div class="small text-muted mb-1">Detalle del día — @kvd.Value.Count servicio(s)</div>
+                                <table class="table table-sm table-bordered mb-0 micro-table">
+                                    <thead class="table-light">
+                                        <tr><th>Servicio</th><th>Cantidad</th><th>Subtotal</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var f in kvd.Value)
+                                        {
+                                            <tr>
+                                                <td>@f.Servicio</td>
+                                                <td>@f.Cantidad</td>
+                                                <td>Q @f.Subtotal</td>
                                             </tr>
                                         }
                                     </tbody>
@@ -486,7 +576,7 @@
         }
     }
     <div class="card w-100 shadow-lg mt-5" id="grafica-card">
-        <div class="card-header bg-ligth">
+        <div class="card-header bg-white">
             <h3 class="titulo">Ingresos por día</h3>
         </div>
         <div class="card-body pt-0">

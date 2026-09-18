@@ -24,6 +24,18 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+// Subida de estudios: 250MB por request (RX DICOM pesan 15-25MB c/u).
+// Sin esto Kestrel/IIS rechazan con 413 antes de llegar al controller,
+// aunque el action tenga [RequestSizeLimit].
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(o =>
+{
+    o.MultipartBodyLengthLimit = 262_144_000;
+});
+builder.WebHost.ConfigureKestrel(o =>
+{
+    o.Limits.MaxRequestBodySize = 262_144_000;
+});
+
 builder.Services.AddDbContext<ClinicaContext>(options =>
 {
     // La cadena viene de configuración (nunca hardcodeada):

@@ -219,7 +219,8 @@ public class ContinuarConsulta : Controller
 
     // ===== ESTUDIOS (carga con metadata: ruta, peso, quien, fecha) =====
     [HttpPost]
-    [RequestSizeLimit(100_000_000)]
+    [RequestSizeLimit(262_144_000)]
+    [RequestFormLimits(MultipartBodyLengthLimit = 262_144_000)]
     public async Task<IActionResult> UploadEstudio(Guid idPaciente, Guid? idConsulta, Guid? idOrden, TipoEstudio tipo, string titulo, string descripcion, List<IFormFile> files)
     {
         if (files == null || files.Count == 0) return BadRequest("Sin archivos");

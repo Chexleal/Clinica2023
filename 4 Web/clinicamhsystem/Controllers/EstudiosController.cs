@@ -31,6 +31,8 @@ public class EstudiosController : Controller
         ViewBag.ConsultaId = consultaId;
         ViewBag.PacienteActual = pacienteId.HasValue ? _pacienteServices.GetPacienteById(pacienteId.Value) : null;
         ViewBag.OrdenesPendientes = pacienteId.HasValue ? _ordenService.GetPendientesByPaciente(pacienteId.Value) : new List<OrdenEstudio>();
+        // Para poder agregar faltantes a una orden ya atendida: el combo muestra TODAS (no solo pendientes)
+        ViewBag.OrdenesPaciente = pacienteId.HasValue ? _ordenService.GetByPaciente(pacienteId.Value) : new List<OrdenEstudio>();
         var ordenSel = idOrden.HasValue ? _ordenService.GetById(idOrden.Value) : null;
         if (ordenSel != null && pacienteId.HasValue && ordenSel.IdPaciente != pacienteId.Value) ordenSel = null;
         ViewBag.IdOrdenSeleccionada = ordenSel?.IdOrden;
@@ -78,14 +80,15 @@ public class EstudiosController : Controller
         var todas = _ordenService.GetAllPendientes()
             .Select(o => new { idOrden = o.IdOrden, idPaciente = o.IdPaciente, fecha = o.FechaOrden.ToString("dd/MM/yyyy"), paciente = o.Paciente != null ? o.Paciente.Nombre + " " + o.Paciente.Apellido : "-", tipo = o.Tipo.ToString(), indicacion = o.Indicacion }).ToList();
         var pac = idPaciente.HasValue
-            ? _ordenService.GetPendientesByPaciente(idPaciente.Value)
-                .Select(o => new { idOrden = o.IdOrden, fecha = o.FechaOrden.ToString("dd/MM/yyyy"), tipo = o.Tipo.ToString(), tipoId = (int)o.Tipo, indicacion = o.Indicacion }).ToList<object>()
+            ? _ordenService.GetByPaciente(idPaciente.Value)
+                .Select(o => new { idOrden = o.IdOrden, fecha = o.FechaOrden.ToString("dd/MM/yyyy"), tipo = o.Tipo.ToString(), tipoId = (int)o.Tipo, indicacion = o.Indicacion, estado = o.Estado.ToString(), estadoId = (int)o.Estado }).ToList<object>()
             : new List<object>();
         return Json(new { todas = todas, paciente = pac });
     }
 
     [HttpPost]
-    [RequestSizeLimit(100_000_000)]
+    [RequestSizeLimit(262_144_000)]
+    [RequestFormLimits(MultipartBodyLengthLimit = 262_144_000)]
     public async Task<IActionResult> UploadEstudio(Guid idPaciente, Guid? idConsulta, Guid? idOrden, TipoEstudio tipo, string titulo, string descripcion, List<IFormFile> files)
     {
         if (files == null || !files.Any()) return BadRequest("Sin archivos");

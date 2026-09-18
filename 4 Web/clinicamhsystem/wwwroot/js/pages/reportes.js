@@ -70,7 +70,7 @@ $(document).ready(function () {
         });
     }
 
-    // Vista micro: detalle expandible por fila (macro = resumen).
+    // Vista micro (servicios): detalle expandible por fila (macro = resumen).
     // El contenido micro vive en divs ocultos FUERA de la tabla (#micro-xxx).
     function getMicroHtml(microId) {
         var holder = document.getElementById(microId);
@@ -81,52 +81,136 @@ $(document).ready(function () {
         return holder.innerHTML;
     }
 
-    $('#table').on('click', '.btn-micro', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        if (!dt) return;
-        var btn = $(this);
+    function toggleMicro(btn, row) {
         var tr = btn.closest('tr');
-        var row = dt.row(tr);
-        if (!row || !row.node()) return;
-        var microId = btn.data('micro');
         if (row.child.isShown()) {
             row.child.hide();
             tr.removeClass('shown');
             btn.text('+');
         } else {
-            var html = getMicroHtml(microId);
-            if (html === null) return;
-            row.child(html).show();
-            tr.addClass('shown');
-            btn.text('−');
-        }
-    });
-
-    $('#expandAllMicro').click(function () {
-        if (!dt) return;
-        $('#table .btn-micro').each(function () {
-            var btn = $(this);
-            var tr = btn.closest('tr');
-            var row = dt.row(tr);
-            if (!row || !row.node() || row.child.isShown()) return;
             var html = getMicroHtml(btn.data('micro'));
             if (html === null) return;
             row.child(html).show();
             tr.addClass('shown');
             btn.text('−');
+        }
+    }
+
+    function vistaActivaEsDia() {
+        return $('#vistaDia').length > 0 && $('#vistaDia').is(':visible');
+    }
+
+    function dtActivo() {
+        return vistaActivaEsDia() && dtDia ? dtDia : dt;
+    }
+
+    $('#table').on('click', '.btn-micro', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!dt) return;
+        var row = dt.row($(this).closest('tr'));
+        if (!row || !row.node()) return;
+        toggleMicro($(this), row);
+    });
+
+    // Vista inversa (por día): se inicializa perezosamente al mostrarla por primera vez.
+    var dtDia = null;
+    function ensureDiaTable() {
+        if (dtDia) return dtDia;
+        if (!$('#tableDia').length) return null;
+        var colsDia = (typeof num_columns_dia !== 'undefined' && num_columns_dia.length) ? num_columns_dia : [1, 2, 3];
+        var fileDia = (typeof custom_file_name_dia !== 'undefined') ? custom_file_name_dia : 'Reporte por dia';
+        dtDia = $('#tableDia').DataTable({
+            "ordering": true,
+            "lengthChange": true,
+            dom: '<"table-title">Bfrtip',
+            "pageLength": 20,
+            "language": DataTablesCommon.withLanguage(),
+            "columnDefs": [{ "orderable": false, "targets": 0 }],
+            buttons: [
+                {
+                    extend: 'copy',
+                    text: '<i class="fas fa-clone"></i><strong>Copiar</strong>',
+                    className: "btn btn-outline-dark",
+                    title: "Reporte",
+                    exportOptions: { columns: colsDia, page: 'all' }
+                },
+                {
+                    extend: 'excel',
+                    text: '<i class="fas fa-file-excel"></i><strong>Excel </strong>',
+                    className: "btn btn-outline-dark",
+                    title: encabezado,
+                    filename: fileDia,
+                    exportOptions: { columns: colsDia, modifier: { page: 'all', search: 'none' } }
+                }, {
+                    extend: 'pdf',
+                    text: '<i class="fas fa-file-excel"></i><strong>PDf </strong>',
+                    className: "btn btn-outline-dark",
+                    title: encabezado,
+                    filename: fileDia,
+                    exportOptions: { columns: colsDia }
+                }]
+        });
+        return dtDia;
+    }
+
+    $('#vistaDia').on('click', '.btn-micro-dia', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!dtDia) return;
+        var row = dtDia.row($(this).closest('tr'));
+        if (!row || !row.node()) return;
+        toggleMicro($(this), row);
+    });
+
+    // Toggle Por servicio / Por día (se recuerda la última vista).
+    function setVista(vista) {
+        var esDia = vista === 'dia';
+        if (!$('#vistaDia').length) return;
+        $('#vistaServicio').toggle(!esDia);
+        $('#vistaDia').toggle(esDia);
+        $('#vistaServicioBtn').toggleClass('btn-primary', !esDia).toggleClass('btn-outline-primary', esDia);
+        $('#vistaDiaBtn').toggleClass('btn-primary', esDia).toggleClass('btn-outline-primary', !esDia);
+        if (esDia) {
+            var t = ensureDiaTable();
+            if (t) t.columns.adjust().draw(false);
+        } else if (dt) {
+            dt.columns.adjust().draw(false);
+        }
+        try { localStorage.setItem('reportesVista', vista); } catch (err) {}
+    }
+    $('#vistaServicioBtn').click(function () { setVista('servicio'); });
+    $('#vistaDiaBtn').click(function () { setVista('dia'); });
+    var vistaGuardada = 'servicio';
+    try { vistaGuardada = localStorage.getItem('reportesVista') || 'servicio'; } catch (err) {}
+    if (vistaGuardada === 'dia') setVista('dia');
+
+    $('#expandAllMicro').click(function () {
+        var api = dtActivo();
+        if (!api) return;
+        var scope = vistaActivaEsDia() ? '#vistaDia' : '#table';
+        $(scope + ' .btn-micro, ' + scope + ' .btn-micro-dia').each(function () {
+            var btn = $(this);
+            var row = api.row(btn.closest('tr'));
+            if (!row || !row.node() || row.child.isShown()) return;
+            var html = getMicroHtml(btn.data('micro'));
+            if (html === null) return;
+            row.child(html).show();
+            btn.closest('tr').addClass('shown');
+            btn.text('−');
         });
     });
 
     $('#collapseAllMicro').click(function () {
-        if (!dt) return;
-        $('#table .btn-micro').each(function () {
+        var api = dtActivo();
+        if (!api) return;
+        var scope = vistaActivaEsDia() ? '#vistaDia' : '#table';
+        $(scope + ' .btn-micro, ' + scope + ' .btn-micro-dia').each(function () {
             var btn = $(this);
-            var tr = btn.closest('tr');
-            var row = dt.row(tr);
+            var row = api.row(btn.closest('tr'));
             if (!row || !row.node() || !row.child.isShown()) return;
             row.child.hide();
-            tr.removeClass('shown');
+            btn.closest('tr').removeClass('shown');
             btn.text('+');
         });
     });

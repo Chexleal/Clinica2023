@@ -107,6 +107,10 @@ public class EstudiosController : Controller
         var estudios = idOrden.HasValue ? _estudioService.GetByOrden(idOrden.Value) : _estudioService.GetByPaciente(idPaciente);
         ViewBag.TodasPendientes = _ordenService.GetAllPendientes();
         ViewBag.EsSoloLectura = false;
+        // Contexto para el botón "Agregar más" del cuadrito de abajo
+        ViewBag.IdOrden = idOrden;
+        ViewBag.IdPaciente = idPaciente;
+        ViewBag.TipoOrden = (int)tipo;
         return PartialView("~/Views/ContinuarConsulta/Partials/_estudiosLista.cshtml", estudios);
     }
 
@@ -115,6 +119,10 @@ public class EstudiosController : Controller
     {
         var estudios = _estudioService.GetByOrden(idOrden);
         ViewBag.EsSoloLectura = false;
+        var orden = _ordenService.GetById(idOrden);
+        ViewBag.IdOrden = idOrden;
+        ViewBag.IdPaciente = orden?.IdPaciente;
+        ViewBag.TipoOrden = orden != null ? (int)orden.Tipo : (estudios.FirstOrDefault() != null ? (int)estudios.FirstOrDefault()!.Tipo : 1);
         return PartialView("~/Views/ContinuarConsulta/Partials/_estudiosLista.cshtml", estudios);
     }
 
@@ -137,20 +145,41 @@ public class EstudiosController : Controller
     }
 
     [HttpPost]
+    [RequestSizeLimit(262_144_000)]
+    [RequestFormLimits(MultipartBodyLengthLimit = 262_144_000)]
+    public async Task<IActionResult> AppendArchivos(Guid idEstudio, List<IFormFile> files)
+    {
+        if (files == null || !files.Any()) return BadRequest("Sin archivos");
+        var est = _estudioService.GetById(idEstudio);
+        if (est == null) return NotFound("Estudio no encontrado");
+        await _estudioService.AgregarArchivosAsync(idEstudio, files, _storage);
+        // Refrescar el mismo grupo (la misma orden) para que el faltante aparezca en su tarjeta
+        var estudios = est.IdOrden.HasValue ? _estudioService.GetByOrden(est.IdOrden.Value) : _estudioService.GetByPaciente(est.IdPaciente);
+        ViewBag.TodasPendientes = _ordenService.GetAllPendientes();
+        ViewBag.EsSoloLectura = false;
+        ViewBag.IdOrden = est.IdOrden;
+        ViewBag.IdPaciente = est.IdPaciente;
+        ViewBag.TipoOrden = (int)est.Tipo;
+        return PartialView("~/Views/ContinuarConsulta/Partials/_estudiosLista.cshtml", estudios);
+    }
+
+    [HttpPost]
     public async Task<IActionResult> DeleteArchivo(Guid idArchivo)
     {
         var arch = _estudioService.GetArchivo(idArchivo);
-        Guid? idPaciente = arch?.Estudio?.IdPaciente;
-        if (!idPaciente.HasValue && arch != null)
-        {
-            idPaciente = _estudioService.GetById(arch.IdEstudio)?.IdPaciente;
-        }
+        var estCtx = arch != null ? _estudioService.GetById(arch.IdEstudio) : null;
+        Guid? idPaciente = arch?.Estudio?.IdPaciente ?? estCtx?.IdPaciente;
+        var idOrdenCtx = estCtx?.IdOrden;
         await _estudioService.DeleteArchivoAsync(idArchivo, _storage);
         if (idPaciente.HasValue)
         {
-            var estudios = _estudioService.GetByPaciente(idPaciente.Value);
+            // Si venía de una orden, mantener el contexto para no perder el botón "Agregar más"
+            var estudios = idOrdenCtx.HasValue ? _estudioService.GetByOrden(idOrdenCtx.Value) : _estudioService.GetByPaciente(idPaciente.Value);
             ViewBag.TodasPendientes = _ordenService.GetAllPendientes();
         ViewBag.EsSoloLectura = false;
+            ViewBag.IdOrden = idOrdenCtx;
+            ViewBag.IdPaciente = idPaciente;
+            ViewBag.TipoOrden = estCtx != null ? (int)estCtx.Tipo : 1;
             return PartialView("~/Views/ContinuarConsulta/Partials/_estudiosLista.cshtml", estudios);
         }
         return Json(new { ok=true });
@@ -161,12 +190,17 @@ public class EstudiosController : Controller
     {
         var est = _estudioService.GetById(idEstudio);
         var idPaciente = est?.IdPaciente;
+        var idOrdenCtx = est?.IdOrden;
+        var tipoCtx = est != null ? (int)est.Tipo : 1;
         await _estudioService.DeleteEstudioAsync(idEstudio, _storage);
         if (idPaciente.HasValue)
         {
-            var estudios = _estudioService.GetByPaciente(idPaciente.Value);
+            var estudios = idOrdenCtx.HasValue ? _estudioService.GetByOrden(idOrdenCtx.Value) : _estudioService.GetByPaciente(idPaciente.Value);
             ViewBag.TodasPendientes = _ordenService.GetAllPendientes();
         ViewBag.EsSoloLectura = false;
+            ViewBag.IdOrden = idOrdenCtx;
+            ViewBag.IdPaciente = idPaciente;
+            ViewBag.TipoOrden = tipoCtx;
             return PartialView("~/Views/ContinuarConsulta/Partials/_estudiosLista.cshtml", estudios);
         }
         return Json(new { ok=true });

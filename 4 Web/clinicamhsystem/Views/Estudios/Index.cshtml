@@ -109,6 +109,37 @@
         </div>
     </div>
 </div>
+
+<div class="card shadow-lg p-3 mb-4" id="cardOrdenesPaciente">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h5 class="mb-0"><i class="fa-solid fa-list-check" style="color:#2d8f77"></i> Órdenes de @(ViewBag.PacienteActual != null ? ViewBag.PacienteActual.Nombre + " " + ViewBag.PacienteActual.Apellido : "este paciente") <span class="badge bg-secondary">@ordenes.Count</span></h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0">
+                <thead class="table-light"><tr><th>Fecha</th><th>Tipo</th><th>Indicación</th><th>Estado</th><th></th></tr></thead>
+                <tbody id="tbodyPaciente">
+                @if(!ordenes.Any()){
+                    <tr class="empty-row"><td colspan="5" class="text-muted small">Sin órdenes para este paciente.</td></tr>
+                }
+                @foreach(var o in ordenes.OrderByDescending(x => x.FechaOrden)){
+                    <tr>
+                        <td><small>@o.FechaOrden.ToString("dd/MM/yyyy")</small></td>
+                        <td><span class="badge bg-info">@o.Tipo</span></td>
+                        <td><small>@o.Indicacion</small></td>
+                        <td>
+                            @if(o.Estado==EstadoOrden.Completada){<span class="badge bg-success">Completada</span>}
+                            else if(o.Estado==EstadoOrden.Pendiente){<span class="badge bg-warning text-dark">Pendiente</span>}
+                            else{<span class="badge bg-secondary">@o.Estado</span>}
+                        </td>
+                        <td class="text-end"><button type="button" class="btn btn-sm btn-outline-primary btn-sel-orden-carga" data-id="@o.IdOrden" data-tipo="@((int)o.Tipo)"><i class="fa-solid fa-check"></i> Seleccionar</button></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 }
 
 @section Scripts{
@@ -208,6 +239,28 @@
                 },
                 error: function(xhr){ Swal.fire({icon:'error', title:'Error', text: xhr.responseText}); },
                 complete: function(){ btn.prop('disabled',false).html('<i class="fa-solid fa-upload"></i> Subir'); }
+            });
+        });
+        // Agregar RX faltantes al MISMO estudio (misma tarjeta/grupo, no grupo aparte)
+        $(document).on('click', '#contEstudiosCarga .btn-add-more-estudio', function(){
+            $(this).closest('div').find('.input-add-more-estudio').trigger('click');
+        });
+        $(document).on('change', '#contEstudiosCarga .input-add-more-estudio', function(){
+            const input = this;
+            const $input = $(input);
+            if(!input.files.length) return;
+            let total = 0; for(let f of input.files) total += f.size;
+            if(total > 250*1024*1024){ Swal.fire({icon:'warning', title:'Muy grande', text:'Máx 250MB por subida'}); $input.val(''); return; }
+            const fd = new FormData();
+            fd.append('idEstudio', $input.data('estudio'));
+            for(let f of input.files) fd.append('files', f);
+            const btn = $('#contEstudiosCarga .btn-add-more-estudio[data-estudio="' + $input.data('estudio') + '"]').prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Agregando...');
+            $.ajax({
+                url: '@Url.Action("AppendArchivos","Estudios")',
+                type: 'POST', data: fd, processData: false, contentType: false,
+                success: function(html){ $('#contEstudiosCarga').html(html); Swal.fire({icon:'success', title:'Agregados al mismo grupo', timer:1200, showConfirmButton:false}); },
+                error: function(xhr){ Swal.fire({icon:'error', title:'Error', text: xhr.responseText}); },
+                complete: function(){ btn.prop('disabled', false).html('<i class="fa-solid fa-plus"></i> Agregar'); }
             });
         });
         // delete en esta vista también usa Estudios controller (delegado a parcial)

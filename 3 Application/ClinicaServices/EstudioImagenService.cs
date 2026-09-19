@@ -11,6 +11,7 @@ public interface IEstudioImagenService
     ArchivoEstudio? GetArchivo(Guid idArchivo);
     List<EstudioImagen> GetByOrden(Guid idOrden);
     Task<EstudioImagen> CrearEstudioAsync(EstudioImagen estudio, List<Microsoft.AspNetCore.Http.IFormFile> files, Storage.IStorageService storage);
+    Task<int> AgregarArchivosAsync(Guid idEstudio, List<Microsoft.AspNetCore.Http.IFormFile> files, Storage.IStorageService storage);
     Task DeleteArchivoAsync(Guid idArchivo, Storage.IStorageService storage);
     Task DeleteEstudioAsync(Guid idEstudio, Storage.IStorageService storage);
 }
@@ -95,6 +96,31 @@ public class EstudioImagenService : IEstudioImagenService
         }
         await _db.SaveChangesAsync();
         return estudio;
+    }
+
+    public async Task<int> AgregarArchivosAsync(Guid idEstudio, List<Microsoft.AspNetCore.Http.IFormFile> files, Storage.IStorageService storage)
+    {
+        var estudio = _db.EstudiosImagen.FirstOrDefault(e => e.IdEstudio == idEstudio);
+        if (estudio == null) return 0;
+
+        foreach (var file in files)
+        {
+            var safeName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+            var relPath = $"estudios/{estudio.IdPaciente}/{estudio.IdEstudio}/{safeName}";
+            await storage.SaveAsync(file, relPath);
+
+            _db.ArchivosEstudio.Add(new ArchivoEstudio
+            {
+                IdArchivo = Guid.NewGuid(),
+                IdEstudio = estudio.IdEstudio,
+                NombreOriginal = file.FileName,
+                RutaStorage = relPath,
+                MimeType = storage.GetContentType(file.FileName),
+                TamanoBytes = file.Length
+            });
+        }
+        await _db.SaveChangesAsync();
+        return files.Count;
     }
 
     public async Task DeleteArchivoAsync(Guid idArchivo, Storage.IStorageService storage)

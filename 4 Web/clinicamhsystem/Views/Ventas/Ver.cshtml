@@ -1,0 +1,81 @@
+@model clinicamhsystem.Models.DetallesPagarViewModel
+@{
+    ViewData["Title"] = "Ver venta " + Model.Venta?.Folio;
+    var venta = Model.Venta!;
+    var esPendiente = venta.Estado == "Pendiente";
+    var esCerrada = venta.Estado == "Pagada" || venta.Estado == "Pendiente de pago";
+    var esReabierta = esPendiente && !string.IsNullOrWhiteSpace(venta.Observaciones) && venta.Observaciones.Contains("Reabierta");
+}
+<script>
+    var COBRO_MODO = 'pagina';
+    var COBRO_ORIGEN = 'ver';
+</script>
+<div class="card shadow-lg mt-4">
+    <div class="card-header bg-white d-flex flex-wrap align-items-center gap-2">
+        <h4 class="mb-0">Venta <span class="badge bg-secondary ms-2">@venta.Folio</span></h4>
+        <span class="badge @(venta.Estado == "Pagada" ? "bg-success" : venta.Estado == "Anulada" ? "bg-secondary" : "bg-warning text-dark") ms-2">@venta.Estado</span>
+        <span class="small text-muted ms-2">@(venta.IdConsulta.HasValue ? "Atada a consulta" : "Mostrador") · @venta.Fecha.ToString("g") · Paciente: @(ViewBag.PacienteNombre ?? "—")</span>
+        <a href="@Url.Action("Index","Ventas")" class="btn btn-outline-secondary btn-sm ms-auto">Volver al listado</a>
+    </div>
+    <div class="card-body">
+        @if (TempData["ErrorCobro"] is string msgErr && !string.IsNullOrWhiteSpace(msgErr))
+        {
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">@msgErr<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        }
+        @if (TempData["OkCobro"] is string msgOk && !string.IsNullOrWhiteSpace(msgOk))
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">@msgOk<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        }
+        @if (!string.IsNullOrWhiteSpace(venta.Observaciones))
+        {
+            <div class="alert alert-light border small"><b>Observaciones / auditoría:</b> @venta.Observaciones</div>
+        }
+        @if (esReabierta)
+        {
+            <div class="alert alert-warning py-2 small">
+                <i class="fa-solid fa-pen-to-square me-1"></i>
+                <b>Venta reabierta para corrección:</b> usa <b>Corregir</b> en la línea con mal precio (pide motivo), o agrega/quita conceptos como en caja. Al terminar usa <b>Completar pago</b>.
+            </div>
+        }
+        @if (esCerrada)
+        {
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <form asp-action="Reabrir" asp-controller="Ventas" asp-route-id="@venta.IdVenta" method="post" class="border rounded-3 p-3 bg-light h-100">
+                        <div class="fw-bold mb-1"><i class="fa-solid fa-pen-to-square me-1"></i>Reabrir para corregir precio / cantidad</div>
+                        <p class="small text-muted mb-2">Reingresa el inventario descontado, deja la venta en <b>Pendiente</b> y conserva los pagos. Después corrige las líneas y usa <b>Completar pago</b>.</p>
+                        <label class="small fw-bold">Motivo (obligatorio)</label>
+                        <input name="motivo" class="form-control form-control-sm" maxlength="200" required placeholder="Ej: precio mal puesto, era Q150 no Q100" list="motivosCorreccion" />
+                        <button class="btn btn-warning btn-sm mt-2" type="submit">Reabrir venta</button>
+                    </form>
+                </div>
+                <div class="col-md-6">
+                    <form asp-action="Devolver" asp-controller="Ventas" asp-route-id="@venta.IdVenta" method="post" class="border rounded-3 p-3 h-100"
+                          onsubmit="return confirm('¿Devolver y anular esta venta? Reingresa el inventario.');">
+                        <div class="fw-bold mb-1 text-danger"><i class="fa-solid fa-rotate-left me-1"></i>Devolver todo y anular</div>
+                        <p class="small text-muted mb-2">Anula la venta y devuelve productos al inventario. Si era de consulta, la consulta vuelve a por cobrar.</p>
+                        <label class="small fw-bold">Motivo (obligatorio)</label>
+                        <input name="motivo" class="form-control form-control-sm" maxlength="200" required placeholder="Ej: cobro duplicado, devolución total" list="motivosCorreccion" />
+                        <button class="btn btn-outline-danger btn-sm mt-2" type="submit">Devolver y anular</button>
+                    </form>
+                </div>
+            </div>
+            <datalist id="motivosCorreccion">
+                <option value="Error de precio"></option>
+                <option value="Cantidad incorrecta"></option>
+                <option value="Concepto equivocado"></option>
+                <option value="Cobro duplicado"></option>
+                <option value="Devolución del paciente"></option>
+                <option value="Otro"></option>
+            </datalist>
+        }
+        @if (venta.Estado == "Anulada")
+        {
+            <div class="alert alert-secondary py-2 small mb-0">Venta anulada (solo lectura).</div>
+        }
+        <partial name="_CobroDetalle" model="Model" />
+    </div>
+</div>
+@section Scripts{
+    <script src="~/js/pages/pagos.js" asp-append-version="true"></script>
+}

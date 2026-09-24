@@ -11,6 +11,15 @@ function cobroEsPagina() {
     return typeof COBRO_MODO !== 'undefined' && COBRO_MODO === 'pagina';
 }
 
+// Vista Ver (corrección) reusa el diseño de caja: las acciones vuelven a Ver, no a Cobrar.
+function cobroEsCorreccion() {
+    return cobroEsPagina() && typeof COBRO_ORIGEN !== 'undefined' && COBRO_ORIGEN === 'ver';
+}
+
+function conOrigen(url) {
+    return cobroEsCorreccion() ? url + '?origen=ver' : url;
+}
+
 function submitCobro(formId, url) {
     var f = document.getElementById(formId);
     f.setAttribute('action', url);
@@ -62,7 +71,7 @@ $('.btn-detalles').click(function () {
 });
 
 function addDetalle() {
-    if (cobroEsPagina()) { submitCobro('agregarDetalleForm', '/Ventas/AddServicio'); return; }
+    if (cobroEsPagina()) { submitCobro('agregarDetalleForm', conOrigen('/Ventas/AddServicio')); return; }
     var detalle = $("#agregarDetalleForm").serialize();
     //console.log("serializado: " + detalle);
     $.ajax({
@@ -134,7 +143,7 @@ function presetPrecioProducto(force) {
 $(document).on('change', '#idProducto', function () { presetPrecioProducto(true); });
 
 function addProducto() {
-    if (cobroEsPagina()) { submitCobro('agregarProductoForm', '/Ventas/AddProducto'); return; }
+    if (cobroEsPagina()) { submitCobro('agregarProductoForm', conOrigen('/Ventas/AddProducto')); return; }
     var detalle = $("#agregarProductoForm").serialize();
     $.ajax({
         url: '/Pagos/AddProducto',
@@ -148,7 +157,7 @@ function addProducto() {
 }
 
 function addProductoExpress() {
-    if (cobroEsPagina()) { submitCobro('productoExpressForm', '/Ventas/AddProductoExpress'); return; }
+    if (cobroEsPagina()) { submitCobro('productoExpressForm', conOrigen('/Ventas/AddProductoExpress')); return; }
     var detalle = $("#productoExpressForm").serialize();
     $.ajax({
         url: '/Pagos/AddProductoExpress',
@@ -183,7 +192,7 @@ function setTipoExpress(t) {
 }
 
 function addServicioExpress() {
-    if (cobroEsPagina()) { submitCobro('servicioExpressForm', '/Ventas/AddServicioExpress'); return; }
+    if (cobroEsPagina()) { submitCobro('servicioExpressForm', conOrigen('/Ventas/AddServicioExpress')); return; }
     $.ajax({
         url: '/Pagos/AddServicioExpress',
         type: 'POST',
@@ -204,7 +213,7 @@ function actualizarReferencia() {
 $(document).on('change', '#idMetodoPago', actualizarReferencia);
 
 function addPago() {
-    if (cobroEsPagina()) { submitCobro('agregarPagoForm', '/Ventas/AgregarPago'); return; }
+    if (cobroEsPagina()) { submitCobro('agregarPagoForm', conOrigen('/Ventas/AgregarPago')); return; }
     $.ajax({
         url: '/Pagos/AgregarPago',
         type: 'POST',
@@ -221,7 +230,9 @@ function addPago() {
 
 function deletePago(idPago) {
     if (cobroEsPagina()) {
-        $.post('/Ventas/EliminarPago', { idPago: idPago, idVenta: $("#IdVentaRef").val() }, function () { location.reload(); });
+        var data = { idPago: idPago, idVenta: $("#IdVentaRef").val() };
+        if (cobroEsCorreccion()) { data.origen = 'ver'; }
+        $.post('/Ventas/EliminarPago', data, function () { location.reload(); });
         return;
     }
     $.ajax({
@@ -243,11 +254,12 @@ function aplicarDescuento(idVentaDetalle) {
     if (cobroEsPagina()) {
         var f = document.createElement('form');
         f.method = 'POST';
-        f.action = '/Ventas/AplicarDescuento';
+        f.action = conOrigen('/Ventas/AplicarDescuento');
         f.innerHTML = '<input hidden name="id" value="' + idVentaDetalle + '">'
             + '<input hidden name="idVenta" value="' + $("#IdVentaRef").val() + '">'
             + '<input hidden name="descuento">'
-            + '<input hidden name="motivoDescuento">';
+            + '<input hidden name="motivoDescuento">'
+            + (cobroEsCorreccion() ? '<input hidden name="origen" value="ver">' : '');
         f.querySelector('[name=descuento]').value = monto;
         f.querySelector('[name=motivoDescuento]').value = motivo;
         document.body.appendChild(f);
@@ -267,7 +279,9 @@ function aplicarDescuento(idVentaDetalle) {
 
 function deleteVentaDetalle(id) {
     if (cobroEsPagina()) {
-        $.post('/Ventas/EliminarDetalle', { id: id, idVenta: $("#IdVentaRef").val() }, function () { location.reload(); });
+        var data = { id: id, idVenta: $("#IdVentaRef").val() };
+        if (cobroEsCorreccion()) { data.origen = 'ver'; }
+        $.post('/Ventas/EliminarDetalle', data, function () { location.reload(); });
         return;
     }
     var idConsulta = $("#IdConsulta").val();

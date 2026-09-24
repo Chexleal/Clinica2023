@@ -25,12 +25,27 @@ public class VentasController : ErrorHandlingController
         _metodos = metodos;
     }
 
-    public ActionResult Index()
+    public ActionResult Index(DateTime? from, DateTime? to, string? texto = null)
     {
         var pendientes = _ventas.GetPendientes();
         ViewBag.PendientesPago = _ventas.GetPendientesPago();
         ViewBag.SaldosPendientesPago = ((List<ClinicaDomain.Venta>)ViewBag.PendientesPago)
             .ToDictionary(v => v.IdVenta, v => _ventas.SaldoPendiente(v.IdVenta));
+        // Historial (Pagadas + Anuladas): por defecto últimos 30 días para corregir errores.
+        var f = (from ?? DateTime.Today.AddDays(-30)).Date;
+        var t = (to ?? DateTime.Today).Date;
+        var historial = _ventas.GetHistorial(f, t, texto);
+        ViewBag.HistorialFrom = f.ToString("yyyy-MM-dd");
+        ViewBag.HistorialTo = t.ToString("yyyy-MM-dd");
+        ViewBag.HistorialTexto = texto ?? string.Empty;
+        ViewBag.Historial = historial;
+        ViewBag.SaldosHistorial = historial.ToDictionary(v => v.IdVenta, v => _ventas.SaldoPendiente(v.IdVenta));
+        try
+        {
+            ViewBag.PacientesMap = _pacientes.GetAll()
+                .ToDictionary(p => p.IdPaciente, p => $"{p.Nombre} {p.Apellido}".Trim());
+        }
+        catch { ViewBag.PacientesMap = new Dictionary<Guid, string>(); }
         return View(pendientes);
     }
 
@@ -73,8 +88,14 @@ public class VentasController : ErrorHandlingController
         return View(modelo);
     }
 
+    /// <summary>Vuelve a Cobrar o a Ver según el origen (la vista Ver reabierta usa el mismo diseño de caja).</summary>
+    private ActionResult RedirectCobro(Guid idVenta, string? origen) =>
+        string.Equals(origen, "ver", StringComparison.OrdinalIgnoreCase)
+            ? RedirectToAction("Ver", new { id = idVenta })
+            : RedirectToAction("Cobrar", new { id = idVenta });
+
     [HttpPost]
-    public ActionResult AddServicio(Guid idVenta, Guid idMotivoCobro, decimal cantidad, string? precio, string? descripcion, string? descuento, string? motivoDescuento)
+    public ActionResult AddServicio(Guid idVenta, Guid idMotivoCobro, decimal cantidad, string? precio, string? descripcion, string? descuento, string? motivoDescuento, string? origen = null)
     {
         try
         {
@@ -88,11 +109,11 @@ public class VentasController : ErrorHandlingController
             _ventas.AddServicio(idVenta, idMotivoCobro, cantidad <= 0 ? 1 : cantidad, precioParsed, descripcion, descParsed, motivoDescuento);
         }
         catch (Exception ex) { RegistrarError(ex); TempData["ErrorCobro"] = ex.Message; }
-        return RedirectToAction("Cobrar", new { id = idVenta });
+        return RedirectCobro(idVenta, origen);
     }
 
     [HttpPost]
-    public ActionResult AddProducto(Guid idVenta, Guid idProducto, decimal cantidad, Guid? loteId, string? precio, string? descripcion, bool esSobrePedido = false, string? descuento = null, string? motivoDescuento = null)
+    public ActionResult AddProducto(Guid idVenta, Guid idProducto, decimal cantidad, Guid? loteId, string? precio, string? descripcion, bool esSobrePedido = false, string? descuento = null, string? motivoDescuento = null, string? origen = null)
     {
         try
         {
@@ -106,70 +127,70 @@ public class VentasController : ErrorHandlingController
             _ventas.AddProducto(idVenta, idProducto, cantidad <= 0 ? 1 : cantidad, loteId, precioParsed, descripcion, esSobrePedido, descParsed, motivoDescuento);
         }
         catch (Exception ex) { RegistrarError(ex); TempData["ErrorCobro"] = ex.Message; }
-        return RedirectToAction("Cobrar", new { id = idVenta });
+        return RedirectCobro(idVenta, origen);
     }
 
     [HttpPost]
-    public ActionResult AddProductoExpress(Guid idVenta, string nombre, decimal precio, decimal cantidad, decimal? costo, string? descuento = null, string? motivoDescuento = null)
+    public ActionResult AddProductoExpress(Guid idVenta, string nombre, decimal precio, decimal cantidad, decimal? costo, string? descuento = null, string? motivoDescuento = null, string? origen = null)
     {
         try { _ventas.AgregarProductoExpress(idVenta, nombre, precio, cantidad <= 0 ? 1 : cantidad, costo, null, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento); }
         catch (Exception ex) { RegistrarError(ex); TempData["ErrorCobro"] = ex.Message; }
-        return RedirectToAction("Cobrar", new { id = idVenta });
+        return RedirectCobro(idVenta, origen);
     }
 
     [HttpPost]
-    public ActionResult AddServicioExpress(Guid idVenta, string descripcion, decimal precio, decimal cantidad, string? descuento = null, string? motivoDescuento = null)
+    public ActionResult AddServicioExpress(Guid idVenta, string descripcion, decimal precio, decimal cantidad, string? descuento = null, string? motivoDescuento = null, string? origen = null)
     {
         try { _ventas.AgregarServicioExpress(idVenta, descripcion, precio, cantidad <= 0 ? 1 : cantidad, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento); }
         catch (Exception ex) { RegistrarError(ex); TempData["ErrorCobro"] = ex.Message; }
-        return RedirectToAction("Cobrar", new { id = idVenta });
+        return RedirectCobro(idVenta, origen);
     }
 
     [HttpPost]
-    public ActionResult AplicarDescuento(Guid id, Guid idVenta, string? descuento, string? motivoDescuento)
+    public ActionResult AplicarDescuento(Guid id, Guid idVenta, string? descuento, string? motivoDescuento, string? origen = null)
     {
         try { _ventas.AplicarDescuento(id, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento); }
         catch (Exception ex) { RegistrarError(ex); TempData["ErrorCobro"] = ex.Message; }
-        return RedirectToAction("Cobrar", new { id = idVenta });
+        return RedirectCobro(idVenta, origen);
     }
 
     [HttpPost]
-    public ActionResult EliminarDetalle(Guid id, Guid idVenta)
+    public ActionResult EliminarDetalle(Guid id, Guid idVenta, string? origen = null)
     {
         try { _ventas.RemoveDetalle(id); }
         catch (Exception ex) { RegistrarError(ex); }
-        return RedirectToAction("Cobrar", new { id = idVenta });
+        return RedirectCobro(idVenta, origen);
     }
 
     [HttpPost]
-    public ActionResult AgregarPago(Guid idVenta, decimal monto, Guid metodoId, string? referencia)
+    public ActionResult AgregarPago(Guid idVenta, decimal monto, Guid metodoId, string? referencia, string? origen = null)
     {
         try { _ventas.AgregarPago(idVenta, metodoId, monto, referencia); }
         catch (Exception ex) { RegistrarError(ex); TempData["ErrorCobro"] = ex.Message; }
-        return RedirectToAction("Cobrar", new { id = idVenta });
+        return RedirectCobro(idVenta, origen);
     }
 
     [HttpPost]
-    public ActionResult EliminarPago(Guid idPago, Guid idVenta)
+    public ActionResult EliminarPago(Guid idPago, Guid idVenta, string? origen = null)
     {
         try { _ventas.EliminarPago(idPago); }
         catch (Exception ex) { RegistrarError(ex); TempData["ErrorCobro"] = ex.Message; }
-        return RedirectToAction("Cobrar", new { id = idVenta });
+        return RedirectCobro(idVenta, origen);
     }
 
     [HttpPost]
-    public ActionResult Finalizar(Guid id)
+    public ActionResult Finalizar(Guid id, string? origen = null)
     {
         try { _ventas.FinalizarPago(id); }
-        catch (Exception ex) { RegistrarError(ex); TempData["ErrorCobro"] = ex.Message; return RedirectToAction("Cobrar", new { id }); }
+        catch (Exception ex) { RegistrarError(ex); TempData["ErrorCobro"] = ex.Message; return RedirectCobro(id, origen); }
         return RedirectToAction("Index");
     }
 
     [HttpPost]
-    public ActionResult PendientePago(Guid id, string responsable, DateTime? fechaPromesa)
+    public ActionResult PendientePago(Guid id, string responsable, DateTime? fechaPromesa, string? origen = null)
     {
         try { _ventas.DejarPendientePago(id, responsable, fechaPromesa); }
-        catch (Exception ex) { RegistrarError(ex); TempData["ErrorCobro"] = ex.Message; return RedirectToAction("Cobrar", new { id }); }
+        catch (Exception ex) { RegistrarError(ex); TempData["ErrorCobro"] = ex.Message; return RedirectCobro(id, origen); }
         return RedirectToAction("Index");
     }
 
@@ -191,6 +212,74 @@ public class VentasController : ErrorHandlingController
         try { _ventas.Anular(id); }
         catch (Exception ex) { RegistrarError(ex); }
         return RedirectToAction("Index");
+    }
+
+    /// <summary>Historial + corrección: ver una venta pagada/anulada con sus líneas, pagos y motivo.</summary>
+    [HttpGet]
+    public ActionResult Ver(Guid id)
+    {
+        var venta = _ventas.GetVenta(id);
+        if (venta is null) return RedirectToAction("Index");
+        ViewBag.CobroModo = "pagina";
+        ViewBag.CobroOrigen = "ver";
+        string? nombrePaciente = null;
+        if (venta.IdPaciente.HasValue)
+        {
+            var pac = _pacientes.GetPacienteById(venta.IdPaciente.Value);
+            if (pac is not null) nombrePaciente = $"{pac.Nombre} {pac.Apellido}".Trim();
+        }
+        ViewBag.PacienteNombre = nombrePaciente ?? "—";
+        var modelo = new clinicamhsystem.Models.DetallesPagarViewModel
+        {
+            consulta = null,
+            Servicios = _servicios.GetAll(),
+            Detalles = new List<DetalleCobro>(),
+            Venta = venta,
+            VentaDetalles = _ventas.GetDetalles(id),
+            Productos = _productos.GetAll(),
+            Metodos = _metodos.GetAll(),
+            Pagos = _ventas.GetPagos(id)
+        };
+        return View(modelo);
+    }
+
+    [HttpPost]
+    public ActionResult Reabrir(Guid id, string motivo)
+    {
+        try { _ventas.Reabrir(id, motivo); TempData["OkCobro"] = "Venta reabierta: corrige líneas y vuelve a finalizar."; }
+        catch (Exception ex) { RegistrarError(ex); TempData["ErrorCobro"] = ex.Message; }
+        return RedirectToAction("Ver", new { id });
+    }
+
+    [HttpPost]
+    public ActionResult Devolver(Guid id, string motivo)
+    {
+        try { _ventas.DevolverAnular(id, motivo); return RedirectToAction("Index"); }
+        catch (Exception ex) { RegistrarError(ex); TempData["ErrorCobro"] = ex.Message; return RedirectToAction("Ver", new { id }); }
+    }
+
+    [HttpPost]
+    public ActionResult CorregirDetalle(Guid id, Guid idVenta, decimal cantidad, decimal precio, string motivo)
+    {
+        try { _ventas.CorregirDetalle(id, cantidad, precio, motivo); TempData["OkCobro"] = "Línea corregida."; }
+        catch (Exception ex) { RegistrarError(ex); TempData["ErrorCobro"] = ex.Message; }
+        return RedirectToAction("Ver", new { id = idVenta });
+    }
+
+    [HttpPost]
+    public ActionResult QuitarDetalle(Guid id, Guid idVenta)
+    {
+        try { _ventas.RemoveDetalle(id); TempData["OkCobro"] = "Línea eliminada."; }
+        catch (Exception ex) { RegistrarError(ex); TempData["ErrorCobro"] = ex.Message; }
+        return RedirectToAction("Ver", new { id = idVenta });
+    }
+
+    [HttpPost]
+    public ActionResult DescuentoVer(Guid id, Guid idVenta, string? descuento, string? motivoDescuento)
+    {
+        try { _ventas.AplicarDescuento(id, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento); TempData["OkCobro"] = "Descuento actualizado."; }
+        catch (Exception ex) { RegistrarError(ex); TempData["ErrorCobro"] = ex.Message; }
+        return RedirectToAction("Ver", new { id = idVenta });
     }
 
     [HttpGet]

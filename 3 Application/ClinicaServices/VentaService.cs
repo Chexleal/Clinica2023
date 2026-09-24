@@ -12,6 +12,10 @@ public interface IVentaService
     List<Venta> GetPendientes(int top = 100);
     List<Venta> GetPendientesPago(int top = 100);
     List<Venta> GetPorRango(DateTime from, DateTime to);
+    /// <summary>Historial para correcciones: Pagadas + Anuladas (libres y de consulta), con filtro texto por folio/observaciones.</summary>
+    List<Venta> GetHistorial(DateTime from, DateTime to, string? texto = null, int top = 200);
+    List<Venta> GetVentasPorPaciente(Guid idPaciente, int top = 200);
+    List<Venta> GetVentasPorConsulta(Guid idConsulta);
     List<VentaDetalle> GetDetalles(Guid idVenta);
     VentaDetalle AddServicio(Guid idVenta, Guid motivoCobroId, decimal cantidad, decimal? precioUnitario = null, string? descripcion = null, decimal descuentoMonto = 0, string? motivoDescuento = null);
     VentaDetalle AddProducto(Guid idVenta, Guid productoId, decimal cantidad, Guid? loteId = null, decimal? precioUnitario = null, string? descripcion = null, bool esSobrePedido = false, decimal descuentoMonto = 0, string? motivoDescuento = null);
@@ -29,6 +33,12 @@ public interface IVentaService
     /// <summary>Deja la cuenta pendiente de pago: descuenta stock ahora y deja el saldo por cobrar (responsable requerido).</summary>
     void DejarPendientePago(Guid idVenta, string responsable, DateTime? fechaPromesa);
     VentaDetalle? AgregarDesdeReceta(Guid idVenta, string nombreMedicamento, decimal cantidad);
+    /// <summary>Corrige cantidad y precio de una línea reabierta (venta Pendiente). Motivo obligatorio (auditoría).</summary>
+    VentaDetalle CorregirDetalle(Guid idVentaDetalle, decimal cantidad, decimal precioUnitario, string motivo);
+    /// <summary>Reabre una venta Pagada o Pendiente de pago a Pendiente para corregirla. Revierte el inventario descontado.</summary>
+    void Reabrir(Guid idVenta, string motivo);
+    /// <summary>Devuelve y anula una venta Pagada o Pendiente de pago. Revierte inventario y la consulta vuelve a por cobrar.</summary>
+    void DevolverAnular(Guid idVenta, string motivo);
     /// <summary>Alta rápida desde caja: crea el producto (sin lote) + entrada + línea de venta en una sola operación.</summary>
     VentaDetalle AgregarProductoExpress(Guid idVenta, string nombre, decimal precioVenta, decimal cantidad, decimal? costoUnitario = null, Guid? idCategoria = null, decimal descuentoMonto = 0, string? motivoDescuento = null);
     /// <summary>Servicio no catalogado: crea el MotivoCobro (si no existe) + línea de venta. No toca inventario.</summary>
@@ -120,6 +130,28 @@ public class VentaService : IVentaService
         var t = to.Date.AddDays(1);
         return _db.Ventas.Where(v => v.Fecha >= f && v.Fecha < t && v.Estado != "Anulada").ToList();
     }
+
+    public List<Venta> GetHistorial(DateTime from, DateTime to, string? texto = null, int top = 200)
+    {
+        var f = from.Date;
+        var t = to.Date.AddDays(1);
+        var q = _db.Ventas.Where(v => v.Fecha >= f && v.Fecha < t
+            && (v.Estado == "Pagada" || v.Estado == "Anulada"));
+        texto = (texto ?? "").Trim();
+        if (!string.IsNullOrWhiteSpace(texto))
+            q = q.Where(v => v.Folio.Contains(texto)
+                || (v.Observaciones != null && v.Observaciones.Contains(texto))
+                || (v.FiadoResponsable != null && v.FiadoResponsable.Contains(texto)));
+        return q.OrderByDescending(v => v.Fecha).Take(top).ToList();
+    }
+
+    public List<Venta> GetVentasPorPaciente(Guid idPaciente, int top = 200) =>
+        _db.Ventas.Where(v => v.IdPaciente == idPaciente)
+            .OrderByDescending(v => v.Fecha).Take(top).ToList();
+
+    public List<Venta> GetVentasPorConsulta(Guid idConsulta) =>
+        _db.Ventas.Where(v => v.IdConsulta == idConsulta)
+            .OrderByDescending(v => v.Fecha).ToList();
 
     public List<VentaDetalle> GetDetalles(Guid idVenta)
     {
@@ -287,6 +319,183 @@ public class VentaService : IVentaService
             SincronizarConsulta(venta);
         }
         _db.SaveChanges();
+    }
+
+    public VentaDetalle CorregirDetalle(Guid idVentaDetalle, decimal cantidad, decimal precioUnitario, string motivo)
+    {
+        if (cantidad <= 0) throw new ArgumentException("Cantidad debe ser mayor a cero.");
+        if (precioUnitario < 0) throw new ArgumentException("Precio no válido.");
+        motivo = (motivo ?? "").Trim();
+        if (string.IsNullOrWhiteSpace(motivo)) throw new ArgumentException("Indica el motivo de la corrección.");
+        if (motivo.Length > 200) motivo = motivo[..200];
+        var detalle = _db.VentaDetalles.FirstOrDefault(d => d.IdVentaDetalle == idVentaDetalle)
+            ?? throw new InvalidOperationException("Línea no encontrada.");
+        var venta = GetVenta(detalle.IdVenta) ?? throw new InvalidOperationException("Venta no encontrada.");
+        if (venta.Estado != "Pendiente")
+            throw new InvalidOperationException("Reabre la venta antes de corregir (solo se corrige en Pendiente).");
+        var bruto = cantidad * precioUnitario;
+        if (detalle.DescuentoMonto > bruto)
+            throw new ArgumentException($"El descuento actual (Q{detalle.DescuentoMonto:0.00}) excede el nuevo bruto (Q{bruto:0.00}). Ajusta el descuento primero.");
+        detalle.Cantidad = cantidad;
+        detalle.PrecioUnitario = precioUnitario;
+        detalle.Subtotal = bruto - detalle.DescuentoMonto;
+        detalle.DescuentoMotivo = detalle.DescuentoMonto > 0
+            ? $"{detalle.DescuentoMotivo} | corr: {motivo}".Trim(' ', '|')
+            : detalle.DescuentoMotivo;
+        detalle.FechaModificacion = DateTime.Now;
+        detalle.ModificadoPor = _currentUser?.Usuario?.IdUsuario;
+        RecalcularTotal(venta);
+        venta.Observaciones = $"{(venta.Observaciones ?? "").Trim()} [Corr {DateTime.Now:dd/MM HH:mm}: {detalle.Descripcion} -> {cantidad} x Q{precioUnitario:0.00} ({motivo})]".Trim();
+        SincronizarConsulta(venta);
+        _db.SaveChanges();
+        return detalle;
+    }
+
+    public void Reabrir(Guid idVenta, string motivo)
+    {
+        motivo = (motivo ?? "").Trim();
+        if (string.IsNullOrWhiteSpace(motivo)) throw new ArgumentException("Indica el motivo de la corrección.");
+        var venta = GetVenta(idVenta) ?? throw new InvalidOperationException("Venta no encontrada.");
+        if (venta.Estado != "Pagada" && venta.Estado != "Pendiente de pago")
+            throw new InvalidOperationException("Solo se puede reabrir una venta pagada o pendiente de pago.");
+        if (motivo.Length > 200) motivo = motivo[..200];
+        using var tx = _db.Database.BeginTransaction();
+        try
+        {
+            ReversarInventario(venta, "Reapertura para corrección");
+            venta.Estado = "Pendiente";
+            venta.FiadoResponsable = null;
+            venta.FechaPromesa = null;
+            venta.FechaModificacion = DateTime.Now;
+            venta.ModificadoPor = _currentUser?.Usuario?.IdUsuario;
+            venta.Observaciones = $"{(venta.Observaciones ?? "").Trim()} [Reabierta {DateTime.Now:dd/MM HH:mm} por {(_currentUser?.Usuario?.NombreUsuario ?? "caja")}: {motivo}]".Trim();
+            SincronizarConsulta(venta);
+            _db.SaveChanges();
+            tx.Commit();
+        }
+        catch
+        {
+            tx.Rollback();
+            throw;
+        }
+    }
+
+    public void DevolverAnular(Guid idVenta, string motivo)
+    {
+        motivo = (motivo ?? "").Trim();
+        if (string.IsNullOrWhiteSpace(motivo)) throw new ArgumentException("Indica el motivo de la devolución.");
+        var venta = GetVenta(idVenta) ?? throw new InvalidOperationException("Venta no encontrada.");
+        if (venta.Estado != "Pagada" && venta.Estado != "Pendiente de pago")
+            throw new InvalidOperationException("Solo se puede devolver una venta pagada o pendiente de pago.");
+        if (motivo.Length > 200) motivo = motivo[..200];
+        using var tx = _db.Database.BeginTransaction();
+        try
+        {
+            ReversarInventario(venta, "Devolución/anulación");
+            venta.Estado = "Anulada";
+            venta.FechaModificacion = DateTime.Now;
+            venta.ModificadoPor = _currentUser?.Usuario?.IdUsuario;
+            venta.Observaciones = $"{(venta.Observaciones ?? "").Trim()} [Devuelta {DateTime.Now:dd/MM HH:mm} por {(_currentUser?.Usuario?.NombreUsuario ?? "caja")}: {motivo}]".Trim();
+            if (venta.IdConsulta.HasValue)
+            {
+                var consulta = _db.Consulta.FirstOrDefault(c => c.IdConsulta == venta.IdConsulta.Value);
+                if (consulta is not null)
+                {
+                    // La consulta vuelve a la cola de cobro: se recalcula con las ventas restantes.
+                    var resto = _db.Ventas.Where(v => v.IdConsulta == venta.IdConsulta.Value
+                        && v.IdVenta != venta.IdVenta && v.Estado != "Anulada").ToList();
+                    consulta.Total = resto.Sum(v => v.Total);
+                    consulta.Pagada = resto.Any(v => v.Estado == "Pagada");
+                }
+            }
+            _db.SaveChanges();
+            tx.Commit();
+        }
+        catch
+        {
+            tx.Rollback();
+            throw;
+        }
+    }
+
+    /// <summary>Reingresa al inventario lo descontado al cobrar (el stock ya salió con SalidaVenta).</summary>
+    private void ReversarInventario(Venta venta, string contexto)
+    {
+        var detalles = _db.VentaDetalles.Where(d => d.IdVenta == venta.IdVenta).ToList();
+        foreach (var d in detalles.Where(x => x.TipoLinea == "Producto" && x.IdProducto.HasValue))
+        {
+            var producto = _db.Productos.FirstOrDefault(p => p.IdProducto == d.IdProducto!.Value);
+            if (producto is null) continue;
+            if (d.EsSobrePedido)
+            {
+                _db.MovimientosInventario.Add(new MovimientoInventario
+                {
+                    IdMovimiento = Guid.NewGuid(),
+                    Fecha = DateTime.Now,
+                    IdProducto = producto.IdProducto,
+                    Tipo = "Devolucion",
+                    Cantidad = d.Cantidad,
+                    CostoUnitario = producto.CostoUltimo,
+                    IdVenta = venta.IdVenta,
+                    IdConsulta = venta.IdConsulta,
+                    Motivo = $"{contexto} {venta.Folio} (sobre pedido, sin stock)"
+                });
+                continue;
+            }
+            if (!producto.RequiereLote)
+            {
+                producto.StockActual += d.Cantidad;
+                _db.MovimientosInventario.Add(new MovimientoInventario
+                {
+                    IdMovimiento = Guid.NewGuid(),
+                    Fecha = DateTime.Now,
+                    IdProducto = producto.IdProducto,
+                    Tipo = "Devolucion",
+                    Cantidad = d.Cantidad,
+                    CostoUnitario = producto.CostoUltimo,
+                    IdVenta = venta.IdVenta,
+                    IdConsulta = venta.IdConsulta,
+                    Motivo = $"{contexto} {venta.Folio}"
+                });
+            }
+            else if (d.IdLote.HasValue)
+            {
+                var lote = _db.LotesProducto.FirstOrDefault(l => l.IdLote == d.IdLote.Value);
+                if (lote is not null) lote.Stock += d.Cantidad;
+                else producto.StockActual += d.Cantidad;
+                producto.StockActual = _db.LotesProducto
+                    .Where(l => l.IdProducto == producto.IdProducto && l.Activo).Sum(l => (decimal?)l.Stock) ?? producto.StockActual;
+                _db.MovimientosInventario.Add(new MovimientoInventario
+                {
+                    IdMovimiento = Guid.NewGuid(),
+                    Fecha = DateTime.Now,
+                    IdProducto = producto.IdProducto,
+                    IdLote = d.IdLote,
+                    Tipo = "Devolucion",
+                    Cantidad = d.Cantidad,
+                    CostoUnitario = lote?.CostoUnitario ?? producto.CostoUltimo,
+                    IdVenta = venta.IdVenta,
+                    IdConsulta = venta.IdConsulta,
+                    Motivo = $"{contexto} {venta.Folio} lote {lote?.CodigoLote}"
+                });
+            }
+            else
+            {
+                producto.StockActual += d.Cantidad;
+                _db.MovimientosInventario.Add(new MovimientoInventario
+                {
+                    IdMovimiento = Guid.NewGuid(),
+                    Fecha = DateTime.Now,
+                    IdProducto = producto.IdProducto,
+                    Tipo = "Devolucion",
+                    Cantidad = d.Cantidad,
+                    CostoUnitario = producto.CostoUltimo,
+                    IdVenta = venta.IdVenta,
+                    IdConsulta = venta.IdConsulta,
+                    Motivo = $"{contexto} {venta.Folio} (FEFO)"
+                });
+            }
+        }
     }
 
     public void Pagar(Guid idVenta)

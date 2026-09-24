@@ -13,11 +13,13 @@ public class PacientesController: ErrorHandlingController
 
     private readonly IPacienteServices _pacienteServices;
     private readonly IConsultaServices _consultaServices;
+    private readonly IVentaService _ventas;
 
-    public PacientesController(IPacienteServices pacienteServices, IConsultaServices consultaServices)
+    public PacientesController(IPacienteServices pacienteServices, IConsultaServices consultaServices, IVentaService ventas)
     {
         _pacienteServices = pacienteServices;
         _consultaServices = consultaServices;
+        _ventas = ventas;
     }
 
     public IActionResult Index()
@@ -134,6 +136,29 @@ public class PacientesController: ErrorHandlingController
     public IActionResult GetHistorialConsultas(Guid pacienteId)
     {
         var consultas = (_consultaServices.GetAllByPacienteId(pacienteId) ?? []).OrderByDescending(c => c.Fecha).ToList();
+        // Cobro por consulta: folio/total/estado/saldo para pagar o ver desde el historial.
+        var ventasPorConsulta = new Dictionary<Guid, List<ClinicaDomain.Venta>>();
+        var saldos = new Dictionary<Guid, decimal>();
+        foreach (var c in consultas)
+        {
+            var ventas = _ventas.GetVentasPorConsulta(c.IdConsulta);
+            ventasPorConsulta[c.IdConsulta] = ventas;
+            foreach (var v in ventas)
+            {
+                try { saldos[v.IdVenta] = _ventas.SaldoPendiente(v.IdVenta); }
+                catch { saldos[v.IdVenta] = v.Total; }
+            }
+        }
+        // Compras de mostrador del paciente (sin consulta).
+        var libres = _ventas.GetVentasPorPaciente(pacienteId).Where(v => !v.IdConsulta.HasValue).ToList();
+        foreach (var v in libres)
+        {
+            try { if (!saldos.ContainsKey(v.IdVenta)) saldos[v.IdVenta] = _ventas.SaldoPendiente(v.IdVenta); }
+            catch { saldos[v.IdVenta] = v.Total; }
+        }
+        ViewBag.VentasPorConsulta = ventasPorConsulta;
+        ViewBag.Saldos = saldos;
+        ViewBag.VentasLibres = libres;
         return PartialView("Partials/_tablaHistorial", consultas);
     }
 }

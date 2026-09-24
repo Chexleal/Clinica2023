@@ -3,6 +3,7 @@
 @{
     // Diseño maestro de cobro (lo usa la modal de Pagar Consulta y la página de Ventas).
     var esPagina = (ViewBag.CobroModo as string) == "pagina";
+    var esCorreccion = (ViewBag.CobroOrigen as string) == "ver";
     var venta = Model.Venta;
     var lineas = Model.VentaDetalles ?? new List<ClinicaDomain.VentaDetalle>();
     var subServicios = lineas.Where(x => x.TipoLinea == "Servicio").Sum(x => x.Subtotal);
@@ -264,8 +265,38 @@
                                 <i class="fa-solid fa-pen me-1"></i>Editar
                             </button>
                         }
+                        @if (esCorreccion)
+                        {
+                            <button class="btn btn-outline-warning py-0 px-1 lh-sm ms-1" style="font-size:.7rem;" type="button"
+                                    title="Corregir cantidad y precio (queda registrado el motivo)" data-bs-toggle="collapse" data-bs-target="#corr-@item.IdVentaDetalle">
+                                <i class="fa-solid fa-pen-to-square me-1"></i>Corregir
+                            </button>
+                        }
                     }
                     </div>
+                    @if (venta?.Estado == "Pendiente" && esCorreccion)
+                    {
+                        <div class="collapse mt-2" id="corr-@item.IdVentaDetalle">
+                            <form asp-action="CorregirDetalle" asp-controller="Ventas" method="post" class="d-flex flex-wrap gap-2 align-items-end border rounded-3 p-2 bg-light">
+                                <input type="hidden" name="id" value="@item.IdVentaDetalle" />
+                                <input type="hidden" name="idVenta" value="@venta?.IdVenta" />
+                                <input type="hidden" name="origen" value="ver" />
+                                <div>
+                                    <label class="small fw-bold">Cant.</label>
+                                    <input name="cantidad" type="number" step="0.01" min="0.01" value="@item.Cantidad.ToString("0.00", inv)" class="form-control form-control-sm" style="width:80px;" required />
+                                </div>
+                                <div>
+                                    <label class="small fw-bold">Precio Q</label>
+                                    <input name="precio" type="number" step="0.01" min="0" value="@item.PrecioUnitario.ToString("0.00", inv)" class="form-control form-control-sm" style="width:95px;" required />
+                                </div>
+                                <div>
+                                    <label class="small fw-bold">Motivo</label>
+                                    <input name="motivo" class="form-control form-control-sm" style="width:170px;" maxlength="200" required placeholder="Error de precio" />
+                                </div>
+                                <button class="btn btn-sm btn-warning" type="submit">Corregir</button>
+                            </form>
+                        </div>
+                    }
                     @if (venta?.Estado == "Pendiente")
                     {
                         <div class="collapse mt-2" id="desc-@item.IdVentaDetalle">
@@ -362,10 +393,13 @@
                         </div>
                         <div class="ms-auto text-end">
                             <div class="fw-bold">Q@(fmt(pg.Monto))</div>
-                            <button class="btn btn-link text-danger p-0 ms-auto" type="button"
-                                    title="Quitar pago" onclick="deletePago('@pg.IdVentaPago')">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
+                            @if (venta?.Estado == "Pendiente" || venta?.Estado == "Pendiente de pago")
+                            {
+                                <button class="btn btn-link text-danger p-0 ms-auto" type="button"
+                                        title="Quitar pago" onclick="deletePago('@pg.IdVentaPago')">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            }
                         </div>
                     </li>
                 }
@@ -375,6 +409,8 @@
             <span class="small text-muted">@(saldo > 0 ? "Saldo pendiente" : "Cambio")</span>
             <span class="fw-bold">Q@(fmt(saldo < 0 ? -saldo : saldo))</span>
         </div>
+        @if (venta?.Estado == "Pendiente" || venta?.Estado == "Pendiente de pago")
+        {
         <form id="agregarPagoForm" method="POST">
             <input hidden name="idConsulta" value="@Model.consulta?.IdConsulta" />
             <input hidden name="idVenta" value="@venta?.IdVenta" />
@@ -401,6 +437,7 @@
                 </div>
             </div>
         </form>
+        }
     </div>
 
     <!-- Pie / acciones -->
@@ -421,15 +458,30 @@
                         <button class="btn btn-outline-warning" type="button" data-bs-toggle="collapse" data-bs-target="#panelPendientePago">Pendiente de pago</button>
                     }
                 }
+                @if (venta?.Estado == "Pendiente" || venta?.Estado == "Pendiente de pago")
+                {
                 <form asp-action="Finalizar" asp-controller="Ventas" asp-route-id="@venta?.IdVenta" class="m-0">
+                    @if (esCorreccion)
+                    {
+                        <input type="hidden" name="origen" value="ver" />
+                    }
                     <button class="btn btn-success" type="submit" @Html.Raw(saldo > 0 ? "disabled title=\"Registra el pago para finalizar\"" : "")>Completar pago — Q@(fmt(total))</button>
                 </form>
+                }
+                else
+                {
+                    <small class="text-muted align-self-center">Venta cerrada — usa Reabrir para corregir.</small>
+                }
             </div>
         </div>
         @if (venta?.Estado == "Pendiente" && saldo > 0)
         {
             <div class="collapse mt-2" id="panelPendientePago">
                 <form asp-action="PendientePago" asp-controller="Ventas" asp-route-id="@venta?.IdVenta" method="post" class="border rounded-3 p-3 bg-light">
+                    @if (esCorreccion)
+                    {
+                        <input type="hidden" name="origen" value="ver" />
+                    }
                     <div class="row g-2 align-items-end">
                         <div class="col-md-6">
                             <label class="small fw-bold">¿Quién queda debiendo?</label>

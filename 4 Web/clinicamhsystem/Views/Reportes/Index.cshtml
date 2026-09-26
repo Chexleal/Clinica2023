@@ -15,12 +15,12 @@
 
         @{
             // Primera pestaña: Por Servicios. Segunda: Por Paciente.
-            // Activa Paciente solo tras buscar un paciente; en el resto (incluido inicio) activa Servicios.
-            var mostrarPaciente = Model.Paciente != null;
+            // Activa Paciente tras buscar un paciente o todos los del rango.
+            var mostrarPaciente = Model.Paciente != null || Model.VerTodosPacientes;
         }
         <ul class="nav nav-tabs" id="myTabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link @(!mostrarPaciente ? "active" : "")" id="tab-servicios-tab" data-bs-toggle="tab" data-bs-target="#tab-servicios" type="button" role="tab" aria-controls="tab-servicios" aria-selected="@(!mostrarPaciente ? "true" : "false")">Por Servicios</button>
+                <button class="nav-link @(!mostrarPaciente ? "active" : "")" id="tab-servicios-tab" data-bs-toggle="tab" data-bs-target="#tab-servicios" type="button" role="tab" aria-controls="tab-servicios" aria-selected="@(!mostrarPaciente ? "true" : "false")">Por Concepto</button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link @(mostrarPaciente ? "active" : "")" id="tab-paciente-tab" data-bs-toggle="tab" data-bs-target="#tab-paciente" type="button" role="tab" aria-controls="tab-paciente" aria-selected="@(mostrarPaciente ? "true" : "false")">Por Paciente</button>
@@ -32,16 +32,29 @@
             <div class="tab-pane fade @(!mostrarPaciente ? "show active" : "")" id="tab-servicios" role="tabpanel" aria-labelledby="tab-servicios-tab">
                 <form id="servicios-search" method="POST" action="@Url.Action("Servicios","Reportes")">
                     <div class="row">
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="form-group">
                                 <label class="control-label">Del</label>
                                 <input required class="form-control" type="date" name="from_dt" id="from_servicios" value="@(Model.From == default(DateTime) ? "" : Model.From.ToString("yyyy-MM-dd"))" />
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="form-group">
                                 <label class="control-label">Al</label>
                                 <input required class="form-control" type="date" name="to_dt" id="to_servicios" value="@(Model.To == default(DateTime) ? "" : Model.To.ToString("yyyy-MM-dd"))" />
+                            </div>
+                        </div>
+                        @{
+                            var tipoSel = ((ViewBag.TipoFiltro as string) ?? Model.TipoFiltro ?? "todos").ToLower();
+                        }
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="control-label">Tipo</label>
+                                <select name="tipo" id="tipo_reporte" class="form-control">
+                                    <option value="todos" selected="@(tipoSel == "todos" ? "selected" : null)">Todos (servicios + productos)</option>
+                                    <option value="servicios" selected="@(tipoSel == "servicios" ? "selected" : null)">Solo servicios</option>
+                                    <option value="productos" selected="@(tipoSel == "productos" ? "selected" : null)">Solo productos</option>
+                                </select>
                             </div>
                         </div>
                         @*<div class="col-md-3">
@@ -66,8 +79,8 @@
                                 <input type="hidden" name="incluirSinIngresos" id="hidSinIngresos" value="@(Model.IncluirSinIngresos ? "true" : "false")" />
                             </div>
                         </div>
-                        <div class="col-md-3 d-flex">
-                            <div class="form-group">
+                        <div class="col-md-2 d-flex">
+                            <div class="form-group w-100">
                                 <label class="control-label"></label>
                                 <button type="submit" class="form-control btn btn-primary d-inline-block">Buscar</button>
                             </div>
@@ -93,9 +106,9 @@
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label class="control-label">Paciente</label>
-                                <select required name="IdPaciente" id="idPaciente" class="form-control select2">
-                                    <option></option>
+                                <label class="control-label">Paciente (vacío = todos del rango)</label>
+                                <select name="IdPaciente" id="idPaciente" class="form-control select2">
+                                    <option value="">Todos los pacientes del rango</option>
                                     @{
                                         var pacientesDropdown = (ViewBag.PacientesDropdown as List<Paciente>) ?? Model.Pacientes;
                                         foreach (var paciente in pacientesDropdown)
@@ -173,15 +186,45 @@
                         <br>
                     </h5>
                 }
-                else if (Model.EsServicio)
+                else if (Model.VerTodosPacientes)
                 {
-
+                    var consultasAll = Model.Pacientes
+                        .SelectMany(p => p.Consulta ?? new List<Consulta>())
+                        .Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date)
+                        .ToList();
+                    var totalAll = consultasAll.Sum(x => x.Total);
                     <h5 class="enc table-title encabezado fw-normal" id="tabla-encabezado">
                         <span class="centered-span">
-                            Resumen de ingresos por servicios<br /><br>
+                            Resumen de consultas por paciente<br /><br>
                             Del &nbsp;&nbsp; @Model.From.ToString("dd/MM/yyyy") &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Al &nbsp;&nbsp; @Model.To.ToString("dd/MM/yyyy")
                         </span>
                         <br>
+                        <br>
+                        No. Pacientes: <span class="fw-bold">@Model.Pacientes.Count</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; No. Consultas: <span class="fw-bold">@consultasAll.Count</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Total: Q <span class="fw-bold">@totalAll</span>
+                        <br>
+                        <br>
+                        <div class="small text-muted fw-normal" style="font-size:0.8rem;">
+                            Solo consultas terminadas y pagadas. Pulse <strong>+</strong> para ver el detalle de cada paciente.
+                        </div>
+                        <br>
+                    </h5>
+                }
+                else if (Model.EsServicio)
+                {
+                    var tipoTitulo = (ViewBag.TipoFiltro as string) ?? Model.TipoFiltro ?? "todos";                    var nombreReporte = tipoTitulo == "servicios" ? "Resumen de ingresos por servicios"
+                        : tipoTitulo == "productos" ? "Resumen de ingresos por productos"
+                        : "Resumen de ingresos por servicios y productos";
+                    <h5 class="enc table-title encabezado fw-normal" id="tabla-encabezado">
+                        <span class="centered-span">
+                            @nombreReporte<br /><br>
+                            Del &nbsp;&nbsp; @Model.From.ToString("dd/MM/yyyy") &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Al &nbsp;&nbsp; @Model.To.ToString("dd/MM/yyyy")
+                        </span>
+                        <br>
+                        <div class="small text-muted fw-normal" style="font-size:0.8rem;">
+                            Solo cobros efectivos del rango (ventas pagadas y legados de consultas terminadas y pagadas).
+                            Criterio de fechas: ventas por fecha de venta (caja), legados por fecha de consulta.
+                            Lo pendiente de cobro va en la tabla "Cobros pendientes".
+                        </div>
                         <br>
                     </h5>
                 }
@@ -190,9 +233,9 @@
             @if (Model.EsServicio)
             {
                 <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
-                    <span class="text-muted small">Vista <strong>macro</strong>: resumen. Vista <strong>micro</strong>: pulse <strong>+</strong> para ver el detalle.</span>
+                    <span class="text-muted small">Vista <strong>macro</strong>: resumen. Pulse <strong>+</strong> para ver el detalle; dentro del detalle, pulse <strong>+</strong> de cada día / servicio para ver los movimientos.</span>
                     <div class="btn-group ms-auto" role="group" aria-label="Vista del reporte">
-                        <button type="button" id="vistaServicioBtn" class="btn btn-sm btn-primary">Por servicio</button>
+                        <button type="button" id="vistaServicioBtn" class="btn btn-sm btn-primary">Por concepto</button>
                         <button type="button" id="vistaDiaBtn" class="btn btn-sm btn-outline-primary">Por día</button>
                     </div>
                     <button type="button" id="expandAllMicro" class="btn btn-sm btn-outline-secondary">Ver micro (expandir todo)</button>
@@ -201,10 +244,32 @@
             }
             @{
                 // Almacén vista micro (macro = resumen). Se llena en el tbody y se renderiza en divs ocultos FUERA de la tabla.
-                var microStore = new Dictionary<string, List<(DateTime Fecha, string Paciente, string Origen, decimal Cantidad, decimal Subtotal)>>();
+                // El 6o campo es el tipo de pago de la venta que originó el movimiento (o "—" si es legado/sin pago).
+                var microStore = new Dictionary<string, List<(DateTime Fecha, string Paciente, string Origen, decimal Cantidad, decimal Subtotal, string MetodoPago)>>();
                 var microTitulos = new Dictionary<string, string>();
-                // Vista inversa: macro por día, micro resumido por servicio.
-                var microDiaStore = new Dictionary<string, List<(string Servicio, decimal Cantidad, decimal Subtotal)>>();
+                // Vista inversa: macro por día, micro con el MISMO detalle que Por servicio
+                // (Servicio/Producto, Paciente, Origen, Tipo pago, Cantidad, Subtotal).
+                var microDiaStore = new Dictionary<string, List<(DateTime Fecha, string Servicio, string Paciente, string Origen, string MetodoPago, decimal Cantidad, decimal Subtotal)>>();
+                // Por Paciente (todos): macro por paciente, micro con sus consultas.
+                var microPacStore = new Dictionary<string, List<Consulta>>();
+                var microPacTitulos = new Dictionary<string, string>();
+                // Pagos del rango (venta -> pagos) y catálogo de tipos de pago, para el micro y la sumatoria.
+                var pagosPorVenta = (ViewBag.PagosPorVenta as Dictionary<Guid, List<ClinicaDomain.VentaPago>>) ?? new Dictionary<Guid, List<ClinicaDomain.VentaPago>>();
+                var metodosMap = (ViewBag.MetodosMap as Dictionary<Guid, string>) ?? new Dictionary<Guid, string>();
+                var tipoFiltro = (((ViewBag.TipoFiltro as string) ?? Model.TipoFiltro ?? "todos").Trim().ToLower());
+                if (tipoFiltro != "servicios" && tipoFiltro != "productos") { tipoFiltro = "todos"; }
+                var verServicios = tipoFiltro == "todos" || tipoFiltro == "servicios";
+                var verProductos = tipoFiltro == "todos" || tipoFiltro == "productos";
+                string MetodoDeVenta(Guid idVenta)
+                {
+                    if (!pagosPorVenta.TryGetValue(idVenta, out var lista) || lista.Count == 0) return "—";
+                    var nombres = lista
+                        .Select(p => metodosMap.TryGetValue(p.IdMetodoPago, out var n) ? n : "—")
+                        .Where(n => !string.IsNullOrWhiteSpace(n))
+                        .Distinct()
+                        .ToList();
+                    return nombres.Count == 0 ? "—" : string.Join(" + ", nombres);
+                }
             }
             <div id="vistaServicio">
             <table id="table" class="table table-striped ">
@@ -222,7 +287,7 @@
                                 var custom_file_name = "Resumen Servicios (@Model.From.ToString("dd-MM-yyyy") - @Model.To.ToString("dd-MM-yyyy"))"
                                 var num_columns = [1, 2, 3]
                                 var encabezado = document.getElementById("tabla-encabezado").textContent;
-                                var titulo = "Resumen de ingresos por servicios"
+                                var titulo = "Resumen de ingresos"
                                 var fechas = "Del  @Model.From.ToString("dd/MM/yyyy")       Al  @Model.To.ToString("dd/MM/yyyy")"
                             </script>
                         }
@@ -240,6 +305,23 @@
                                 var num_columns = [0, 1, 2, 3, 4]
                                 var encabezado = document.getElementById("tabla-encabezado").textContent;
                                 var titulo = "Resumen de consultas"
+                                var fechas = "Del  @Model.From.ToString("dd/MM/yyyy")       Al  @Model.To.ToString("dd/MM/yyyy")"
+                            </script>
+                        }
+                        else if (Model.VerTodosPacientes)
+                        {
+                            <tr>
+                                <th></th>
+                                <th>Paciente</th>
+                                <th>DPI</th>
+                                <th>No. Consultas</th>
+                                <th>Total</th>
+                            </tr>
+                            <script>
+                                var custom_file_name = "Consultas por paciente (@Model.From.ToString("dd-MM-yyyy") - @Model.To.ToString("dd-MM-yyyy"))"
+                                var num_columns = [1, 2, 3, 4]
+                                var encabezado = document.getElementById("tabla-encabezado").textContent;
+                                var titulo = "Resumen de consultas por paciente"
                                 var fechas = "Del  @Model.From.ToString("dd/MM/yyyy")       Al  @Model.To.ToString("dd/MM/yyyy")"
                             </script>
                         }
@@ -284,6 +366,40 @@
                                 </tr>
                             }
                         }
+                        else if (Model.VerTodosPacientes)
+                        {
+                            microPacStore.Clear();
+                            microPacTitulos.Clear();
+                            var granConsPac = 0;
+                            var granTotPac = 0.0M;
+                            foreach (var pac in Model.Pacientes.OrderBy(p => p.Nombre).ThenBy(p => p.Apellido))
+                            {
+                                var consPac = (pac.Consulta ?? new List<Consulta>())
+                                    .Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date)
+                                    .OrderBy(x => x.Fecha)
+                                    .ToList();
+                                var totPac = consPac.Sum(x => x.Total);
+                                granConsPac += consPac.Count;
+                                granTotPac += totPac;
+                                var microPacId = $"micro-pac-{pac.IdPaciente}";
+                                microPacStore[microPacId] = consPac;
+                                microPacTitulos[microPacId] = $"{pac.Nombre} {pac.Apellido}";
+                                <tr class="macro-row">
+                                    <td>
+                                        @if (consPac.Count > 0)
+                                        {
+                                            <button type="button" class="btn-micro btn btn-sm btn-outline-primary" data-micro="@microPacId" title="Ver detalle">+</button>
+                                        }
+                                    </td>
+                                    <td>@pac.Nombre @pac.Apellido</td>
+                                    <td>@pac.Dpi</td>
+                                    <td>@consPac.Count</td>
+                                    <td>Q @totPac</td>
+                                </tr>
+                            }
+                            granCantidadFoot = granConsPac;
+                            granTotalFoot = granTotPac;
+                        }
                         else if (Model.EsServicio)
                         {
                             // Lookups para la vista micro: consulta -> (fecha, paciente), venta -> (fecha, folio, paciente).
@@ -299,11 +415,13 @@
                             var granTotal = 0.0M;
                             microStore.Clear();
                             microTitulos.Clear();
+                            if (verServicios)
+                            {
                             foreach (var servicio in Model.Servicios)
                             {
                                 var cantidad = 0;
                                 var total = 0.0M;
-                                var micro = new List<(DateTime Fecha, string Paciente, string Origen, int Cantidad, decimal Subtotal)>();
+                                var micro = new List<(DateTime Fecha, string Paciente, string Origen, decimal Cantidad, decimal Subtotal, string MetodoPago)>();
                                 @foreach (var paciente in Model.Pacientes)
                                 {
                                     foreach (var consulta in (paciente.Consulta ?? new List<Consulta>()).Where(x => x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date))
@@ -312,7 +430,7 @@
                                         {
                                             cantidad += detalle.Cantidad;
                                             total += detalle.Subtotal;
-                                            micro.Add((consulta.Fecha, $"{paciente.Nombre} {paciente.Apellido}", "Consulta", detalle.Cantidad, detalle.Subtotal));
+                                            micro.Add((consulta.Fecha, $"{paciente.Nombre} {paciente.Apellido}", "Consulta (legado)", detalle.Cantidad, detalle.Subtotal, "—"));
                                         }
                                     }
                                 }
@@ -337,7 +455,7 @@
                                             nomPaciente = $"{cc.P.Nombre} {cc.P.Apellido}";
                                         }
                                     }
-                                    micro.Add((fVenta, nomPaciente, origen, (int)d.Cantidad, d.Subtotal));
+                                    micro.Add((fVenta, nomPaciente, origen, d.Cantidad, d.Subtotal, MetodoDeVenta(d.IdVenta)));
                                 }
                                 micro = micro.OrderBy(m => m.Fecha).ToList();
                                 // Check apagado (default): ocultar servicios sin movimientos en el rango.
@@ -348,9 +466,9 @@
                                 granCantidad += cantidad;
                                 granTotal += total;
                                 var microId = $"micro-{servicio.IdMotivoCobro}";
-                                microStore[microId] = micro.Select(m => (m.Fecha, m.Paciente, m.Origen, (decimal)m.Cantidad, m.Subtotal)).ToList();
+                                microStore[microId] = micro;
                                 microTitulos[microId] = servicio.Descripcion;
-                                <tr class="macro-row">
+                                <tr class="macro-row fila-servicio">
                                     <td>
                                         @if (cantidad > 0)
                                         {
@@ -362,7 +480,10 @@
                                     <td>Q @total</td>
                                 </tr>
                             }
+                            }
                             // Productos + ventas libres del rango, también con micro.
+                            if (verProductos)
+                            {
                             var prodGroups = todosVentaDetalles.Where(x => x.TipoLinea == "Producto").GroupBy(x => x.Descripcion).ToList();
                             var prodIdx = 0;
                             foreach (var g in prodGroups)
@@ -373,7 +494,7 @@
                                 granTotal += prodTotal;
                                 var prodMicroId = $"micro-prod-{prodIdx}";
                                 prodIdx++;
-                                var prodMicro = new List<(DateTime Fecha, string Paciente, string Origen, decimal Cantidad, decimal Subtotal)>();
+                                var prodMicro = new List<(DateTime Fecha, string Paciente, string Origen, decimal Cantidad, decimal Subtotal, string MetodoPago)>();
                                 foreach (var d in g.OrderBy(x => ventasPorId.ContainsKey(x.IdVenta) ? ventasPorId[x.IdVenta].Fecha : DateTime.MaxValue))
                                 {
                                     var fV = Model.From;
@@ -393,7 +514,7 @@
                                             nP = $"{ccc.P.Nombre} {ccc.P.Apellido}";
                                         }
                                     }
-                                    prodMicro.Add((fV, nP, oR, d.Cantidad, d.Subtotal));
+                                    prodMicro.Add((fV, nP, oR, d.Cantidad, d.Subtotal, MetodoDeVenta(d.IdVenta)));
                                 }
                                 microStore[prodMicroId] = prodMicro;
                                 microTitulos[prodMicroId] = $"{g.Key} (producto)";
@@ -404,12 +525,13 @@
                                     <td>Q @prodTotal</td>
                                 </tr>
                             }
+                            }
                             granCantidadFoot = granCantidad;
                             granTotalFoot = granTotal;
                         }
                     }
                 </tbody>
-                @if (Model.EsServicio)
+                @if (Model.EsServicio || Model.VerTodosPacientes)
                 {
                     <tfoot class="table-dark fw-bold">
                         <tr>
@@ -446,21 +568,24 @@
                                 var granTotDia = 0M;
                                 foreach (var dia in diasConMov)
                                 {
-                                    var filasDia = new List<(string Servicio, decimal Cantidad, decimal Subtotal)>();
+                                    // Mismo grano que el micro Por servicio: un movimiento por línea,
+                                    // solo que agrupado por día y con la columna Servicio/Producto.
+                                    var movsDia = new List<(DateTime Fecha, string Servicio, string Paciente, string Origen, string MetodoPago, decimal Cantidad, decimal Subtotal)>();
                                     foreach (var kv in microStore)
                                     {
-                                        var esProd = kv.Key.StartsWith("micro-prod-");
-                                        var nombreFila = esProd ? "Productos" : (microTitulos.ContainsKey(kv.Key) ? microTitulos[kv.Key] : kv.Key);
-                                        var movsDia = kv.Value.Where(m => m.Fecha.Date == dia).ToList();
-                                        if (movsDia.Count == 0) { continue; }
-                                        filasDia.Add((nombreFila, movsDia.Sum(m => m.Cantidad), movsDia.Sum(m => m.Subtotal)));
+                                        var nombreFila = microTitulos.ContainsKey(kv.Key) ? microTitulos[kv.Key] : kv.Key;
+                                        foreach (var m in kv.Value.Where(m => m.Fecha.Date == dia))
+                                        {
+                                            movsDia.Add((m.Fecha, nombreFila, m.Paciente, m.Origen, m.MetodoPago, m.Cantidad, m.Subtotal));
+                                        }
                                     }
-                                    var cantDia = filasDia.Sum(f => f.Cantidad);
-                                    var totDia = filasDia.Sum(f => f.Subtotal);
+                                    movsDia = movsDia.OrderBy(x => x.Servicio).ThenBy(x => x.Paciente).ToList();
+                                    var cantDia = movsDia.Sum(f => f.Cantidad);
+                                    var totDia = movsDia.Sum(f => f.Subtotal);
                                     granCantDia += cantDia;
                                     granTotDia += totDia;
                                     var microDiaId = $"micro-dia-{dia:yyyyMMdd}";
-                                    microDiaStore[microDiaId] = filasDia;
+                                    microDiaStore[microDiaId] = movsDia;
                                     <tr class="macro-row">
                                         <td><button type="button" class="btn-micro-dia btn btn-sm btn-outline-primary" data-micro="@microDiaId" title="Ver detalle">+</button></td>
                                         <td>@dia.ToString("dd/MM/yyyy")</td>
@@ -481,37 +606,209 @@
                     </table>
                 </div>
             }
+            @if (Model.EsServicio)
+            {
+                // Sumatoria por tipo de pago (prorrateada por línea para respetar el filtro servicios/productos).
+                // Solo cobros efectivos: ventas Pagadas + legados de consultas terminadas y pagadas.
+                var ventasRango = (ViewBag.Ventas as List<ClinicaDomain.Venta>) ?? new List<ClinicaDomain.Venta>();
+                var detallesRango = (ViewBag.VentaDetalles as List<ClinicaDomain.VentaDetalle>) ?? new List<ClinicaDomain.VentaDetalle>();
+                var totalesMetodo = new Dictionary<string, decimal>();
+                var ventasSetMetodo = new Dictionary<string, HashSet<Guid>>();
+                var ventasContadas = new HashSet<Guid>();
+                void AcumularMetodo(string nombre, decimal monto, Guid? idVenta)
+                {
+                    if (string.IsNullOrWhiteSpace(nombre)) { nombre = "—"; }
+                    if (!totalesMetodo.ContainsKey(nombre)) { totalesMetodo[nombre] = 0; ventasSetMetodo[nombre] = new HashSet<Guid>(); }
+                    totalesMetodo[nombre] += monto;
+                    if (idVenta.HasValue) { ventasSetMetodo[nombre].Add(idVenta.Value); }
+                }
+                foreach (var v in ventasRango)
+                {
+                    var lineasV = detallesRango.Where(d => d.IdVenta == v.IdVenta);
+                    if (tipoFiltro == "servicios") { lineasV = lineasV.Where(d => d.TipoLinea == "Servicio"); }
+                    else if (tipoFiltro == "productos") { lineasV = lineasV.Where(d => d.TipoLinea == "Producto"); }
+                    var subF = lineasV.Sum(d => (decimal?)d.Subtotal) ?? 0;
+                    if (subF == 0) { continue; }
+                    ventasContadas.Add(v.IdVenta);
+                    if (!pagosPorVenta.TryGetValue(v.IdVenta, out var pagosV) || pagosV.Count == 0)
+                    {
+                        AcumularMetodo("SIN REGISTRO", subF, v.IdVenta);
+                        continue;
+                    }
+                    var baseCalc = v.Total > 0 ? v.Total : pagosV.Sum(p => p.Monto);
+                    if (baseCalc <= 0)
+                    {
+                        AcumularMetodo("SIN REGISTRO", subF, v.IdVenta);
+                        continue;
+                    }
+                    foreach (var pg in pagosV)
+                    {
+                        var nombreM = metodosMap.TryGetValue(pg.IdMetodoPago, out var nm) ? nm : "—";
+                        AcumularMetodo(nombreM, subF * (pg.Monto / baseCalc), v.IdVenta);
+                    }
+                }
+                if (verServicios && Model.Detalles != null && Model.Pacientes != null)
+                {
+                    var consultasEnRango = Model.Pacientes
+                        .SelectMany(p => p.Consulta ?? new List<Consulta>())
+                        .Where(c => c.Fecha.Date >= Model.From.Date && c.Fecha.Date <= Model.To.Date)
+                        .Select(c => c.IdConsulta)
+                        .ToHashSet();
+                    var legadoTotal = Model.Detalles.Where(d => consultasEnRango.Contains(d.IdConsulta)).Sum(d => (decimal?)d.Subtotal) ?? 0;
+                    if (legadoTotal != 0) { AcumularMetodo("SIN REGISTRO", legadoTotal, null); }
+                }
+                var totalMetodos = totalesMetodo.Values.Sum();
+                <div class="mt-4" id="totalesPorPago">
+                    <h5 class="fw-bold mb-1">Totales por tipo de pago @(tipoFiltro == "todos" ? "" : (tipoFiltro == "servicios" ? "(solo servicios)" : "(solo productos)"))</h5>
+                    <div class="small text-muted mb-2">Si una venta se pagó con varios tipos, el monto se reparte proporcionalmente entre sus líneas. Los cobros legados (de consultas terminadas y pagadas, sin registro de tipo de pago) se agrupan en SIN REGISTRO. Lo pendiente de cobro no suma aquí: va en la tabla "Cobros pendientes".</div>
+                    <div class="table-responsive">
+                    <table id="tablaTotalesPago" class="table table-striped">
+                        <thead class="table-dark">
+                            <tr><th>Tipo de pago</th><th>Ventas</th><th>Total</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var kvp in totalesMetodo.OrderByDescending(x => x.Value))
+                            {
+                                <tr>
+                                    <td>@kvp.Key</td>
+                                    <td>@(ventasSetMetodo.TryGetValue(kvp.Key, out var setV) ? setV.Count : 0)</td>
+                                    <td>Q @Math.Round(kvp.Value, 2)</td>
+                                </tr>
+                            }
+                            @if (totalesMetodo.Count == 0)
+                            {
+                                <tr><td colspan="3" class="text-center text-muted">Sin movimientos en el rango.</td></tr>
+                            }
+                        </tbody>
+                        <tfoot class="table-dark fw-bold">
+                            <tr><td>Total general</td><td>@ventasContadas.Count</td><td>Q @Math.Round(totalMetodos, 2)</td></tr>
+                        </tfoot>
+                    </table>
+                    </div>
+                </div>
+            }
+            @if (Model.EsServicio)
+            {
+                // Cobros pendientes: ventas en caja o con saldo por cobrar + legados de
+                // consultas no pagadas. No suman en los totales de arriba.
+                var ventasPend = (ViewBag.VentasPendientes as List<ClinicaDomain.Venta>) ?? new List<ClinicaDomain.Venta>();
+                var mapaPacPend = (ViewBag.PacientesMap as Dictionary<Guid, string>) ?? new Dictionary<Guid, string>();
+                var legPend = (ViewBag.DetallesPendientes as List<DetalleCobro>) ?? new List<DetalleCobro>();
+                var consultasConVenta = (ViewBag.ConsultasConVenta as HashSet<Guid>) ?? new HashSet<Guid>();
+                var filasPend = new List<(DateTime Fecha, string Paciente, string Origen, decimal Total, decimal Abonado, string Estado)>();
+                foreach (var v in ventasPend)
+                {
+                    var abonado = pagosPorVenta.TryGetValue(v.IdVenta, out var pgsV) ? pgsV.Sum(p => p.Monto) : 0;
+                    var nomV = v.IdPaciente.HasValue && mapaPacPend.TryGetValue(v.IdPaciente.Value, out var nmV) ? nmV : "Mostrador";
+                    var orgV = (string.IsNullOrWhiteSpace(v.Folio) ? "Venta" : $"Venta {v.Folio}") + (v.IdConsulta != null ? " (consulta)" : " (mostrador)");
+                    var estV = v.Estado;
+                    if (!string.IsNullOrWhiteSpace(v.FiadoResponsable)) { estV += $" — {v.FiadoResponsable}"; }
+                    if (v.FechaPromesa.HasValue) { estV += $" (promesa {v.FechaPromesa.Value:dd/MM/yyyy})"; }
+                    filasPend.Add((v.Fecha, nomV, orgV, v.Total, abonado, estV));
+                }
+                if (Model.Pacientes != null)
+                {
+                    var consultasPend = Model.Pacientes
+                        .SelectMany(p => (p.Consulta ?? new List<Consulta>()).Select(c => new { C = c, P = p }))
+                        .Where(x => x.C.Fecha.Date >= Model.From.Date && x.C.Fecha.Date <= Model.To.Date
+                            && !(x.C.Terminada && x.C.Pagada)
+                            && !consultasConVenta.Contains(x.C.IdConsulta))
+                        .ToList();
+                    foreach (var x in consultasPend)
+                    {
+                        var totLeg = legPend.Where(d => d.IdConsulta == x.C.IdConsulta).Sum(d => (decimal?)d.Subtotal) ?? 0;
+                        if (totLeg == 0) { continue; }
+                        filasPend.Add((x.C.Fecha, $"{x.P.Nombre} {x.P.Apellido}", "Consulta (legado)", totLeg, 0, "Consulta pendiente de pago"));
+                    }
+                }
+                filasPend = filasPend.OrderBy(f => f.Fecha).ToList();
+                var totPendTotal = filasPend.Sum(f => f.Total);
+                var totPendAbonado = filasPend.Sum(f => f.Abonado);
+                <div class="mt-4" id="cobrosPendientes">
+                    <h5 class="fw-bold mb-1">Cobros pendientes</h5>
+                    <div class="small text-muted mb-2">Ventas en caja o con saldo por cobrar, más legados de consultas no pagadas. No suman en los totales de arriba.</div>
+                    <div class="table-responsive">
+                    <table id="tablaPendientes" class="table table-striped">
+                        <thead class="table-dark">
+                            <tr><th>Fecha</th><th>Paciente</th><th>Origen</th><th>Total</th><th>Abonado</th><th>Saldo</th><th>Estado</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var fp in filasPend)
+                            {
+                                <tr>
+                                    <td>@fp.Fecha.ToString("dd/MM/yyyy")</td>
+                                    <td>@fp.Paciente</td>
+                                    <td>@fp.Origen</td>
+                                    <td>Q @fp.Total</td>
+                                    <td>Q @fp.Abonado</td>
+                                    <td class="fw-bold">Q @(fp.Total - fp.Abonado)</td>
+                                    <td>@fp.Estado</td>
+                                </tr>
+                            }
+                            @if (filasPend.Count == 0)
+                            {
+                                <tr><td colspan="7" class="text-center text-muted">Sin cobros pendientes en el rango.</td></tr>
+                            }
+                        </tbody>
+                        <tfoot class="table-dark fw-bold">
+                            <tr><td colspan="3">Total pendiente</td><td>Q @totPendTotal</td><td>Q @totPendAbonado</td><td>Q @(totPendTotal - totPendAbonado)</td><td></td></tr>
+                        </tfoot>
+                    </table>
+                    </div>
+                </div>
+            }
             @if (Model.EsServicio && microStore.Count > 0)
             {
                 <div style="display:none;" aria-hidden="true">
                     @foreach (var kv in microStore)
                     {
                         var titulo = microTitulos.ContainsKey(kv.Key) ? microTitulos[kv.Key] : kv.Key;
+                        var gruposFecha = kv.Value.GroupBy(m => m.Fecha.Date).OrderBy(g => g.Key).ToList();
                         <div id="@kv.Key">
                             <div class="micro-wrap p-2">
-                                <div class="small text-muted mb-1">Micro: @titulo — @kv.Value.Count movimiento(s)</div>
+                                <div class="small text-muted mb-1">Micro: @titulo — @kv.Value.Count movimiento(s) en @gruposFecha.Count día(s). Pulse <strong>+</strong> de cada día para ver los movimientos.</div>
                                 <table class="table table-sm table-bordered mb-0 micro-table">
                                     <thead class="table-light">
-                                        <tr><th>Fecha</th><th>Paciente</th><th>Origen</th><th>Cantidad</th><th>Subtotal</th></tr>
+                                        <tr><th style="width:42px;"></th><th>Fecha</th><th>Movimientos</th><th>Cantidad</th><th>Subtotal</th></tr>
                                     </thead>
                                     <tbody>
                                         @{
-                                            var tonoA = false;
-                                            DateTime? fechaGrupo = null;
+                                            var gi = 0;
                                         }
-                                        @foreach (var m in kv.Value)
+                                        @foreach (var g in gruposFecha)
                                         {
-                                            if (fechaGrupo == null || m.Fecha.Date != fechaGrupo.Value)
-                                            {
-                                                tonoA = !tonoA;
-                                                fechaGrupo = m.Fecha.Date;
-                                            }
-                                            <tr class="@(tonoA ? "micro-fecha-a" : "micro-fecha-b")">
-                                                <td>@m.Fecha.ToString("dd/MM/yyyy")</td>
-                                                <td>@m.Paciente</td>
-                                                <td>@m.Origen</td>
-                                                <td>@m.Cantidad</td>
-                                                <td>Q @m.Subtotal</td>
+                                            gi++;
+                                            var cantG = g.Sum(x => x.Cantidad);
+                                            var subG = g.Sum(x => x.Subtotal);
+                                            var unoSolo = g.Count() == 1;
+                                            <tr class="micro-n2-head @(gi % 2 == 1 ? "micro-fecha-a" : "micro-fecha-b")">
+                                                <td><button type="button" class="btn-micro-n2 btn btn-sm btn-outline-secondary" title="Ver movimientos del día">@(unoSolo ? "−" : "+")</button></td>
+                                                <td class="fw-bold">@g.Key.ToString("dd/MM/yyyy")</td>
+                                                <td>@g.Count()</td>
+                                                <td>@cantG</td>
+                                                <td>Q @subG</td>
+                                            </tr>
+                                            <tr class="micro-n2-det" style="@(unoSolo ? "" : "display:none;")">
+                                                <td></td>
+                                                <td colspan="4" class="p-1">
+                                                    <table class="table table-sm table-bordered mb-0 micro-n2-table">
+                                                        <thead class="table-light">
+                                                            <tr><th>Paciente</th><th>Origen</th><th>Tipo pago</th><th>Cantidad</th><th>Subtotal</th></tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach (var m in g.OrderBy(x => x.Paciente).ThenBy(x => x.Origen))
+                                                            {
+                                                                <tr>
+                                                                    <td>@m.Paciente</td>
+                                                                    <td>@m.Origen</td>
+                                                                    <td><span class="badge bg-light text-dark border">@m.MetodoPago</span></td>
+                                                                    <td>@m.Cantidad</td>
+                                                                    <td>Q @m.Subtotal</td>
+                                                                </tr>
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </td>
                                             </tr>
                                         }
                                     </tbody>
@@ -521,20 +818,83 @@
                     }
                     @foreach (var kvd in microDiaStore)
                     {
+                        var gruposServ = kvd.Value.GroupBy(x => x.Servicio).OrderBy(g => g.Key).ToList();
                         <div id="@kvd.Key">
                             <div class="micro-wrap p-2">
-                                <div class="small text-muted mb-1">Detalle del día — @kvd.Value.Count servicio(s)</div>
+                                <div class="small text-muted mb-1">Detalle del día — @kvd.Value.Count movimiento(s) en @gruposServ.Count servicio(s). Pulse <strong>+</strong> de cada servicio para ver los movimientos.</div>
                                 <table class="table table-sm table-bordered mb-0 micro-table">
                                     <thead class="table-light">
-                                        <tr><th>Servicio</th><th>Cantidad</th><th>Subtotal</th></tr>
+                                        <tr><th style="width:42px;"></th><th>Servicio / Producto</th><th>Movimientos</th><th>Cantidad</th><th>Subtotal</th></tr>
                                     </thead>
                                     <tbody>
-                                        @foreach (var f in kvd.Value)
+                                        @{
+                                            var gj = 0;
+                                        }
+                                        @foreach (var gs in gruposServ)
+                                        {
+                                            gj++;
+                                            var cantGs = gs.Sum(x => x.Cantidad);
+                                            var subGs = gs.Sum(x => x.Subtotal);
+                                            var unoSoloGs = gs.Count() == 1;
+                                            <tr class="micro-n2-head @(gj % 2 == 1 ? "micro-fecha-a" : "micro-fecha-b")">
+                                                <td><button type="button" class="btn-micro-n2 btn btn-sm btn-outline-secondary" title="Ver movimientos del servicio">@(unoSoloGs ? "−" : "+")</button></td>
+                                                <td class="fw-bold">@gs.Key</td>
+                                                <td>@gs.Count()</td>
+                                                <td>@cantGs</td>
+                                                <td>Q @subGs</td>
+                                            </tr>
+                                            <tr class="micro-n2-det" style="@(unoSoloGs ? "" : "display:none;")">
+                                                <td></td>
+                                                <td colspan="4" class="p-1">
+                                                    <table class="table table-sm table-bordered mb-0 micro-n2-table">
+                                                        <thead class="table-light">
+                                                            <tr><th>Paciente</th><th>Origen</th><th>Tipo pago</th><th>Cantidad</th><th>Subtotal</th></tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach (var f in gs.OrderBy(x => x.Paciente).ThenBy(x => x.Origen))
+                                                            {
+                                                                <tr>
+                                                                    <td>@f.Paciente</td>
+                                                                    <td>@f.Origen</td>
+                                                                    <td><span class="badge bg-light text-dark border">@f.MetodoPago</span></td>
+                                                                    <td>@f.Cantidad</td>
+                                                                    <td>Q @f.Subtotal</td>
+                                                                </tr>
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            @if (Model.VerTodosPacientes && microPacStore.Count > 0)
+            {
+                <div style="display:none;" aria-hidden="true">
+                    @foreach (var kvp in microPacStore)
+                    {
+                        var tituloPac = microPacTitulos.ContainsKey(kvp.Key) ? microPacTitulos[kvp.Key] : kvp.Key;
+                        <div id="@kvp.Key">
+                            <div class="micro-wrap p-2">
+                                <div class="small text-muted mb-1">Detalle: @tituloPac — @kvp.Value.Count consulta(s) terminadas y pagadas</div>
+                                <table class="table table-sm table-bordered mb-0 micro-table">
+                                    <thead class="table-light">
+                                        <tr><th>Fecha</th><th>Duración</th><th>Motivo de consulta</th><th>Radiografías</th><th>Total</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var cp in kvp.Value)
                                         {
                                             <tr>
-                                                <td>@f.Servicio</td>
-                                                <td>@f.Cantidad</td>
-                                                <td>Q @f.Subtotal</td>
+                                                <td>@DateManager.GetDisplayDate(cp.FechaCreacion, cp.Fecha)</td>
+                                                <td>@cp.TiempoDuracion min</td>
+                                                <td>@cp.MotivoConsulta</td>
+                                                <td>@(cp.Radiografias ? "Si" : "No")</td>
+                                                <td>Q @cp.Total</td>
                                             </tr>
                                         }
                                     </tbody>

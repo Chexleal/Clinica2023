@@ -125,10 +125,19 @@ public class ProductoService : IProductoService
 
     public List<Producto> Buscar(string texto, int top = 20)
     {
-        texto = (texto ?? "").Trim().ToLower();
+        texto = (texto ?? "").Trim();
         var q = _db.Productos.Where(x => x.Activo);
         if (!string.IsNullOrWhiteSpace(texto))
-            q = q.Where(x => x.Nombre.ToLower().Contains(texto) || (x.Sku ?? "").ToLower().Contains(texto));
+        {
+            // Por palabras y sin tildes: cada palabra debe aparecer en nombre o SKU.
+            var tokens = texto.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            foreach (var token in tokens)
+            {
+                var term = token;
+                q = q.Where(x => EF.Functions.Collate(x.Nombre, "Latin1_General_CI_AI").Contains(term)
+                    || EF.Functions.Collate(x.Sku ?? "", "Latin1_General_CI_AI").Contains(term));
+            }
+        }
         return q.OrderBy(x => x.Nombre).Take(top).ToList();
     }
 

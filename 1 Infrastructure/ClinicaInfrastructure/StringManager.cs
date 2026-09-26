@@ -433,6 +433,40 @@ public static class StringManager
     }
 
     /// <summary>
+    /// Normaliza un nombre/apellido de persona: recorta espacios, colapsa
+    /// espacios internos y deja cada palabra con inicial en mayúscula
+    /// ("jOsE  pÉRez" -> "Jose Pérez", "maría-josé" -> "María-José").
+    /// Conserva las tildes. Nunca retorna null.
+    /// </summary>
+    public static string NombrePropio(this string? texto)
+    {
+        if (string.IsNullOrWhiteSpace(texto)) return string.Empty;
+        var palabras = Regex.Split(texto.Trim(), @"\s+");
+        var sb = new StringBuilder();
+        foreach (var p in palabras)
+        {
+            if (p.Length == 0) continue;
+            if (sb.Length > 0) sb.Append(' ');
+            sb.Append(CapitalizarPalabra(p));
+        }
+        return sb.ToString();
+    }
+
+    private static string CapitalizarPalabra(string palabra)
+    {
+        // Respeta separadores internos (guion, apóstrofo): cada segmento se capitaliza.
+        var partes = Regex.Split(palabra, @"([-'])");
+        for (int i = 0; i < partes.Length; i++)
+        {
+            var s = partes[i];
+            if (s.Length == 0 || s == "-" || s == "'") continue;
+            partes[i] = char.ToUpper(s[0], CultureInfo.InvariantCulture)
+                + (s.Length > 1 ? s.Substring(1).ToLower(CultureInfo.InvariantCulture) : string.Empty);
+        }
+        return string.Concat(partes);
+    }
+
+    /// <summary>
     /// Limpia un texto libre (notas, motivos, observaciones): recorta y colapsa
     /// espacios internos, conservando mayúsculas/minúsculas. Nunca retorna null.
     /// </summary>

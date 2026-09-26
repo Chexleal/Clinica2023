@@ -1,5 +1,6 @@
 using Azure.Core;
 using ClinicaDomain;
+using ClinicaInfrastructure;
 using Microsoft.EntityFrameworkCore;
 using PaaS.Framework.Utils.Extensions;
 
@@ -37,6 +38,9 @@ public class PacienteServices : IPacienteServices
 
 			var pacienteExsitente = _dbContext.Pacientes.FirstOrDefault(x => x.IdPaciente == paciente.IdPaciente && !x.EstadoEliminado);
 			if (pacienteExsitente is not null) return 2;
+            // Nombres tipo título ("JoSe" -> "Jose"): el Id se deriva en minúsculas, no cambia.
+            paciente.Nombre = paciente.Nombre.NombrePropio();
+            paciente.Apellido = paciente.Apellido.NombrePropio();
             paciente.IdPaciente = $"{paciente.Nombre.Trim().ToLower()}|{paciente.Apellido.Trim().ToLower()}".ToGuid();
             paciente.EstadoEliminado = false;
             paciente.BeforeSaveChanges();
@@ -68,8 +72,19 @@ public class PacienteServices : IPacienteServices
         var query = _dbContext.Pacientes.Where(x => !x.EstadoEliminado);
         if (!string.IsNullOrWhiteSpace(texto))
         {
-            var t = texto.Trim();
-            query = query.Where(x => x.Nombre.Contains(t) || x.Apellido.Contains(t) || x.Dpi.Contains(t)).OrderBy(x => x.Nombre).ThenBy(x => x.Apellido);
+            // Por palabras y sin tildes: "perez juan" encuentra "Juan Pérez" (nombre,
+            // apellido, nombre+apellido o DPI). Igual criterio que GetPaginated.
+            var tokens = texto.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            foreach (var token in tokens)
+            {
+                var term = token;
+                query = query.Where(x =>
+                    EF.Functions.Collate(x.Nombre, "Latin1_General_CI_AI").Contains(term) ||
+                    EF.Functions.Collate(x.Apellido, "Latin1_General_CI_AI").Contains(term) ||
+                    EF.Functions.Collate(x.Nombre + " " + x.Apellido, "Latin1_General_CI_AI").Contains(term) ||
+                    EF.Functions.Collate(x.Dpi, "Latin1_General_CI_AI").Contains(term));
+            }
+            query = query.OrderBy(x => x.Nombre).ThenBy(x => x.Apellido);
         }
         else
         {
@@ -130,8 +145,8 @@ public class PacienteServices : IPacienteServices
         if (pacienteDB is not null)
         {
             pacienteDB.Dpi = paciente.Dpi;
-            pacienteDB.Nombre = paciente.Nombre;
-            pacienteDB.Apellido = paciente.Apellido;
+            pacienteDB.Nombre = paciente.Nombre.NombrePropio();
+            pacienteDB.Apellido = paciente.Apellido.NombrePropio();
             pacienteDB.FechaNacimiento = paciente.FechaNacimiento;
             pacienteDB.Genero = paciente.Genero;
             pacienteDB.Telefono = paciente.Telefono;

@@ -17,6 +17,8 @@ public interface IVentaService
     List<Venta> GetVentasPorPaciente(Guid idPaciente, int top = 200);
     List<Venta> GetVentasPorConsulta(Guid idConsulta);
     List<VentaDetalle> GetDetalles(Guid idVenta);
+    /// <summary>Detalles de varias ventas en una sola consulta (para reportes por rango).</summary>
+    List<VentaDetalle> GetDetallesPorVentas(IEnumerable<Guid> idsVenta);
     VentaDetalle AddServicio(Guid idVenta, Guid motivoCobroId, decimal cantidad, decimal? precioUnitario = null, string? descripcion = null, decimal descuentoMonto = 0, string? motivoDescuento = null);
     VentaDetalle AddProducto(Guid idVenta, Guid productoId, decimal cantidad, Guid? loteId = null, decimal? precioUnitario = null, string? descripcion = null, bool esSobrePedido = false, decimal descuentoMonto = 0, string? motivoDescuento = null);
     /// <summary>Aplica o edita el descuento de una línea pendiente (motivo obligatorio si monto &gt; 0). Registra quién lo otorgó.</summary>
@@ -26,6 +28,8 @@ public interface IVentaService
     void Anular(Guid idVenta);
     // Tipos de pago (efectivo, tarjeta, transferencia...): una venta admite varios pagos.
     List<VentaPago> GetPagos(Guid idVenta);
+    /// <summary>Pagos de varias ventas en una sola consulta (para reportes por rango).</summary>
+    List<VentaPago> GetPagosPorVentas(IEnumerable<Guid> idsVenta);
     VentaPago AgregarPago(Guid idVenta, Guid metodoId, decimal monto, string? referencia);
     void EliminarPago(Guid idPago);
     decimal SaldoPendiente(Guid idVenta);
@@ -139,9 +143,10 @@ public class VentaService : IVentaService
             && (v.Estado == "Pagada" || v.Estado == "Anulada"));
         texto = (texto ?? "").Trim();
         if (!string.IsNullOrWhiteSpace(texto))
-            q = q.Where(v => v.Folio.Contains(texto)
-                || (v.Observaciones != null && v.Observaciones.Contains(texto))
-                || (v.FiadoResponsable != null && v.FiadoResponsable.Contains(texto)));
+            // Sin tildes (el responsable es un nombre de persona y puede llevarlas).
+            q = q.Where(v => EF.Functions.Collate(v.Folio, "Latin1_General_CI_AI").Contains(texto)
+                || (v.Observaciones != null && EF.Functions.Collate(v.Observaciones, "Latin1_General_CI_AI").Contains(texto))
+                || (v.FiadoResponsable != null && EF.Functions.Collate(v.FiadoResponsable, "Latin1_General_CI_AI").Contains(texto)));
         return q.OrderByDescending(v => v.Fecha).Take(top).ToList();
     }
 
@@ -156,6 +161,15 @@ public class VentaService : IVentaService
     public List<VentaDetalle> GetDetalles(Guid idVenta)
     {
         var lineas = _db.VentaDetalles.Where(d => d.IdVenta == idVenta).ToList();
+        CompletarNombresDescuento(lineas);
+        return lineas;
+    }
+
+    public List<VentaDetalle> GetDetallesPorVentas(IEnumerable<Guid> idsVenta)
+    {
+        var ids = (idsVenta ?? Enumerable.Empty<Guid>()).Distinct().ToList();
+        if (!ids.Any()) return new List<VentaDetalle>();
+        var lineas = _db.VentaDetalles.Where(d => ids.Contains(d.IdVenta)).ToList();
         CompletarNombresDescuento(lineas);
         return lineas;
     }
@@ -515,6 +529,13 @@ public class VentaService : IVentaService
 
     public List<VentaPago> GetPagos(Guid idVenta) =>
         _db.VentaPagos.Where(p => p.IdVenta == idVenta).OrderBy(p => p.Fecha).ToList();
+
+    public List<VentaPago> GetPagosPorVentas(IEnumerable<Guid> idsVenta)
+    {
+        var ids = (idsVenta ?? Enumerable.Empty<Guid>()).Distinct().ToList();
+        if (!ids.Any()) return new List<VentaPago>();
+        return _db.VentaPagos.Where(p => ids.Contains(p.IdVenta)).OrderBy(p => p.Fecha).ToList();
+    }
 
     public VentaPago AgregarPago(Guid idVenta, Guid metodoId, decimal monto, string? referencia)
     {

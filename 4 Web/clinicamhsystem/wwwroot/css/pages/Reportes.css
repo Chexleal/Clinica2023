@@ -25,7 +25,8 @@
     text-align: center; /* Centra el texto dentro del bloque */
 }
 
-.dataTables_filter{
+/* El buscador de DataTables se oculta solo dentro de reportes (no global). */
+#reporte .dataTables_filter{
     visibility:hidden;
 }
 
@@ -71,6 +72,28 @@ tr.shown .btn-micro {
 
 .micro-fecha-b td {
     background-color: #ffffff;
+}
+
+/* Micro nivel 2 (grupos día/servicio -> movimientos) */
+.btn-micro-n2 {
+    width: 26px;
+    font-weight: bold;
+    padding: 0 6px;
+}
+
+tr.micro-n2-head.shown .btn-micro-n2 {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #fff;
+}
+
+.micro-n2-table {
+    background-color: #fff;
+}
+
+.micro-n2-det > td {
+    background-color: #fff;
+    border-top: none;
 }
 
 .grafica-servicios-wrap {

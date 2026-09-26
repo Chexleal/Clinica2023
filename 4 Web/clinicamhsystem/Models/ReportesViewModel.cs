@@ -18,5 +18,11 @@ namespace clinicaWeb.Models
 
         /// <summary>Por Servicios: incluir filas sin movimientos en el rango. Default apagado.</summary>
         public bool IncluirSinIngresos { get; set; }
+
+        /// <summary>Filtro del reporte Por Servicios: todos|servicios|productos.</summary>
+        public string TipoFiltro { get; set; } = "todos";
+
+        /// <summary>Por Paciente sin paciente elegido: un resumen por cada paciente del rango.</summary>
+        public bool VerTodosPacientes { get; set; }
     }
 }

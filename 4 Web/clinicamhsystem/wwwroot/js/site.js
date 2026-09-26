@@ -1,6 +1,48 @@
-﻿$.fn.dataTable.ext.type.search = function (data) {
-    return !data ? '' : typeof data === 'string' ? data.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() : data;
-};
+﻿// Normalización global de texto para buscadores: minúsculas, sin tildes/diacríticos
+// y con espacios colapsados. "José  Pérez" y "jose perez" quedan igual.
+function normTexto(s) {
+    return (!s ? '' : String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()).replace(/\s+/g, ' ').trim();
+}
+window.normTexto = normTexto;
+
+// Select2: matcher global normalizado. Cada palabra escrita debe aparecer en la
+// opción, en cualquier orden ("perez juan" encuentra "Juan Pérez - 123") y sin
+// importar tildes ni mayúsculas. Aplica a todos los select2 (actuales y futuros).
+function matchSelect2(params, data) {
+    if (!params.term || $.trim(params.term) === '') return data;
+    if (data.children && data.children.length > 0) {
+        var grupo = $.extend(true, {}, data);
+        grupo.children = [];
+        for (var c = 0; c < data.children.length; c++) {
+            var mh = matchSelect2(params, data.children[c]);
+            if (mh) grupo.children.push(mh);
+        }
+        return grupo.children.length ? grupo : null;
+    }
+    var texto = normTexto(data.text || '');
+    var tokens = normTexto(params.term).split(' ');
+    for (var t = 0; t < tokens.length; t++) {
+        if (!tokens[t]) continue;
+        if (texto.indexOf(tokens[t]) === -1) return null;
+    }
+    return data;
+}
+if ($.fn.select2 && $.fn.select2.defaults) {
+    $.fn.select2.defaults.set('matcher', matchSelect2);
+}
+
+// DataTables (lado cliente): normaliza el contenido a buscar para que escribir
+// sin tildes encuentre datos con tildes ("medicamento" encuentra "Medicación").
+if ($.fn.dataTable && $.fn.dataTable.ext && $.fn.dataTable.ext.type && $.fn.dataTable.ext.type.search) {
+    $.extend($.fn.dataTable.ext.type.search, {
+        string: function (data) {
+            return !data || typeof data !== 'string' ? (data || '') : normTexto(data.replace(/[\r\n\u2028]/g, ' '));
+        },
+        html: function (data) {
+            return !data || typeof data !== 'string' ? '' : normTexto(data.replace(/[\r\n\u2028]/g, ' ').replace(/<.*?>/g, ''));
+        }
+    });
+}
 
 document.getElementById("toggle-button").addEventListener("click", function () {
     var sidebar = document.querySelector(".menu");

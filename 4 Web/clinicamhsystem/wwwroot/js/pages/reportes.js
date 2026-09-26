@@ -1,7 +1,10 @@
 $(document).ready(function () {
     var dt = CreateTable();
+    CreateTotalesPagoTable();
+    CreatePendientesTable();
 
-    $('.btn-total').click(function () {
+    // Delegado: también funciona en filas micro insertadas dinámicamente.
+    $(document).on('click', '.btn-total', function () {
         var consultaId = $(this).data('id');
         $.ajax({
             url: '/Reportes/Detalles',
@@ -133,7 +136,8 @@ $(document).ready(function () {
                     text: '<i class="fas fa-clone"></i><strong>Copiar</strong>',
                     className: "btn btn-outline-dark",
                     title: "Reporte",
-                    exportOptions: { columns: colsDia, page: 'all' }
+                    exportOptions: { columns: colsDia, page: 'all' },
+                    footer: true
                 },
                 {
                     extend: 'excel',
@@ -141,14 +145,17 @@ $(document).ready(function () {
                     className: "btn btn-outline-dark",
                     title: encabezado,
                     filename: fileDia,
-                    exportOptions: { columns: colsDia, modifier: { page: 'all', search: 'none' } }
+                    exportOptions: { columns: colsDia, modifier: { page: 'all', search: 'none' } },
+                    footer: true
                 }, {
                     extend: 'pdf',
-                    text: '<i class="fas fa-file-excel"></i><strong>PDf </strong>',
+                    text: '<i class="fas fa-file-pdf"></i><strong>PDF </strong>',
+                    customize: estiloPdfReporte,
                     className: "btn btn-outline-dark",
                     title: encabezado,
                     filename: fileDia,
-                    exportOptions: { columns: colsDia }
+                    exportOptions: { columns: colsDia },
+                    footer: true
                 }]
         });
         return dtDia;
@@ -161,6 +168,26 @@ $(document).ready(function () {
         var row = dtDia.row($(this).closest('tr'));
         if (!row || !row.node()) return;
         toggleMicro($(this), row);
+    });
+
+    // Nivel 2 del micro (agrupado día/servicio -> movimientos): las tablas micro se
+    // insertan dinámicamente como child rows, por eso el handler es delegado.
+    $(document).on('click', '.btn-micro-n2', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var btn = $(this);
+        var head = btn.closest('tr.micro-n2-head');
+        var det = head.next('tr.micro-n2-det');
+        if (!det.length) return;
+        if (det.is(':visible')) {
+            det.hide();
+            head.removeClass('shown');
+            btn.text('+');
+        } else {
+            det.show();
+            head.addClass('shown');
+            btn.text('−');
+        }
     });
 
     // Toggle Por servicio / Por día (se recuerda la última vista).
@@ -199,6 +226,13 @@ $(document).ready(function () {
             btn.closest('tr').addClass('shown');
             btn.text('−');
         });
+        // Nivel 2: expandir también los grupos visibles (los holders ocultos no son :visible y quedan colapsados).
+        $('.btn-micro-n2:visible').each(function () {
+            var head = $(this).closest('tr.micro-n2-head');
+            head.next('tr.micro-n2-det').show();
+            head.addClass('shown');
+            $(this).text('−');
+        });
     });
 
     $('#collapseAllMicro').click(function () {
@@ -215,6 +249,139 @@ $(document).ready(function () {
         });
     });
 });
+
+// Estilo PDF común: igual que la tabla en pantalla (encabezado oscuro con texto
+// blanco, cuerpo centrado y fila de totales en negrita). No usa índices fijos de
+// doc.content para no romperse si cambia el título o el mensaje superior.
+function estiloPdfReporte(doc) {
+    var tabla = null;
+    for (var i = 0; i < doc.content.length; i++) {
+        if (doc.content[i] && doc.content[i].table) { tabla = doc.content[i].table; break; }
+    }
+    if (!tabla || !tabla.body || !tabla.body.length) return;
+    var ncols = tabla.body[0].length;
+    tabla.widths = Array.apply(null, Array(ncols)).map(function () { return '*'; });
+    tabla.body.forEach(function (fila, idx) {
+        if (!fila || !fila.forEach) return;
+        fila.forEach(function (celda) {
+            if (!celda || typeof celda !== 'object') return;
+            if (idx === 0) {
+                celda.fillColor = '#212529';
+                celda.color = '#ffffff';
+                celda.bold = true;
+            }
+            celda.alignment = 'center';
+        });
+    });
+    var pie = tabla.body[tabla.body.length - 1];
+    if (tabla.body.length > 1 && pie && pie.forEach) {
+        pie.forEach(function (celda) {
+            if (celda && typeof celda === 'object') celda.bold = true;
+        });
+    }
+    doc.defaultStyle = doc.defaultStyle || {};
+    doc.defaultStyle.fontSize = 9;
+}
+
+function CreateTotalesPagoTable() {
+    if (!$('#tablaTotalesPago').length) return null;
+    var tituloPago = 'Totales por tipo de pago';
+    try {
+        if (typeof encabezado !== 'undefined' && encabezado) tituloPago = encabezado + ' - Totales por tipo de pago';
+    } catch (e) {}
+    var filePago = 'Totales por tipo de pago';
+    try {
+        if (typeof custom_file_name !== 'undefined' && custom_file_name) filePago = custom_file_name + ' - por tipo de pago';
+    } catch (e) {}
+    return $('#tablaTotalesPago').DataTable({
+        "ordering": true,
+        "paging": false,
+        "searching": false,
+        "info": false,
+        "lengthChange": false,
+        dom: 'Bfrtip',
+        "language": DataTablesCommon.withLanguage(),
+        buttons: [
+            {
+                extend: 'copy',
+                text: '<i class="fas fa-clone"></i><strong>Copiar</strong>',
+                className: "btn btn-outline-dark btn-sm",
+                title: tituloPago,
+                exportOptions: { columns: [0, 1, 2] },
+                footer: true
+            },
+            {
+                extend: 'excel',
+                text: '<i class="fas fa-file-excel"></i><strong>Excel </strong>',
+                className: "btn btn-outline-dark btn-sm",
+                title: tituloPago,
+                filename: filePago,
+                exportOptions: { columns: [0, 1, 2] },
+                footer: true
+            },
+            {
+                extend: 'pdf',
+                text: '<i class="fas fa-file-pdf"></i><strong>PDF </strong>',
+                customize: estiloPdfReporte,
+                className: "btn btn-outline-dark btn-sm",
+                title: tituloPago,
+                filename: filePago,
+                exportOptions: { columns: [0, 1, 2] },
+                footer: true,
+                orientation: "portrait",
+                pageSize: "LETTER"
+            }]
+    });
+}
+
+function CreatePendientesTable() {
+    if (!$('#tablaPendientes').length) return null;
+    var tituloPend = 'Cobros pendientes';
+    try {
+        if (typeof encabezado !== 'undefined' && encabezado) tituloPend = encabezado + ' - Cobros pendientes';
+    } catch (e) {}
+    var filePend = 'Cobros pendientes';
+    try {
+        if (typeof custom_file_name !== 'undefined' && custom_file_name) filePend = custom_file_name + ' - pendientes';
+    } catch (e) {}
+    return $('#tablaPendientes').DataTable({
+        "ordering": true,
+        "pageLength": 20,
+        "lengthChange": true,
+        dom: 'Bfrtip',
+        "language": DataTablesCommon.withLanguage(),
+        buttons: [
+            {
+                extend: 'copy',
+                text: '<i class="fas fa-clone"></i><strong>Copiar</strong>',
+                className: "btn btn-outline-dark btn-sm",
+                title: tituloPend,
+                exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6] },
+                footer: true
+            },
+            {
+                extend: 'excel',
+                text: '<i class="fas fa-file-excel"></i><strong>Excel </strong>',
+                className: "btn btn-outline-dark btn-sm",
+                title: tituloPend,
+                filename: filePend,
+                exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6] },
+                footer: true
+            },
+            {
+                extend: 'pdf',
+                text: '<i class="fas fa-file-pdf"></i><strong>PDF </strong>',
+                customize: estiloPdfReporte,
+                className: "btn btn-outline-dark btn-sm",
+                title: tituloPend,
+                filename: filePend,
+                exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6] },
+                footer: true,
+                orientation: "landscape",
+                pageSize: "LEGAL"
+            }]
+    });
+}
 
 function CreateTable() {
     if (!$('#table').length) return null;
@@ -238,18 +405,13 @@ function CreateTable() {
                     columns: (typeof num_columns !== 'undefined' && num_columns.length) ? num_columns : [0, 1, 2, 3, 4],
                     page: 'all'
                 },
+                footer: true,
                 orientation: "landscape",
                 pageSize: "LEGAL"
             },
             {
                 extend: 'excel',
                 text: '<i class="fas fa-file-excel"></i><strong>Excel </strong>',
-                customize: function (xlsx) {
-                    var sheet = xlsx.xl.worksheets['sheet1.xml'];
-                    $('row:first c', sheet).attr('s', '25');
-                    $('row:first c:nth-child(1) t', sheet).text('Contenido adicional 1');
-                    $('row:first c:nth-child(2) ', sheet).text('Contenido adicional 2');
-                },
                 messageTop: '',
                 className: "btn btn-outline-dark",
                 title: encabezado,
@@ -261,16 +423,13 @@ function CreateTable() {
                         search: 'none'
                     }
                 },
+                footer: true,
                 orientation: "landscape",
                 pageSize: "LEGAL"
             }, {
                 extend: 'pdf',
-                text: '<i class="fas fa-file-excel"></i><strong>PDf </strong>',
-                customize: function (doc) {
-                    doc.content[1].table.widths = Array(doc.content[1].table.body[0].length + 1).join('*').split('');
-                    doc.styles.tableBodyEven.alignment = 'center';
-                    doc.styles.tableBodyOdd.alignment = 'center';    
-                },
+                text: '<i class="fas fa-file-pdf"></i><strong>PDF </strong>',
+                customize: estiloPdfReporte,
                 messageTop: '',
                 className: "btn btn-outline-dark",
                 title: encabezado,
@@ -278,6 +437,7 @@ function CreateTable() {
                 exportOptions: {
                     columns: num_columns,
                 },
+                footer: true,
                 orientation: "landscape",
                 pageSize: "LEGAL"
             }]

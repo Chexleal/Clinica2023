@@ -20,18 +20,10 @@ public interface IErrorLogService
         string? traceIdentifier = null);
 }
 
-public sealed class ErrorLogService : IErrorLogService
+public sealed class ErrorLogService(
+    ClinicaContext dbContext,
+    ILogger<ErrorLogService> logger) : IErrorLogService
 {
-    private readonly ClinicaContext _dbContext;
-    private readonly ILogger<ErrorLogService> _logger;
-
-    public ErrorLogService(
-        ClinicaContext dbContext,
-        ILogger<ErrorLogService> logger)
-    {
-        _dbContext = dbContext;
-        _logger = logger;
-    }
 
     public async Task RegistrarAsync(
         Exception exception,
@@ -43,12 +35,12 @@ public sealed class ErrorLogService : IErrorLogService
         try
         {
             PrepararRegistro(exception, tipoError, ruta, metodoHttp, traceIdentifier);
-            await _dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
         }
         catch (Exception registroException)
         {
             // El registro de errores nunca debe ocultar el error original.
-            _logger.LogError(registroException, "No fue posible guardar el error en ErrorLog.");
+            logger.LogError(registroException, "No fue posible guardar el error en ErrorLog.");
         }
     }
 
@@ -62,11 +54,11 @@ public sealed class ErrorLogService : IErrorLogService
         try
         {
             PrepararRegistro(exception, tipoError, ruta, metodoHttp, traceIdentifier);
-            _dbContext.SaveChanges();
+            dbContext.SaveChanges();
         }
         catch (Exception registroException)
         {
-            _logger.LogError(registroException, "No fue posible guardar el error en ErrorLog.");
+            logger.LogError(registroException, "No fue posible guardar el error en ErrorLog.");
         }
     }
 
@@ -92,8 +84,8 @@ public sealed class ErrorLogService : IErrorLogService
         };
 
         // Evita volver a intentar cambios pendientes de la operación que falló.
-        _dbContext.ChangeTracker.Clear();
-        _dbContext.ErrorLogs.Add(error);
+        dbContext.ChangeTracker.Clear();
+        dbContext.ErrorLogs.Add(error);
     }
 
     private static string? Limitar(string? valor, int maximo)

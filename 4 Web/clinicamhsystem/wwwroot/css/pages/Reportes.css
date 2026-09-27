@@ -55,6 +55,11 @@ tr.shown .btn-micro {
     background-color: #e9f2f9;
 }
 
+/* Filas de gastos: rojito muy sutil para distinguir los egresos */
+.fila-gasto td {
+    background-color: #fbeeee;
+}
+
 /* Tabs del área: pestaña activa en azul de la app */
 #myTabs .nav-link {
     color: #495057;

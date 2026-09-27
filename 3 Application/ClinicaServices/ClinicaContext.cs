@@ -55,6 +55,8 @@ public partial class ClinicaContext : DbContext
     public virtual DbSet<VentaDetalle> VentaDetalles { get; set; }
     public virtual DbSet<MetodoPago> MetodosPago { get; set; }
     public virtual DbSet<VentaPago> VentaPagos { get; set; }
+    public virtual DbSet<CategoriaGasto> CategoriasGasto { get; set; }
+    public virtual DbSet<Gasto> Gastos { get; set; }
 
     public override int SaveChanges()
     {
@@ -693,6 +695,36 @@ public partial class ClinicaContext : DbContext
             entity.Property(e => e.Referencia).HasMaxLength(80).IsUnicode(false).HasColumnName("referencia");
             entity.Property(e => e.Fecha).HasColumnName("fecha");
             entity.HasIndex(e => e.IdVenta).HasDatabaseName("IX_VentaPago_Venta");
+        });
+
+        modelBuilder.Entity<CategoriaGasto>(entity =>
+        {
+            entity.HasKey(e => e.IdCategoriaGasto).HasName("PK_CategoriaGasto");
+            entity.ToTable("Categoria_gasto");
+            entity.Property(e => e.IdCategoriaGasto).ValueGeneratedNever().HasColumnName("id_categoria_gasto");
+            entity.Property(e => e.Nombre).HasMaxLength(120).IsUnicode(false).HasColumnName("nombre");
+            entity.Property(e => e.Activo).HasColumnName("activo");
+        });
+
+        modelBuilder.Entity<Gasto>(entity =>
+        {
+            entity.HasKey(e => e.IdGasto).HasName("PK_Gasto");
+            entity.ToTable("Gasto");
+            entity.Property(e => e.IdGasto).ValueGeneratedNever().HasColumnName("id_gasto");
+            entity.Property(e => e.Fecha).HasColumnName("fecha");
+            entity.Property(e => e.IdCategoriaGasto).HasColumnName("id_categoria_gasto");
+            entity.Property(e => e.Concepto).HasMaxLength(250).IsUnicode(false).HasColumnName("concepto");
+            entity.Property(e => e.Proveedor).HasMaxLength(200).IsUnicode(false).HasColumnName("proveedor");
+            entity.Property(e => e.NumeroComprobante).HasMaxLength(80).IsUnicode(false).HasColumnName("numero_comprobante");
+            entity.Property(e => e.RutaComprobante).HasMaxLength(500).IsUnicode(false).HasColumnName("ruta_comprobante");
+            entity.Property(e => e.NombreComprobante).HasMaxLength(255).IsUnicode(false).HasColumnName("nombre_comprobante");
+            entity.Property(e => e.IdMetodoPago).HasColumnName("id_metodo_pago");
+            entity.Property(e => e.Referencia).HasMaxLength(80).IsUnicode(false).HasColumnName("referencia");
+            entity.Property(e => e.Monto).HasColumnType("decimal(15, 2)").HasColumnName("monto");
+            entity.Property(e => e.Observaciones).HasMaxLength(300).IsUnicode(false).HasColumnName("observaciones");
+            entity.Property(e => e.Estado).HasMaxLength(20).IsUnicode(false).HasColumnName("estado");
+            entity.HasIndex(e => e.Fecha).HasDatabaseName("IX_Gasto_Fecha");
+            entity.HasIndex(e => e.IdCategoriaGasto).HasDatabaseName("IX_Gasto_Categoria");
         });
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes()

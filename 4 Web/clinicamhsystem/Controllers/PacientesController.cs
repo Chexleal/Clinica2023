@@ -8,19 +8,10 @@ using System.Threading.Tasks;
 namespace clinicaWeb.Controllers;
 
 [SecurityFilter("Pacientes")]
-public class PacientesController: ErrorHandlingController
+public class PacientesController(IPacienteServices pacienteServices, IConsultaServices consultaServices, IVentaService ventas) : ErrorHandlingController
 {
 
-    private readonly IPacienteServices _pacienteServices;
-    private readonly IConsultaServices _consultaServices;
-    private readonly IVentaService _ventas;
 
-    public PacientesController(IPacienteServices pacienteServices, IConsultaServices consultaServices, IVentaService ventas)
-    {
-        _pacienteServices = pacienteServices;
-        _consultaServices = consultaServices;
-        _ventas = ventas;
-    }
 
     public IActionResult Index()
     {
@@ -30,7 +21,7 @@ public class PacientesController: ErrorHandlingController
     [HttpPost]
     public IActionResult GetPacientesTable(DataTableRequest request)
     {
-        var result = _pacienteServices.GetPaginated(request.Start, request.Length, request.SearchValue, request.SortColumn, request.SortDir);
+        var result = pacienteServices.GetPaginated(request.Start, request.Length, request.SearchValue, request.SortColumn, request.SortDir);
 
         var data = result.Data.Select(p => new
         {
@@ -56,7 +47,7 @@ public class PacientesController: ErrorHandlingController
     // GET: UsuariosController/Detalles/fj33-4ra4r
     public ActionResult Detalles(Guid id)
     {
-        var paciente = _pacienteServices.GetPacienteById(id);
+        var paciente = pacienteServices.GetPacienteById(id);
         return View("Detalles", paciente);
     }
 
@@ -73,7 +64,7 @@ public class PacientesController: ErrorHandlingController
     {
         try
         {
-            _pacienteServices.AddPaciente(paciente);
+            pacienteServices.AddPaciente(paciente);
             return RedirectToAction("Index");
         }
         catch (Exception ex)
@@ -88,7 +79,7 @@ public class PacientesController: ErrorHandlingController
     // GET: UsuariosController/Editar/fj33-4ra4r
     public ActionResult Editar(Guid id)
     {
-        var paciente = _pacienteServices.GetPacienteById(id);
+        var paciente = pacienteServices.GetPacienteById(id);
         return View("Editar", paciente);
     }
 
@@ -99,7 +90,7 @@ public class PacientesController: ErrorHandlingController
     {
         try
         {
-            _pacienteServices.UpdatePaciente(paciente);
+            pacienteServices.UpdatePaciente(paciente);
             return RedirectToAction("Index");
         }
         catch(Exception ex)
@@ -115,45 +106,45 @@ public class PacientesController: ErrorHandlingController
     {
         try
         {
-            _pacienteServices.DeletePaciente(id);
+            pacienteServices.DeletePaciente(id);
             return RedirectToAction("Index");
         }
         catch (Exception ex) {
             RegistrarError(ex);
             return View("Error");
         }
-        //var pacientes = _pacienteServices.GetAll();
+        //var pacientes = pacienteServices.GetAll();
         //return RedirectToAction("Index", pacientes);
     }
 
     [HttpGet]
     public IActionResult GetPaciente(Guid pacienteId)
     {
-        var paciente = _pacienteServices.GetPacienteById(pacienteId);
+        var paciente = pacienteServices.GetPacienteById(pacienteId);
         return PartialView("Editar", paciente);
     }
     [HttpGet]
     public IActionResult GetHistorialConsultas(Guid pacienteId)
     {
-        var consultas = (_consultaServices.GetAllByPacienteId(pacienteId) ?? []).OrderByDescending(c => c.Fecha).ToList();
+        var consultas = (consultaServices.GetAllByPacienteId(pacienteId) ?? []).OrderByDescending(c => c.Fecha).ToList();
         // Cobro por consulta: folio/total/estado/saldo para pagar o ver desde el historial.
         var ventasPorConsulta = new Dictionary<Guid, List<ClinicaDomain.Venta>>();
         var saldos = new Dictionary<Guid, decimal>();
         foreach (var c in consultas)
         {
-            var ventas = _ventas.GetVentasPorConsulta(c.IdConsulta);
-            ventasPorConsulta[c.IdConsulta] = ventas;
-            foreach (var v in ventas)
+            var ventasConsulta = ventas.GetVentasPorConsulta(c.IdConsulta);
+            ventasPorConsulta[c.IdConsulta] = ventasConsulta;
+            foreach (var v in ventasConsulta)
             {
-                try { saldos[v.IdVenta] = _ventas.SaldoPendiente(v.IdVenta); }
+                try { saldos[v.IdVenta] = ventas.SaldoPendiente(v.IdVenta); }
                 catch { saldos[v.IdVenta] = v.Total; }
             }
         }
         // Compras de mostrador del paciente (sin consulta).
-        var libres = _ventas.GetVentasPorPaciente(pacienteId).Where(v => !v.IdConsulta.HasValue).ToList();
+        var libres = ventas.GetVentasPorPaciente(pacienteId).Where(v => !v.IdConsulta.HasValue).ToList();
         foreach (var v in libres)
         {
-            try { if (!saldos.ContainsKey(v.IdVenta)) saldos[v.IdVenta] = _ventas.SaldoPendiente(v.IdVenta); }
+            try { if (!saldos.ContainsKey(v.IdVenta)) saldos[v.IdVenta] = ventas.SaldoPendiente(v.IdVenta); }
             catch { saldos[v.IdVenta] = v.Total; }
         }
         ViewBag.VentasPorConsulta = ventasPorConsulta;

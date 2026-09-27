@@ -73,6 +73,47 @@ $(document).ready(function () {
         });
     }
 
+    // Gráfico de barras APILADAS: gastos por día divididos por categoría (mismo estilo).
+    if ($('#graficaGastosDia').length && typeof Chart !== 'undefined') {
+        var labelsGastos = JSON.parse(document.getElementById('labelsGastosDia').value);
+        var datasetsGastos = JSON.parse(document.getElementById('datasetsGastosDia').value);
+        var ctxGastos = document.getElementById('graficaGastosDia').getContext('2d');
+        new Chart(ctxGastos, {
+            type: 'bar',
+            data: {
+                labels: labelsGastos,
+                datasets: datasetsGastos
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { stacked: true },
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function (value) { return 'Q ' + value; }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { display: true, position: 'bottom' },
+                    tooltip: {
+                        filter: function (item) { return item.parsed.y > 0; },
+                        callbacks: {
+                            label: function (ctx) { return ' ' + ctx.dataset.label + ': Q ' + ctx.parsed.y; },
+                            footer: function (items) {
+                                var total = items.reduce(function (acc, it) { return acc + it.parsed.y; }, 0);
+                                return 'Total: Q ' + total;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
     // Vista micro (servicios): detalle expandible por fila (macro = resumen).
     // El contenido micro vive en divs ocultos FUERA de la tabla (#micro-xxx).
     function getMicroHtml(microId) {

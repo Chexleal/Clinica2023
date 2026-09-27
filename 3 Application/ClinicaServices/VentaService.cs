@@ -51,11 +51,8 @@ public interface IVentaService
     VentaDetalle AgregarServicioExpress(Guid idVenta, string descripcion, decimal precio, decimal cantidad, decimal descuentoMonto = 0, string? motivoDescuento = null);
 }
 
-public class VentaService : IVentaService
+public class VentaService(ClinicaContext db, ICurrentUser? currentUser = null) : IVentaService
 {
-    private readonly ClinicaContext _db;
-    private readonly ICurrentUser? _currentUser;
-    public VentaService(ClinicaContext db, ICurrentUser? currentUser = null) { _db = db; _currentUser = currentUser; }
 
     private string NuevoFolio()
     {
@@ -64,13 +61,13 @@ public class VentaService : IVentaService
 
     private void RecalcularTotal(Venta venta)
     {
-        venta.Total = _db.VentaDetalles.Where(d => d.IdVenta == venta.IdVenta).Sum(d => (decimal?)d.Subtotal) ?? 0;
+        venta.Total = db.VentaDetalles.Where(d => d.IdVenta == venta.IdVenta).Sum(d => (decimal?)d.Subtotal) ?? 0;
     }
 
     private void SincronizarConsulta(Venta venta)
     {
         if (!venta.IdConsulta.HasValue) return;
-        var consulta = _db.Consulta.FirstOrDefault(c => c.IdConsulta == venta.IdConsulta.Value);
+        var consulta = db.Consulta.FirstOrDefault(c => c.IdConsulta == venta.IdConsulta.Value);
         if (consulta is null) return;
         consulta.Total = venta.Total;
         if (venta.Estado == "Pagada") consulta.Pagada = true;
@@ -83,10 +80,10 @@ public class VentaService : IVentaService
 
     public Venta GetOrCreatePorConsulta(Guid idConsulta)
     {
-        var venta = _db.Ventas.FirstOrDefault(v => v.IdConsulta == idConsulta && (v.Estado == "Pendiente" || v.Estado == "Pendiente de pago"));
+        var venta = db.Ventas.FirstOrDefault(v => v.IdConsulta == idConsulta && (v.Estado == "Pendiente" || v.Estado == "Pendiente de pago"));
         if (venta is not null) return venta;
         // Anti-duplicado: si ya existe una pagada, se crea una nueva pendiente solo si la consulta se reabrió.
-        var consulta = _db.Consulta.FirstOrDefault(c => c.IdConsulta == idConsulta)
+        var consulta = db.Consulta.FirstOrDefault(c => c.IdConsulta == idConsulta)
             ?? throw new InvalidOperationException("Consulta no encontrada.");
         venta = new Venta
         {
@@ -98,8 +95,8 @@ public class VentaService : IVentaService
             Total = 0,
             Estado = "Pendiente"
         };
-        _db.Ventas.Add(venta);
-        _db.SaveChanges();
+        db.Ventas.Add(venta);
+        db.SaveChanges();
         return venta;
     }
 
@@ -116,43 +113,43 @@ public class VentaService : IVentaService
             Estado = "Pendiente",
             Observaciones = observaciones ?? string.Empty
         };
-        _db.Ventas.Add(venta);
-        _db.SaveChanges();
+        db.Ventas.Add(venta);
+        db.SaveChanges();
         return venta;
     }
 
     public Venta? GetVenta(Guid idVenta) =>
-        _db.Ventas.FirstOrDefault(v => v.IdVenta == idVenta);
+        db.Ventas.FirstOrDefault(v => v.IdVenta == idVenta);
 
     public bool DescartarSiVacia(Guid idVenta)
     {
-        var v = _db.Ventas.FirstOrDefault(x => x.IdVenta == idVenta);
+        var v = db.Ventas.FirstOrDefault(x => x.IdVenta == idVenta);
         if (v is null || v.Estado != "Pendiente" || v.IdConsulta.HasValue) return false;
-        if (_db.VentaDetalles.Any(d => d.IdVenta == idVenta)) return false;
-        if (_db.VentaPagos.Any(p => p.IdVenta == idVenta)) return false;
-        _db.Ventas.Remove(v);
-        _db.SaveChanges();
+        if (db.VentaDetalles.Any(d => d.IdVenta == idVenta)) return false;
+        if (db.VentaPagos.Any(p => p.IdVenta == idVenta)) return false;
+        db.Ventas.Remove(v);
+        db.SaveChanges();
         return true;
     }
 
     public List<Venta> GetPendientes(int top = 100) =>
-        _db.Ventas.Where(v => v.Estado == "Pendiente" && v.IdConsulta == null).OrderByDescending(v => v.Fecha).Take(top).ToList();
+        db.Ventas.Where(v => v.Estado == "Pendiente" && v.IdConsulta == null).OrderByDescending(v => v.Fecha).Take(top).ToList();
 
     public List<Venta> GetPendientesPago(int top = 100) =>
-        _db.Ventas.Where(v => v.Estado == "Pendiente de pago").OrderBy(v => v.FechaPromesa == null ? 1 : 0).ThenBy(v => v.FechaPromesa).ThenByDescending(v => v.Fecha).Take(top).ToList();
+        db.Ventas.Where(v => v.Estado == "Pendiente de pago").OrderBy(v => v.FechaPromesa == null ? 1 : 0).ThenBy(v => v.FechaPromesa).ThenByDescending(v => v.Fecha).Take(top).ToList();
 
     public List<Venta> GetPorRango(DateTime from, DateTime to)
     {
         var f = from.Date;
         var t = to.Date.AddDays(1);
-        return _db.Ventas.Where(v => v.Fecha >= f && v.Fecha < t && v.Estado != "Anulada").ToList();
+        return db.Ventas.Where(v => v.Fecha >= f && v.Fecha < t && v.Estado != "Anulada").ToList();
     }
 
     public List<Venta> GetHistorial(DateTime from, DateTime to, string? texto = null, int top = 200)
     {
         var f = from.Date;
         var t = to.Date.AddDays(1);
-        var q = _db.Ventas.Where(v => v.Fecha >= f && v.Fecha < t
+        var q = db.Ventas.Where(v => v.Fecha >= f && v.Fecha < t
             && (v.Estado == "Pagada" || v.Estado == "Anulada"));
         texto = (texto ?? "").Trim();
         if (!string.IsNullOrWhiteSpace(texto))
@@ -164,16 +161,16 @@ public class VentaService : IVentaService
     }
 
     public List<Venta> GetVentasPorPaciente(Guid idPaciente, int top = 200) =>
-        _db.Ventas.Where(v => v.IdPaciente == idPaciente)
+        db.Ventas.Where(v => v.IdPaciente == idPaciente)
             .OrderByDescending(v => v.Fecha).Take(top).ToList();
 
     public List<Venta> GetVentasPorConsulta(Guid idConsulta) =>
-        _db.Ventas.Where(v => v.IdConsulta == idConsulta)
+        db.Ventas.Where(v => v.IdConsulta == idConsulta)
             .OrderByDescending(v => v.Fecha).ToList();
 
     public List<VentaDetalle> GetDetalles(Guid idVenta)
     {
-        var lineas = _db.VentaDetalles.Where(d => d.IdVenta == idVenta).ToList();
+        var lineas = db.VentaDetalles.Where(d => d.IdVenta == idVenta).ToList();
         CompletarNombresDescuento(lineas);
         return lineas;
     }
@@ -182,7 +179,7 @@ public class VentaService : IVentaService
     {
         var ids = (idsVenta ?? Enumerable.Empty<Guid>()).Distinct().ToList();
         if (!ids.Any()) return new List<VentaDetalle>();
-        var lineas = _db.VentaDetalles.Where(d => ids.Contains(d.IdVenta)).ToList();
+        var lineas = db.VentaDetalles.Where(d => ids.Contains(d.IdVenta)).ToList();
         CompletarNombresDescuento(lineas);
         return lineas;
     }
@@ -208,7 +205,7 @@ public class VentaService : IVentaService
             var ids = lineas.Where(l => l.DescuentoOtorgadoPor.HasValue)
                 .Select(l => l.DescuentoOtorgadoPor!.Value).Distinct().ToList();
             if (!ids.Any()) return;
-            var nombres = _db.Usuarios.Where(u => ids.Contains(u.IdUsuario))
+            var nombres = db.Usuarios.Where(u => ids.Contains(u.IdUsuario))
                 .ToDictionary(u => u.IdUsuario, u => (u.Nombre + " " + u.Apellido).Trim());
             foreach (var l in lineas)
                 if (l.DescuentoOtorgadoPor.HasValue && nombres.TryGetValue(l.DescuentoOtorgadoPor.Value, out var n))
@@ -222,7 +219,7 @@ public class VentaService : IVentaService
         if (cantidad <= 0) throw new ArgumentException("Cantidad debe ser mayor a cero.");
         var venta = GetVenta(idVenta) ?? throw new InvalidOperationException("Venta no encontrada.");
         if (venta.Estado != "Pendiente") throw new InvalidOperationException("Solo se puede modificar una venta pendiente.");
-        var servicio = _db.MotivoCobros.FirstOrDefault(m => m.IdMotivoCobro == motivoCobroId)
+        var servicio = db.MotivoCobros.FirstOrDefault(m => m.IdMotivoCobro == motivoCobroId)
             ?? throw new InvalidOperationException("Servicio no encontrado.");
         var precio = precioUnitario ?? servicio.PrecioSugerido;
         var bruto = cantidad * precio;
@@ -239,12 +236,12 @@ public class VentaService : IVentaService
             Subtotal = bruto - desc,
             DescuentoMonto = desc,
             DescuentoMotivo = motivo,
-            DescuentoOtorgadoPor = desc > 0 ? _currentUser?.Usuario?.IdUsuario : null
+            DescuentoOtorgadoPor = desc > 0 ? currentUser?.Usuario?.IdUsuario : null
         };
-        _db.VentaDetalles.Add(detalle);
+        db.VentaDetalles.Add(detalle);
         RecalcularTotal(venta);
         SincronizarConsulta(venta);
-        _db.SaveChanges();
+        db.SaveChanges();
         return detalle;
     }
 
@@ -254,7 +251,7 @@ public class VentaService : IVentaService
         if (precioUnitario.HasValue && precioUnitario.Value < 0) throw new ArgumentException("Precio no válido.");
         var venta = GetVenta(idVenta) ?? throw new InvalidOperationException("Venta no encontrada.");
         if (venta.Estado != "Pendiente") throw new InvalidOperationException("Solo se puede modificar una venta pendiente.");
-        var producto = _db.Productos.FirstOrDefault(p => p.IdProducto == productoId && p.Activo)
+        var producto = db.Productos.FirstOrDefault(p => p.IdProducto == productoId && p.Activo)
             ?? throw new InvalidOperationException("Producto no encontrado o inactivo.");
         var precioFinal = precioUnitario ?? producto.PrecioVenta;
         if (precioFinal <= 0)
@@ -265,16 +262,16 @@ public class VentaService : IVentaService
         {
             // Validar stock disponible (sin descontar aún; el descuento real es al Pagar).
             var disponible = producto.RequiereLote
-                ? _db.LotesProducto.Where(l => l.IdProducto == productoId && l.Activo && l.Stock > 0).Sum(l => (decimal?)l.Stock) ?? 0
+                ? db.LotesProducto.Where(l => l.IdProducto == productoId && l.Activo && l.Stock > 0).Sum(l => (decimal?)l.Stock) ?? 0
                 : producto.StockActual;
-            var yaReservado = _db.VentaDetalles.Where(d => d.IdProducto == productoId && d.IdVenta == idVenta).Sum(d => (decimal?)d.Cantidad) ?? 0;
+            var yaReservado = db.VentaDetalles.Where(d => d.IdProducto == productoId && d.IdVenta == idVenta).Sum(d => (decimal?)d.Cantidad) ?? 0;
             if (disponible < yaReservado + cantidad)
                 throw new InvalidOperationException($"Stock insuficiente de {producto.Nombre}. Disponible: {disponible}. Si es sobre pedido, marca el check S/pedido al agregarlo.");
         }
 
         if (producto.RequiereLote && loteId.HasValue)
         {
-            var lote = _db.LotesProducto.FirstOrDefault(l => l.IdLote == loteId.Value && l.IdProducto == productoId)
+            var lote = db.LotesProducto.FirstOrDefault(l => l.IdLote == loteId.Value && l.IdProducto == productoId)
                 ?? throw new InvalidOperationException("Lote no válido para este producto.");
             if (lote.Stock < cantidad) throw new InvalidOperationException($"El lote {lote.CodigoLote} solo tiene {lote.Stock}.");
         }
@@ -294,13 +291,13 @@ public class VentaService : IVentaService
             Subtotal = brutoProd - descProd,
             DescuentoMonto = descProd,
             DescuentoMotivo = motivoProd,
-            DescuentoOtorgadoPor = descProd > 0 ? _currentUser?.Usuario?.IdUsuario : null,
+            DescuentoOtorgadoPor = descProd > 0 ? currentUser?.Usuario?.IdUsuario : null,
             EsSobrePedido = esSobrePedido
         };
-        _db.VentaDetalles.Add(detalle);
+        db.VentaDetalles.Add(detalle);
         RecalcularTotal(venta);
         SincronizarConsulta(venta);
-        _db.SaveChanges();
+        db.SaveChanges();
         return detalle;
     }
 
@@ -308,15 +305,15 @@ public class VentaService : IVentaService
     {
         var nombre = (nombreMedicamento ?? "").Trim().ToLower();
         if (string.IsNullOrWhiteSpace(nombre)) return null;
-        var producto = _db.Productos.FirstOrDefault(p => p.Activo && p.Nombre.ToLower() == nombre)
-            ?? _db.Productos.FirstOrDefault(p => p.Activo && p.Nombre.ToLower().Contains(nombre));
+        var producto = db.Productos.FirstOrDefault(p => p.Activo && p.Nombre.ToLower() == nombre)
+            ?? db.Productos.FirstOrDefault(p => p.Activo && p.Nombre.ToLower().Contains(nombre));
         if (producto is null) return null; // no hay match: la compra no es obligatoria en clínica
         return AddProducto(idVenta, producto.IdProducto, cantidad);
     }
 
     public VentaDetalle AplicarDescuento(Guid idVentaDetalle, decimal descuentoMonto, string? motivoDescuento)
     {
-        var detalle = _db.VentaDetalles.FirstOrDefault(d => d.IdVentaDetalle == idVentaDetalle)
+        var detalle = db.VentaDetalles.FirstOrDefault(d => d.IdVentaDetalle == idVentaDetalle)
             ?? throw new InvalidOperationException("Línea no encontrada.");
         var venta = GetVenta(detalle.IdVenta) ?? throw new InvalidOperationException("Venta no encontrada.");
         if (venta.Estado != "Pendiente") throw new InvalidOperationException("Solo se puede modificar una venta pendiente.");
@@ -324,28 +321,28 @@ public class VentaService : IVentaService
         var (desc, motivo) = ValidarDescuento(bruto, descuentoMonto, motivoDescuento);
         detalle.DescuentoMonto = desc;
         detalle.DescuentoMotivo = motivo;
-        detalle.DescuentoOtorgadoPor = desc > 0 ? _currentUser?.Usuario?.IdUsuario : null;
+        detalle.DescuentoOtorgadoPor = desc > 0 ? currentUser?.Usuario?.IdUsuario : null;
         detalle.Subtotal = bruto - desc;
         RecalcularTotal(venta);
         SincronizarConsulta(venta);
-        _db.SaveChanges();
+        db.SaveChanges();
         return detalle;
     }
 
     public void RemoveDetalle(Guid idVentaDetalle)
     {
-        var detalle = _db.VentaDetalles.FirstOrDefault(d => d.IdVentaDetalle == idVentaDetalle);
+        var detalle = db.VentaDetalles.FirstOrDefault(d => d.IdVentaDetalle == idVentaDetalle);
         if (detalle is null) return;
         var venta = GetVenta(detalle.IdVenta);
         if (venta is not null && venta.Estado != "Pendiente")
             throw new InvalidOperationException("Solo se puede modificar una venta pendiente.");
-        _db.VentaDetalles.Remove(detalle);
+        db.VentaDetalles.Remove(detalle);
         if (venta is not null)
         {
             RecalcularTotal(venta);
             SincronizarConsulta(venta);
         }
-        _db.SaveChanges();
+        db.SaveChanges();
     }
 
     public VentaDetalle CorregirDetalle(Guid idVentaDetalle, decimal cantidad, decimal precioUnitario, string motivo)
@@ -355,7 +352,7 @@ public class VentaService : IVentaService
         motivo = (motivo ?? "").Trim();
         if (string.IsNullOrWhiteSpace(motivo)) throw new ArgumentException("Indica el motivo de la corrección.");
         if (motivo.Length > 200) motivo = motivo[..200];
-        var detalle = _db.VentaDetalles.FirstOrDefault(d => d.IdVentaDetalle == idVentaDetalle)
+        var detalle = db.VentaDetalles.FirstOrDefault(d => d.IdVentaDetalle == idVentaDetalle)
             ?? throw new InvalidOperationException("Línea no encontrada.");
         var venta = GetVenta(detalle.IdVenta) ?? throw new InvalidOperationException("Venta no encontrada.");
         if (venta.Estado != "Pendiente")
@@ -370,11 +367,11 @@ public class VentaService : IVentaService
             ? $"{detalle.DescuentoMotivo} | corr: {motivo}".Trim(' ', '|')
             : detalle.DescuentoMotivo;
         detalle.FechaModificacion = DateTime.Now;
-        detalle.ModificadoPor = _currentUser?.Usuario?.IdUsuario;
+        detalle.ModificadoPor = currentUser?.Usuario?.IdUsuario;
         RecalcularTotal(venta);
         venta.Observaciones = $"{(venta.Observaciones ?? "").Trim()} [Corr {DateTime.Now:dd/MM HH:mm}: {detalle.Descripcion} -> {cantidad} x Q{precioUnitario:0.00} ({motivo})]".Trim();
         SincronizarConsulta(venta);
-        _db.SaveChanges();
+        db.SaveChanges();
         return detalle;
     }
 
@@ -386,7 +383,7 @@ public class VentaService : IVentaService
         if (venta.Estado != "Pagada" && venta.Estado != "Pendiente de pago")
             throw new InvalidOperationException("Solo se puede reabrir una venta pagada o pendiente de pago.");
         if (motivo.Length > 200) motivo = motivo[..200];
-        using var tx = _db.Database.BeginTransaction();
+        using var tx = db.Database.BeginTransaction();
         try
         {
             ReversarInventario(venta, "Reapertura para corrección");
@@ -394,10 +391,10 @@ public class VentaService : IVentaService
             venta.FiadoResponsable = null;
             venta.FechaPromesa = null;
             venta.FechaModificacion = DateTime.Now;
-            venta.ModificadoPor = _currentUser?.Usuario?.IdUsuario;
-            venta.Observaciones = $"{(venta.Observaciones ?? "").Trim()} [Reabierta {DateTime.Now:dd/MM HH:mm} por {(_currentUser?.Usuario?.NombreUsuario ?? "caja")}: {motivo}]".Trim();
+            venta.ModificadoPor = currentUser?.Usuario?.IdUsuario;
+            venta.Observaciones = $"{(venta.Observaciones ?? "").Trim()} [Reabierta {DateTime.Now:dd/MM HH:mm} por {(currentUser?.Usuario?.NombreUsuario ?? "caja")}: {motivo}]".Trim();
             SincronizarConsulta(venta);
-            _db.SaveChanges();
+            db.SaveChanges();
             tx.Commit();
         }
         catch
@@ -415,27 +412,27 @@ public class VentaService : IVentaService
         if (venta.Estado != "Pagada" && venta.Estado != "Pendiente de pago")
             throw new InvalidOperationException("Solo se puede devolver una venta pagada o pendiente de pago.");
         if (motivo.Length > 200) motivo = motivo[..200];
-        using var tx = _db.Database.BeginTransaction();
+        using var tx = db.Database.BeginTransaction();
         try
         {
             ReversarInventario(venta, "Devolución/anulación");
             venta.Estado = "Anulada";
             venta.FechaModificacion = DateTime.Now;
-            venta.ModificadoPor = _currentUser?.Usuario?.IdUsuario;
-            venta.Observaciones = $"{(venta.Observaciones ?? "").Trim()} [Devuelta {DateTime.Now:dd/MM HH:mm} por {(_currentUser?.Usuario?.NombreUsuario ?? "caja")}: {motivo}]".Trim();
+            venta.ModificadoPor = currentUser?.Usuario?.IdUsuario;
+            venta.Observaciones = $"{(venta.Observaciones ?? "").Trim()} [Devuelta {DateTime.Now:dd/MM HH:mm} por {(currentUser?.Usuario?.NombreUsuario ?? "caja")}: {motivo}]".Trim();
             if (venta.IdConsulta.HasValue)
             {
-                var consulta = _db.Consulta.FirstOrDefault(c => c.IdConsulta == venta.IdConsulta.Value);
+                var consulta = db.Consulta.FirstOrDefault(c => c.IdConsulta == venta.IdConsulta.Value);
                 if (consulta is not null)
                 {
                     // La consulta vuelve a la cola de cobro: se recalcula con las ventas restantes.
-                    var resto = _db.Ventas.Where(v => v.IdConsulta == venta.IdConsulta.Value
+                    var resto = db.Ventas.Where(v => v.IdConsulta == venta.IdConsulta.Value
                         && v.IdVenta != venta.IdVenta && v.Estado != "Anulada").ToList();
                     consulta.Total = resto.Sum(v => v.Total);
                     consulta.Pagada = resto.Any(v => v.Estado == "Pagada");
                 }
             }
-            _db.SaveChanges();
+            db.SaveChanges();
             tx.Commit();
         }
         catch
@@ -448,14 +445,14 @@ public class VentaService : IVentaService
     /// <summary>Reingresa al inventario lo descontado al cobrar (el stock ya salió con SalidaVenta).</summary>
     private void ReversarInventario(Venta venta, string contexto)
     {
-        var detalles = _db.VentaDetalles.Where(d => d.IdVenta == venta.IdVenta).ToList();
+        var detalles = db.VentaDetalles.Where(d => d.IdVenta == venta.IdVenta).ToList();
         foreach (var d in detalles.Where(x => x.TipoLinea == "Producto" && x.IdProducto.HasValue))
         {
-            var producto = _db.Productos.FirstOrDefault(p => p.IdProducto == d.IdProducto!.Value);
+            var producto = db.Productos.FirstOrDefault(p => p.IdProducto == d.IdProducto!.Value);
             if (producto is null) continue;
             if (d.EsSobrePedido)
             {
-                _db.MovimientosInventario.Add(new MovimientoInventario
+                db.MovimientosInventario.Add(new MovimientoInventario
                 {
                     IdMovimiento = Guid.NewGuid(),
                     Fecha = DateTime.Now,
@@ -472,7 +469,7 @@ public class VentaService : IVentaService
             if (!producto.RequiereLote)
             {
                 producto.StockActual += d.Cantidad;
-                _db.MovimientosInventario.Add(new MovimientoInventario
+                db.MovimientosInventario.Add(new MovimientoInventario
                 {
                     IdMovimiento = Guid.NewGuid(),
                     Fecha = DateTime.Now,
@@ -487,12 +484,12 @@ public class VentaService : IVentaService
             }
             else if (d.IdLote.HasValue)
             {
-                var lote = _db.LotesProducto.FirstOrDefault(l => l.IdLote == d.IdLote.Value);
+                var lote = db.LotesProducto.FirstOrDefault(l => l.IdLote == d.IdLote.Value);
                 if (lote is not null) lote.Stock += d.Cantidad;
                 else producto.StockActual += d.Cantidad;
-                producto.StockActual = _db.LotesProducto
+                producto.StockActual = db.LotesProducto
                     .Where(l => l.IdProducto == producto.IdProducto && l.Activo).Sum(l => (decimal?)l.Stock) ?? producto.StockActual;
-                _db.MovimientosInventario.Add(new MovimientoInventario
+                db.MovimientosInventario.Add(new MovimientoInventario
                 {
                     IdMovimiento = Guid.NewGuid(),
                     Fecha = DateTime.Now,
@@ -509,7 +506,7 @@ public class VentaService : IVentaService
             else
             {
                 producto.StockActual += d.Cantidad;
-                _db.MovimientosInventario.Add(new MovimientoInventario
+                db.MovimientosInventario.Add(new MovimientoInventario
                 {
                     IdMovimiento = Guid.NewGuid(),
                     Fecha = DateTime.Now,
@@ -531,8 +528,8 @@ public class VentaService : IVentaService
         var venta = GetVenta(idVenta) ?? throw new InvalidOperationException("Venta no encontrada.");
         if (venta.Estado != "Pendiente") throw new InvalidOperationException("La venta ya fue procesada.");
         RecalcularTotal(venta);
-        var efectivo = _db.MetodosPago.FirstOrDefault(m => m.Activo && m.Nombre.ToLower().Contains("efectivo"))
-            ?? _db.MetodosPago.FirstOrDefault(m => m.Activo);
+        var efectivo = db.MetodosPago.FirstOrDefault(m => m.Activo && m.Nombre.ToLower().Contains("efectivo"))
+            ?? db.MetodosPago.FirstOrDefault(m => m.Activo);
         if (efectivo is null)
             throw new InvalidOperationException("No hay tipos de pago configurados.");
         if (!GetPagos(idVenta).Any() && venta.Total > 0)
@@ -541,20 +538,20 @@ public class VentaService : IVentaService
     }
 
     public List<VentaPago> GetPagos(Guid idVenta) =>
-        _db.VentaPagos.Where(p => p.IdVenta == idVenta).OrderBy(p => p.Fecha).ToList();
+        db.VentaPagos.Where(p => p.IdVenta == idVenta).OrderBy(p => p.Fecha).ToList();
 
     public List<VentaPago> GetPagosPorVentas(IEnumerable<Guid> idsVenta)
     {
         var ids = (idsVenta ?? Enumerable.Empty<Guid>()).Distinct().ToList();
         if (!ids.Any()) return new List<VentaPago>();
-        return _db.VentaPagos.Where(p => ids.Contains(p.IdVenta)).OrderBy(p => p.Fecha).ToList();
+        return db.VentaPagos.Where(p => ids.Contains(p.IdVenta)).OrderBy(p => p.Fecha).ToList();
     }
 
     public VentaPago AgregarPago(Guid idVenta, Guid metodoId, decimal monto, string? referencia)
     {
         var venta = GetVenta(idVenta) ?? throw new InvalidOperationException("Venta no encontrada.");
         if (venta.Estado != "Pendiente" && venta.Estado != "Pendiente de pago") throw new InvalidOperationException("Solo se puede pagar una venta pendiente o pendiente de pago.");
-        var metodo = _db.MetodosPago.FirstOrDefault(m => m.IdMetodoPago == metodoId && m.Activo)
+        var metodo = db.MetodosPago.FirstOrDefault(m => m.IdMetodoPago == metodoId && m.Activo)
             ?? throw new InvalidOperationException("Tipo de pago no válido o inactivo.");
         if (monto <= 0) throw new ArgumentException("El monto debe ser mayor a cero.");
         referencia = (referencia ?? "").Trim();
@@ -576,27 +573,27 @@ public class VentaService : IVentaService
             Referencia = referencia,
             Fecha = DateTime.Now
         };
-        _db.VentaPagos.Add(pago);
-        _db.SaveChanges();
+        db.VentaPagos.Add(pago);
+        db.SaveChanges();
         if (venta.Estado == "Pendiente de pago" && SaldoPendiente(idVenta) <= 0.001m)
         {
             // Pendiente de pago saldado con abonos: se cierra (el stock ya se descontó).
             venta.Estado = "Pagada";
             SincronizarConsulta(venta);
-            _db.SaveChanges();
+            db.SaveChanges();
         }
         return pago;
     }
 
     public void EliminarPago(Guid idPago)
     {
-        var pago = _db.VentaPagos.FirstOrDefault(p => p.IdVentaPago == idPago);
+        var pago = db.VentaPagos.FirstOrDefault(p => p.IdVentaPago == idPago);
         if (pago is null) return;
         var venta = GetVenta(pago.IdVenta);
         if (venta is not null && venta.Estado != "Pendiente" && venta.Estado != "Pendiente de pago")
             throw new InvalidOperationException("Solo se puede modificar una venta pendiente o pendiente de pago.");
-        _db.VentaPagos.Remove(pago);
-        _db.SaveChanges();
+        db.VentaPagos.Remove(pago);
+        db.SaveChanges();
     }
 
     public decimal SaldoPendiente(Guid idVenta)
@@ -620,7 +617,7 @@ public class VentaService : IVentaService
             RecalcularTotal(venta);
             venta.Estado = "Pagada";
             SincronizarConsulta(venta);
-            _db.SaveChanges();
+            db.SaveChanges();
             return;
         }
         AplicarCobro(venta, "Pagada");
@@ -648,19 +645,19 @@ public class VentaService : IVentaService
         var idVenta = venta.IdVenta;
         var detalles = GetDetalles(idVenta);
 
-        using var tx = _db.Database.BeginTransaction();
+        using var tx = db.Database.BeginTransaction();
         try
         {
             foreach (var d in detalles.Where(x => x.TipoLinea == "Producto" && x.IdProducto.HasValue))
             {
-                var producto = _db.Productos.FirstOrDefault(p => p.IdProducto == d.IdProducto!.Value)
+                var producto = db.Productos.FirstOrDefault(p => p.IdProducto == d.IdProducto!.Value)
                     ?? throw new InvalidOperationException($"Producto no encontrado: {d.Descripcion}");
                 var cantidad = d.Cantidad;
 
                 // Sobre pedido por línea: no toca stock; deja rastro para el pendiente con el proveedor.
                 if (d.EsSobrePedido)
                 {
-                    _db.MovimientosInventario.Add(new MovimientoInventario
+                    db.MovimientosInventario.Add(new MovimientoInventario
                     {
                         IdMovimiento = Guid.NewGuid(),
                         Fecha = DateTime.Now,
@@ -680,7 +677,7 @@ public class VentaService : IVentaService
                     if (producto.StockActual < cantidad)
                         throw new InvalidOperationException($"Stock insuficiente de {producto.Nombre}.");
                     producto.StockActual -= cantidad;
-                    _db.MovimientosInventario.Add(new MovimientoInventario
+                    db.MovimientosInventario.Add(new MovimientoInventario
                     {
                         IdMovimiento = Guid.NewGuid(),
                         Fecha = DateTime.Now,
@@ -699,13 +696,13 @@ public class VentaService : IVentaService
                     List<LoteProducto> lotes;
                     if (d.IdLote.HasValue)
                     {
-                        var unico = _db.LotesProducto.FirstOrDefault(l => l.IdLote == d.IdLote.Value)
+                        var unico = db.LotesProducto.FirstOrDefault(l => l.IdLote == d.IdLote.Value)
                             ?? throw new InvalidOperationException("Lote no encontrado.");
                         lotes = new List<LoteProducto> { unico };
                     }
                     else
                     {
-                        lotes = _db.LotesProducto
+                        lotes = db.LotesProducto
                             .Where(l => l.IdProducto == producto.IdProducto && l.Activo && l.Stock > 0)
                             .OrderBy(l => l.FechaVencimiento == null ? 1 : 0)
                             .ThenBy(l => l.FechaVencimiento)
@@ -719,7 +716,7 @@ public class VentaService : IVentaService
                         var toma = Math.Min(lote.Stock, restante);
                         lote.Stock -= toma;
                         restante -= toma;
-                        _db.MovimientosInventario.Add(new MovimientoInventario
+                        db.MovimientosInventario.Add(new MovimientoInventario
                         {
                             IdMovimiento = Guid.NewGuid(),
                             Fecha = DateTime.Now,
@@ -740,7 +737,7 @@ public class VentaService : IVentaService
                     }
                     if (restante > 0)
                         throw new InvalidOperationException($"Stock insuficiente en lotes de {producto.Nombre}.");
-                    producto.StockActual = _db.LotesProducto
+                    producto.StockActual = db.LotesProducto
                         .Where(l => l.IdProducto == producto.IdProducto && l.Activo).Sum(l => (decimal?)l.Stock) ?? 0;
                 }
             }
@@ -748,7 +745,7 @@ public class VentaService : IVentaService
             RecalcularTotal(venta);
             venta.Estado = estadoFinal;
             SincronizarConsulta(venta);
-            _db.SaveChanges();
+            db.SaveChanges();
             tx.Commit();
         }
         catch
@@ -768,7 +765,7 @@ public class VentaService : IVentaService
             throw new InvalidOperationException("Una venta pendiente de pago no se puede anular por el momento.");
         venta.Estado = "Anulada";
         SincronizarConsulta(venta);
-        _db.SaveChanges();
+        db.SaveChanges();
     }
 
     public VentaDetalle AgregarProductoExpress(Guid idVenta, string nombre, decimal precioVenta, decimal cantidad, decimal? costoUnitario = null, Guid? idCategoria = null, decimal descuentoMonto = 0, string? motivoDescuento = null)
@@ -780,11 +777,11 @@ public class VentaService : IVentaService
         var venta = GetVenta(idVenta) ?? throw new InvalidOperationException("Venta no encontrada.");
         if (venta.Estado != "Pendiente") throw new InvalidOperationException("Solo se puede modificar una venta pendiente.");
 
-        using var tx = _db.Database.BeginTransaction();
+        using var tx = db.Database.BeginTransaction();
         try
         {
             // Reutilizar si ya existe (evita duplicados por alta rápida repetida).
-            var existente = _db.Productos.FirstOrDefault(p => p.Activo && p.Nombre.ToLower() == nombre.ToLower());
+            var existente = db.Productos.FirstOrDefault(p => p.Activo && p.Nombre.ToLower() == nombre.ToLower());
             Producto producto;
             if (existente is not null)
             {
@@ -793,10 +790,10 @@ public class VentaService : IVentaService
             else
             {
                 Guid catId;
-                if (idCategoria.HasValue && _db.CategoriasProducto.Any(c => c.IdCategoriaProducto == idCategoria.Value && c.Tipo == "Bien"))
+                if (idCategoria.HasValue && db.CategoriasProducto.Any(c => c.IdCategoriaProducto == idCategoria.Value && c.Tipo == "Bien"))
                     catId = idCategoria.Value;
                 else
-                    catId = _db.CategoriasProducto.Where(c => c.Tipo == "Bien" && c.Activo)
+                    catId = db.CategoriasProducto.Where(c => c.Tipo == "Bien" && c.Activo)
                         .OrderBy(c => c.Nombre).Select(c => c.IdCategoriaProducto).FirstOrDefault();
                 if (catId == Guid.Empty)
                     throw new InvalidOperationException("No hay categorías de producto. Crea una en Configuraciones > Inventario > Categorías.");
@@ -816,8 +813,8 @@ public class VentaService : IVentaService
                     Activo = true
                 };
                 producto.BeforeSaveChanges();
-                _db.Productos.Add(producto);
-                _db.SaveChanges();
+                db.Productos.Add(producto);
+                db.SaveChanges();
             }
 
             // Entrada express por la cantidad a vender (queda costo registrado, sin negativos).
@@ -825,7 +822,7 @@ public class VentaService : IVentaService
             producto.StockActual += cantidad;
             producto.CostoUltimo = costo;
             if (precioVenta > 0) producto.PrecioVenta = precioVenta;
-            _db.MovimientosInventario.Add(new MovimientoInventario
+            db.MovimientosInventario.Add(new MovimientoInventario
             {
                 IdMovimiento = Guid.NewGuid(),
                 Fecha = DateTime.Now,
@@ -837,7 +834,7 @@ public class VentaService : IVentaService
                 IdConsulta = venta.IdConsulta,
                 Motivo = "Alta rápida desde caja"
             });
-            _db.SaveChanges();
+            db.SaveChanges();
 
             tx.Commit();
             // Fuera de la tx interna: agrega la línea (valida stock, que ya existe por la entrada).
@@ -859,7 +856,7 @@ public class VentaService : IVentaService
         var venta = GetVenta(idVenta) ?? throw new InvalidOperationException("Venta no encontrada.");
         if (venta.Estado != "Pendiente") throw new InvalidOperationException("Solo se puede modificar una venta pendiente.");
 
-        var servicio = _db.MotivoCobros.FirstOrDefault(m => !m.EstadoEliminado && m.Descripcion.ToLower() == descripcion.ToLower());
+        var servicio = db.MotivoCobros.FirstOrDefault(m => !m.EstadoEliminado && m.Descripcion.ToLower() == descripcion.ToLower());
         if (servicio is null)
         {
             servicio = new MotivoCobro
@@ -870,8 +867,8 @@ public class VentaService : IVentaService
                 EstadoEliminado = false
             };
             servicio.BeforeSaveChanges();
-            _db.MotivoCobros.Add(servicio);
-            _db.SaveChanges();
+            db.MotivoCobros.Add(servicio);
+            db.SaveChanges();
         }
         return AddServicio(idVenta, servicio.IdMotivoCobro, cantidad, precio, descripcion, descuentoMonto, motivoDescuento);
     }

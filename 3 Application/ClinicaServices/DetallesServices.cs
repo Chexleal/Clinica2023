@@ -19,23 +19,18 @@ namespace ClinicaServices
         void Delete(Guid id);
         void Pagar(Guid IdConsulta);
     }
-    public class DetalleServices : IDetallesServices
+    public class DetalleServices(ClinicaContext dbContext) : IDetallesServices
     {
-        private readonly ClinicaContext _dbContext;
-        public DetalleServices(ClinicaContext dbContext)
-        {
-            _dbContext = dbContext;
-        }
 
         public DetalleCobro GetDetalle(Guid id)
         {
-            //return _dbContext.Usuarios.Find(id);
-            return _dbContext.DetalleCobros.FirstOrDefault(p => p.IdDetalleCobro == id);
+            //return dbContext.Usuarios.Find(id);
+            return dbContext.DetalleCobros.FirstOrDefault(p => p.IdDetalleCobro == id);
         }
 
         public List<DetalleCobro> GetDetallesByConsulta(Guid consultaId)
         {
-            return _dbContext.DetalleCobros.Where(x => x.IdConsulta.Equals(consultaId)).ToList();
+            return dbContext.DetalleCobros.Where(x => x.IdConsulta.Equals(consultaId)).ToList();
         }
 
         public List<DetalleCobro> GetByRange(DateTime from, DateTime to)
@@ -43,8 +38,8 @@ namespace ClinicaServices
             var fromDate = from.Date;
             var toDateExclusive = to.Date.AddDays(1);
 
-            return _dbContext.DetalleCobros
-                .Where(d => _dbContext.Consulta.Any(c => c.IdConsulta == d.IdConsulta
+            return dbContext.DetalleCobros
+                .Where(d => dbContext.Consulta.Any(c => c.IdConsulta == d.IdConsulta
                     && c.Fecha >= fromDate
                     && c.Fecha < toDateExclusive
                     && !c.Eliminada))
@@ -55,13 +50,13 @@ namespace ClinicaServices
         {
             detalle.IdDetalleCobro = Guid.NewGuid();
             detalle.Subtotal = detalle.Cantidad * detalle.Valor;
-            detalle.NombreServicio = _dbContext.MotivoCobros.FirstOrDefault(x => x.IdMotivoCobro == detalle.IdMotivoCobro).Descripcion;
-            Consulta consulta = _dbContext.Consulta.FirstOrDefault(p => p.IdConsulta == detalle.IdConsulta);
+            detalle.NombreServicio = dbContext.MotivoCobros.FirstOrDefault(x => x.IdMotivoCobro == detalle.IdMotivoCobro).Descripcion;
+            Consulta consulta = dbContext.Consulta.FirstOrDefault(p => p.IdConsulta == detalle.IdConsulta);
             consulta.Total += detalle.Subtotal;
             
-            //var consulta = _dbContext.Consulta.FirstOrDefault(x => x.IdConsulta == detalle.IdConsulta);
-            _dbContext.DetalleCobros.Add(detalle);
-            _dbContext.SaveChanges();
+            //var consulta = dbContext.Consulta.FirstOrDefault(x => x.IdConsulta == detalle.IdConsulta);
+            dbContext.DetalleCobros.Add(detalle);
+            dbContext.SaveChanges();
         }
 
         public void Delete(Guid id)
@@ -69,18 +64,18 @@ namespace ClinicaServices
             var detalle = GetDetalle(id);
             if (detalle is not null)
             {
-                var consulta = _dbContext.Consulta.FirstOrDefault(p => p.IdConsulta == detalle.IdConsulta);
+                var consulta = dbContext.Consulta.FirstOrDefault(p => p.IdConsulta == detalle.IdConsulta);
                 consulta.Total -= detalle.Subtotal;
-                _dbContext.DetalleCobros.Remove(detalle);
-                _dbContext.SaveChanges();
+                dbContext.DetalleCobros.Remove(detalle);
+                dbContext.SaveChanges();
             }
         }
 
         public void Pagar(Guid idConsulta)
         {
-            var consulta = _dbContext.Consulta.FirstOrDefault(p => p.IdConsulta == idConsulta);
+            var consulta = dbContext.Consulta.FirstOrDefault(p => p.IdConsulta == idConsulta);
             consulta.Pagada = true;
-            _dbContext.SaveChanges();
+            dbContext.SaveChanges();
         }
     }
 }

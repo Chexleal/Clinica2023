@@ -18,16 +18,10 @@ public interface IPacienteServices
     PagedResult<Paciente> GetPaginated(int start, int length, string search, int sortColumn, string sortDir);
     (List<Paciente> Datos, bool HayMas) BuscarSelect(string? texto, int page, int pageSize);
 }
-public class PacienteServices : IPacienteServices
+public class PacienteServices(ClinicaContext dbContext, IErrorLogService errorLogService) : IPacienteServices
 {
-	private const int MaxAntecedentesLength = 1000;
-	private readonly ClinicaContext _dbContext;
-	private readonly IErrorLogService _errorLogService;
-	public PacienteServices(ClinicaContext dbContext, IErrorLogService errorLogService)
-	{
-		_dbContext = dbContext;
-		_errorLogService = errorLogService;
-	}
+ 	private const int MaxAntecedentesLength = 1000;
+
 
 	public int AddPaciente(Paciente paciente)
 	{
@@ -36,7 +30,7 @@ public class PacienteServices : IPacienteServices
 		{
 			//paciente.IdPaciente = Guid.NewGuid();
 
-			var pacienteExsitente = _dbContext.Pacientes.FirstOrDefault(x => x.IdPaciente == paciente.IdPaciente && !x.EstadoEliminado);
+			var pacienteExsitente = dbContext.Pacientes.FirstOrDefault(x => x.IdPaciente == paciente.IdPaciente && !x.EstadoEliminado);
 			if (pacienteExsitente is not null) return 2;
             // Nombres tipo título ("JoSe" -> "Jose"): el Id se deriva en minúsculas, no cambia.
             paciente.Nombre = paciente.Nombre.NombrePropio();
@@ -44,32 +38,32 @@ public class PacienteServices : IPacienteServices
             paciente.IdPaciente = $"{paciente.Nombre.Trim().ToLower()}|{paciente.Apellido.Trim().ToLower()}".ToGuid();
             paciente.EstadoEliminado = false;
             paciente.BeforeSaveChanges();
-            _dbContext.Pacientes.Add(paciente);
-            _dbContext.SaveChanges();
+            dbContext.Pacientes.Add(paciente);
+            dbContext.SaveChanges();
 			return 1;
 		}
 		catch (Exception ex)
 		{
-			_errorLogService.Registrar(ex, "Controlado", nameof(AddPaciente));
+			errorLogService.Registrar(ex, "Controlado", nameof(AddPaciente));
 			return 3;
 		}
 	}
 
     public Paciente? GetPacienteById(Guid id)
     {
-        return _dbContext.Pacientes.FirstOrDefault(p => p.IdPaciente == id);
+        return dbContext.Pacientes.FirstOrDefault(p => p.IdPaciente == id);
     }
 
     public List<Paciente> GetAll()
 	{
-        return _dbContext.Pacientes.Where(x => !x.EstadoEliminado).ToList();
+        return dbContext.Pacientes.Where(x => !x.EstadoEliminado).ToList();
 	}
 
     public (List<Paciente> Datos, bool HayMas) BuscarSelect(string? texto, int page, int pageSize)
     {
         if (page < 1) page = 1;
         if (pageSize < 1 || pageSize > 50) pageSize = 20;
-        var query = _dbContext.Pacientes.Where(x => !x.EstadoEliminado);
+        var query = dbContext.Pacientes.Where(x => !x.EstadoEliminado);
         if (!string.IsNullOrWhiteSpace(texto))
         {
             // Por palabras y sin tildes: "perez juan" encuentra "Juan Pérez" (nombre,
@@ -97,7 +91,7 @@ public class PacienteServices : IPacienteServices
 
     public PagedResult<Paciente> GetPaginated(int start, int length, string search, int sortColumn, string sortDir)
     {
-        var query = _dbContext.Pacientes.AsNoTracking().Where(x => !x.EstadoEliminado);
+        var query = dbContext.Pacientes.AsNoTracking().Where(x => !x.EstadoEliminado);
         var total = query.Count();
 
         if (!string.IsNullOrWhiteSpace(search))
@@ -161,7 +155,7 @@ public class PacienteServices : IPacienteServices
             pacienteDB.TipoSange = paciente.TipoSange;
             pacienteDB.NoRegistro = paciente.NoRegistro;
             pacienteDB.BeforeSaveChanges();
-            _dbContext.SaveChanges();
+            dbContext.SaveChanges();
         }
     }
 
@@ -175,7 +169,7 @@ public class PacienteServices : IPacienteServices
         {
             paciente.Antecedentes = antecedentes ?? string.Empty;
             paciente.BeforeSaveChanges();
-            _dbContext.SaveChanges();
+            dbContext.SaveChanges();
         }
     }
 
@@ -185,7 +179,7 @@ public class PacienteServices : IPacienteServices
         if (paciente is not null)
         {
             paciente.EstadoEliminado = true;
-            _dbContext.SaveChanges();
+            dbContext.SaveChanges();
         }
     }
 

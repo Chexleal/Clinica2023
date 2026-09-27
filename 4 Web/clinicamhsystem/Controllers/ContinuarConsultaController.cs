@@ -18,50 +18,29 @@ using System.Text;
 namespace clinicaWeb.Controllers;
 
 [SecurityFilter("ContinuarConsulta")]
-public class ContinuarConsulta : Controller
+public class ContinuarConsulta(IConsultaServices consultaServices, IPacienteServices pacienteServices, IRecetaServices recetaServices, ICitaServices citaServices, IEstudioImagenService estudioService, IOrdenEstudioService ordenService, IStorageService storage, ICatalogoIndicacionService catalogoService/*, IConverter converter*/) : Controller
 {
 
-    private readonly IConsultaServices _consultaServices;
-    private readonly IRecetaServices _recetaServices;
-    private readonly IPacienteServices _pacienteServices;
-    private readonly ICitaServices _citasServices;
-    private readonly IEstudioImagenService _estudioService;
-    private readonly IOrdenEstudioService _ordenService;
-    private readonly IStorageService _storage;
-    private readonly ICatalogoIndicacionService _catalogoService;
     //private readonly IConverter _converter;
-
-    public ContinuarConsulta(IConsultaServices consultaServices, IPacienteServices pacienteServices, IRecetaServices recetaServices,ICitaServices citaServices, IEstudioImagenService estudioService, IOrdenEstudioService ordenService, IStorageService storage, ICatalogoIndicacionService catalogoService/*, IConverter converter*/)
-    {
-        _consultaServices = consultaServices;
-        _pacienteServices = pacienteServices;
-        _recetaServices = recetaServices;
-        _citasServices = citaServices;
-        _estudioService = estudioService;
-        _ordenService = ordenService;
-        _storage = storage;
-        _catalogoService = catalogoService;
-        //_converter = converter;
-    }
 
 
     public ActionResult Index(Guid consultaId)
     {
-        var consulta = _consultaServices.GetConsulta(consultaId);
-        consulta.PacienteInformacion ??= _pacienteServices.GetPacienteById(consulta.IdPaciente);
-        consulta.PacienteInformacion.Consulta = _consultaServices.GetAllByPacienteId(consulta.IdPaciente);
-        var receta = _recetaServices.GetByConsulta(consultaId) ?? new();
-        var medicamentos = _recetaServices.GetAllMedicamentos() ?? new();
+        var consulta = consultaServices.GetConsulta(consultaId);
+        consulta.PacienteInformacion ??= pacienteServices.GetPacienteById(consulta.IdPaciente);
+        consulta.PacienteInformacion.Consulta = consultaServices.GetAllByPacienteId(consulta.IdPaciente);
+        var receta = recetaServices.GetByConsulta(consultaId) ?? new();
+        var medicamentos = recetaServices.GetAllMedicamentos() ?? new();
         // Estudios y órdenes para el área de carga
-        var estudios = _estudioService.GetByPaciente(consulta.IdPaciente);
-        var ordenes = _ordenService.GetByPaciente(consulta.IdPaciente);
+        var estudios = estudioService.GetByPaciente(consulta.IdPaciente);
+        var ordenes = ordenService.GetByPaciente(consulta.IdPaciente);
         ViewBag.Estudios = estudios;
         ViewBag.Ordenes = ordenes;
         ViewBag.EsSoloLectura = true;
-        ViewBag.Catalogo = _catalogoService.GetAll().Where(c=>c.Activo).ToList();
+        ViewBag.Catalogo = catalogoService.GetAll().Where(c=>c.Activo).ToList();
         ViewBag.CatalogoJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.Catalogo);
         ViewBag.TiposEstudio = Enum.GetValues(typeof(TipoEstudio)).Cast<TipoEstudio>().Select(t => new { Id = (int)t, Nombre = t.ToString() }).ToList();
-        //var paciente = _pacienteServices.GetPacienteById(consulta.IdPaciente);
+        //var paciente = pacienteServices.GetPacienteById(consulta.IdPaciente);
         return View(new ConsultaContinuarViewModel { Consulta = consulta, Receta = receta,Medicamentos= medicamentos/*, Paciente = paciente */});
     }
 
@@ -71,7 +50,7 @@ public class ContinuarConsulta : Controller
     [HttpPost]
     public ActionResult Guardar(Consulta consulta, string? antecedentes)
     {
-        var consultaDb = _consultaServices.GetConsulta(consulta.IdConsulta);
+        var consultaDb = consultaServices.GetConsulta(consulta.IdConsulta);
 
         String duracion = DateTime.Now.Subtract(consultaDb.Fecha).Minutes.ToString();
 
@@ -89,8 +68,8 @@ public class ContinuarConsulta : Controller
         consultaDb.Terminada = consulta.Terminada;
         consultaDb.TiempoDuracion = duracion.ToString();
 
-        _consultaServices.UpdateConsulta(consultaDb);
-        _pacienteServices.UpdateAntecedentes(consultaDb.IdPaciente, antecedentes);
+        consultaServices.UpdateConsulta(consultaDb);
+        pacienteServices.UpdateAntecedentes(consultaDb.IdPaciente, antecedentes);
         if (consulta.Terminada) return RedirectToAction("Index", "Consultas");
         return RedirectToAction("Index", new { consultaId = consulta.IdConsulta });
     }
@@ -98,7 +77,7 @@ public class ContinuarConsulta : Controller
     [HttpPost]
     public ActionResult GuardarReceta(Receta receta)
     {
-        var updReceta = _recetaServices.GetByConsulta(receta.IdConsulta);
+        var updReceta = recetaServices.GetByConsulta(receta.IdConsulta);
         if (updReceta is null)
         {
             var recetaCreate = new Receta()
@@ -106,12 +85,12 @@ public class ContinuarConsulta : Controller
                 Descripcion = receta.Descripcion,
                 IdConsulta = receta.IdConsulta
             };
-            _recetaServices.Create(recetaCreate);
+            recetaServices.Create(recetaCreate);
         }
         else
         {
             updReceta.Descripcion = receta.Descripcion;
-            _recetaServices.Update(updReceta);
+            recetaServices.Update(updReceta);
         }
 
         return RedirectToAction("Index", new { consultaId = receta.IdConsulta });
@@ -121,17 +100,17 @@ public class ContinuarConsulta : Controller
 
     public ActionResult DescargarPdf(Guid consultaId)
     {
-            var receta = _recetaServices.GetByConsulta(consultaId);
-            var consulta = _consultaServices.GetConsulta(consultaId);
-            var pacienteInfo = _pacienteServices.GetPacienteById(consulta.IdPaciente);
-            var proximaCita = _citasServices.GetNextCita(consulta.Fecha, consulta.IdPaciente);
+            var receta = recetaServices.GetByConsulta(consultaId);
+            var consulta = consultaServices.GetConsulta(consultaId);
+            var pacienteInfo = pacienteServices.GetPacienteById(consulta.IdPaciente);
+            var proximaCita = citaServices.GetNextCita(consulta.Fecha, consulta.IdPaciente);
 
         return View("ConsultaPdf", new GenerarRecetaModel
         {
             Receta = receta,
             Consulta = consulta,
             Paciente = pacienteInfo,
-            DetallesReceta = _recetaServices.GetAllDetalles(receta.IdReceta),
+            DetallesReceta = recetaServices.GetAllDetalles(receta.IdReceta),
             CitaProx = proximaCita
         });
     }
@@ -140,7 +119,7 @@ public class ContinuarConsulta : Controller
     // GET: ConsultasController/Edit/5
     public ActionResult Editar(Guid id)
     {
-        var consultas = _consultaServices.GetConsulta(id);
+        var consultas = consultaServices.GetConsulta(id);
         return RedirectToAction("Editar", consultas);
     }
 
@@ -151,8 +130,8 @@ public class ContinuarConsulta : Controller
     //{
     //    try
     //    {
-    //        _consultaServices.UpdateConsulta(consulta);
-    //        var consultas = _consultaServices.GetAll();
+    //        consultaServices.UpdateConsulta(consulta);
+    //        var consultas = consultaServices.GetAll();
     //        return RedirectToAction("Index", consultas);
     //    }
     //    catch
@@ -164,7 +143,7 @@ public class ContinuarConsulta : Controller
     [HttpGet]
     public ActionResult GetMedicamentos(Guid idReceta)
     {
-        var detalles=_recetaServices.GetAllDetalles(idReceta);
+        var detalles=recetaServices.GetAllDetalles(idReceta);
 
         return PartialView("Partials/_medicamentosTabla", new ConsultaContinuarViewModel {  DetallesReceta= detalles });
     }
@@ -172,7 +151,7 @@ public class ContinuarConsulta : Controller
     [HttpPost]
     public ActionResult DeleteMedicamentos(Guid idDetalleReceta)
     { 
-        var idReceta = _recetaServices.DeleteDetalle(idDetalleReceta);
+        var idReceta = recetaServices.DeleteDetalle(idDetalleReceta);
 
         return RedirectToAction("GetMedicamentos", new { idReceta });
     }
@@ -181,7 +160,7 @@ public class ContinuarConsulta : Controller
     [HttpPost]
     public ActionResult AddDetalleReceta(DetalleReceta detalleReceta)
     {
-        _recetaServices.AddDetalleReceta(detalleReceta);
+        recetaServices.AddDetalleReceta(detalleReceta);
 
         return RedirectToAction("GetMedicamentos", new { idReceta = detalleReceta.IdReceta });
     }
@@ -191,21 +170,21 @@ public class ContinuarConsulta : Controller
     public IActionResult CrearOrden(Guid idPaciente, Guid? idConsulta, TipoEstudio tipo, string indicacion, bool esExterna = false)
     {
         var orden = new OrdenEstudio { IdPaciente = idPaciente, IdConsulta = idConsulta, Tipo = tipo, Indicacion = indicacion ?? "", Estado = EstadoOrden.Pendiente, EsExterna = esExterna };
-        _ordenService.Crear(orden);
+        ordenService.Crear(orden);
         return Json(new { ok = true, idOrden = orden.IdOrden, esExterna = orden.EsExterna });
     }
 
     [HttpGet]
     public IActionResult ImprimirOrden(Guid idOrden)
     {
-        var orden = _ordenService.GetByIdDetallado(idOrden);
+        var orden = ordenService.GetByIdDetallado(idOrden);
         if (orden == null) return NotFound();
-        var paciente = orden.Paciente ?? _pacienteServices.GetPacienteById(orden.IdPaciente);
+        var paciente = orden.Paciente ?? pacienteServices.GetPacienteById(orden.IdPaciente);
         if (paciente == null) return NotFound();
         Consulta? consulta = orden.Consulta;
         if (consulta == null && orden.IdConsulta.HasValue)
         {
-            try { consulta = _consultaServices.GetConsulta(orden.IdConsulta.Value); } catch { consulta = null; }
+            try { consulta = consultaServices.GetConsulta(orden.IdConsulta.Value); } catch { consulta = null; }
         }
         return View("~/Views/Shared/OrdenPdf.cshtml", new clinicaWeb.Models.GenerarOrdenModel
         {
@@ -219,29 +198,29 @@ public class ContinuarConsulta : Controller
     [HttpPost]
     public IActionResult MarcarOrdenImpresa(Guid idOrden)
     {
-        _ordenService.MarcarImpresa(idOrden);
+        ordenService.MarcarImpresa(idOrden);
         return Json(new { ok = true });
     }
 
     [HttpGet]
     public IActionResult GetOrdenes(Guid idPaciente)
     {
-        var ordenes = _ordenService.GetByPaciente(idPaciente);
+        var ordenes = ordenService.GetByPaciente(idPaciente);
         return PartialView("Partials/_ordenesTabla", ordenes);
     }
 
     [HttpPost]
     public IActionResult ActualizarEstadoOrden(Guid idOrden, EstadoOrden estado)
     {
-        _ordenService.ActualizarEstado(idOrden, estado);
+        ordenService.ActualizarEstado(idOrden, estado);
         return Json(new { ok = true });
     }
 
     [HttpPost]
     public IActionResult DeleteOrden(Guid idOrden, Guid idPaciente)
     {
-        _ordenService.Eliminar(idOrden);
-        var ordenes = _ordenService.GetByPaciente(idPaciente);
+        ordenService.Eliminar(idOrden);
+        var ordenes = ordenService.GetByPaciente(idPaciente);
         return PartialView("Partials/_ordenesTabla", ordenes);
     }
 
@@ -262,9 +241,9 @@ public class ContinuarConsulta : Controller
             Descripcion = descripcion ?? "",
             Modalidad = tipo == TipoEstudio.Resonancia ? ModalidadDicom.MR : tipo == TipoEstudio.Tomografia ? ModalidadDicom.CT : ModalidadDicom.DX
         };
-        await _estudioService.CrearEstudioAsync(estudio, files, _storage);
-        if (idOrden.HasValue) _ordenService.ActualizarEstado(idOrden.Value, EstadoOrden.Completada);
-        var estudios = _estudioService.GetByPaciente(idPaciente);
+        await estudioService.CrearEstudioAsync(estudio, files, storage);
+        if (idOrden.HasValue) ordenService.ActualizarEstado(idOrden.Value, EstadoOrden.Completada);
+        var estudios = estudioService.GetByPaciente(idPaciente);
         ViewBag.EsSoloLectura = true;
         return PartialView("Partials/_estudiosLista", estudios);
     }
@@ -272,7 +251,7 @@ public class ContinuarConsulta : Controller
     [HttpGet]
     public IActionResult GetEstudios(Guid idPaciente)
     {
-        var estudios = _estudioService.GetByPaciente(idPaciente);
+        var estudios = estudioService.GetByPaciente(idPaciente);
         ViewBag.EsSoloLectura = true;
         return PartialView("Partials/_estudiosLista", estudios);
     }
@@ -280,9 +259,9 @@ public class ContinuarConsulta : Controller
     [HttpGet]
     public async Task<IActionResult> VerArchivo(Guid idArchivo)
     {
-        var arch = _estudioService.GetArchivo(idArchivo);
+        var arch = estudioService.GetArchivo(idArchivo);
         if (arch == null) return NotFound();
-        var bytes = await _storage.ReadAsync(arch.RutaStorage);
+        var bytes = await storage.ReadAsync(arch.RutaStorage);
         return File(bytes, arch.MimeType); // inline: el navegador muestra PDF/imagen en pestana
     }
 
@@ -290,22 +269,22 @@ public class ContinuarConsulta : Controller
     [HttpGet]
     public async Task<IActionResult> GetArchivoBytes(Guid idArchivo)
     {
-        var arch = _estudioService.GetArchivo(idArchivo);
+        var arch = estudioService.GetArchivo(idArchivo);
         if (arch == null) return NotFound();
-        var bytes = await _storage.ReadAsync(arch.RutaStorage);
+        var bytes = await storage.ReadAsync(arch.RutaStorage);
         return File(bytes, arch.MimeType);
     }
 
     [HttpPost]
     public async Task<IActionResult> DeleteArchivo(Guid idArchivo)
     {
-        var arch = _estudioService.GetArchivo(idArchivo);
+        var arch = estudioService.GetArchivo(idArchivo);
         var idPaciente = arch?.Estudio?.IdPaciente;
-        await _estudioService.DeleteArchivoAsync(idArchivo, _storage);
+        await estudioService.DeleteArchivoAsync(idArchivo, storage);
         ViewBag.EsSoloLectura = true;
         if (idPaciente.HasValue)
         {
-            var estudios = _estudioService.GetByPaciente(idPaciente.Value);
+            var estudios = estudioService.GetByPaciente(idPaciente.Value);
             return PartialView("Partials/_estudiosLista", estudios);
         }
         return Json(new { ok = true });
@@ -314,13 +293,13 @@ public class ContinuarConsulta : Controller
     [HttpPost]
     public async Task<IActionResult> DeleteEstudio(Guid idEstudio)
     {
-        var est = _estudioService.GetById(idEstudio);
+        var est = estudioService.GetById(idEstudio);
         var idPaciente = est?.IdPaciente;
-        await _estudioService.DeleteEstudioAsync(idEstudio, _storage);
+        await estudioService.DeleteEstudioAsync(idEstudio, storage);
         ViewBag.EsSoloLectura = true;
         if (idPaciente.HasValue)
         {
-            var estudios = _estudioService.GetByPaciente(idPaciente.Value);
+            var estudios = estudioService.GetByPaciente(idPaciente.Value);
             return PartialView("Partials/_estudiosLista", estudios);
         }
         return Json(new { ok = true });

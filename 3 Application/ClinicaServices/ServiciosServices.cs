@@ -19,40 +19,35 @@ namespace ClinicaServices
         public void UpdateServicio(Guid id, string descripcion, decimal precioSugerido);
 
     }
-    public class ServiciosServices : IServiciosServices
+    public class ServiciosServices(ClinicaContext dbContext) : IServiciosServices
     {
-        private readonly ClinicaContext _dbContext;
-        public ServiciosServices(ClinicaContext dbContext)
-        {
-            _dbContext = dbContext;
-        }
 
         public MotivoCobro? GetServicio(Guid id)
         {
-            //return _dbContext.Usuarios.Find(id);
-            return _dbContext.MotivoCobros.FirstOrDefault(p => p.IdMotivoCobro == id);
+            //return dbContext.Usuarios.Find(id);
+            return dbContext.MotivoCobros.FirstOrDefault(p => p.IdMotivoCobro == id);
         }
 
         public List<MotivoCobro>? GetAll()
         {
-            var lista = _dbContext.MotivoCobros.Where(x => !x.EstadoEliminado).ToList();
-            AuditoriaNombres.Completar(_dbContext, lista);
+            var lista = dbContext.MotivoCobros.Where(x => !x.EstadoEliminado).ToList();
+            AuditoriaNombres.Completar(dbContext, lista);
             return lista;
         }
 
         public void AddServicio(MotivoCobro servicio)
         {
-            //var consultaExistente = _dbContext.Consulta.FirstOrDefault(X => X.IdConsulta == consulta.IdConsulta && !X.Terminada);
+            //var consultaExistente = dbContext.Consulta.FirstOrDefault(X => X.IdConsulta == consulta.IdConsulta && !X.Terminada);
             //if consultaExistente.
 
-            //var servicioExistente = _dbContext.MotivoCobros.FirstOrDefault(x=>x.Descripcion.Trim().ToLower().Replace(" ", "") == "");
+            //var servicioExistente = dbContext.MotivoCobros.FirstOrDefault(x=>x.Descripcion.Trim().ToLower().Replace(" ", "") == "");
 
                 servicio.IdMotivoCobro = Guid.NewGuid();
                 servicio.EstadoEliminado = false;
                 servicio.Descripcion = servicio.Descripcion.TextoCatalogo();
                 servicio.BeforeSaveChanges();
-                _dbContext.MotivoCobros.Add(servicio);
-                _dbContext.SaveChanges();
+                dbContext.MotivoCobros.Add(servicio);
+                dbContext.SaveChanges();
 
             
         }
@@ -62,7 +57,7 @@ namespace ClinicaServices
             if (servicio is not null)
             {
                 servicio.EstadoEliminado = true;
-                _dbContext.SaveChanges();
+                dbContext.SaveChanges();
             }
         }
         public void UpdateServicio(Guid id, string descripcion, decimal precioSugerido)
@@ -73,7 +68,7 @@ namespace ClinicaServices
             servicio.Descripcion = descripcion.TextoCatalogo();
             servicio.PrecioSugerido = precioSugerido < 0 ? 0 : precioSugerido;
             servicio.BeforeSaveChanges();
-            _dbContext.SaveChanges();
+            dbContext.SaveChanges();
         }
     }
 }

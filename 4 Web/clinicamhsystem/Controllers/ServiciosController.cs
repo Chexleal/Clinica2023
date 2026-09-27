@@ -9,20 +9,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace clinicaWeb.Controllers;
 [SecurityFilter("Servicios")]
-public class ServiciosController : ErrorHandlingController
+public class ServiciosController(IServiciosServices serviciosServices) : ErrorHandlingController
 {
-    private readonly IServiciosServices _services;
-
-    public ServiciosController(IServiciosServices serviciosServices)
-    {
-        _services = serviciosServices;
-    }
 
 
     // GET: ServiciosController
     public ActionResult Index()
     {
-        var servicios = _services.GetAll();
+        var servicios = serviciosServices.GetAll();
         return View(new ServiciosViewModel { Servicios = servicios});
     }
 
@@ -38,7 +32,7 @@ public class ServiciosController : ErrorHandlingController
     {
         try
         {
-            _services.AddServicio(servicio);
+            serviciosServices.AddServicio(servicio);
         }
         catch (Exception ex)
         {
@@ -91,7 +85,7 @@ public class ServiciosController : ErrorHandlingController
     {
         try
         {
-            _services.DeleteServicio(id);
+            serviciosServices.DeleteServicio(id);
         }
         catch (Exception ex)
         {
@@ -105,7 +99,7 @@ public class ServiciosController : ErrorHandlingController
     {
         try
         {
-            _services.UpdateServicio(id, descripcion, precioSugerido ?? 0);
+            serviciosServices.UpdateServicio(id, descripcion, precioSugerido ?? 0);
         }
         catch (Exception ex)
         {

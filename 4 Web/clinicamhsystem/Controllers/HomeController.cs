@@ -12,25 +12,15 @@ using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Diagnostics;
 
 namespace clinicamhsystem.Controllers;
-public class HomeController : Controller
-{
-    private readonly IUserServices _userServices;
-    private readonly ICurrentUser _currentUser;
-    private readonly IErrorLogService _errorLogService;
-
-    public HomeController(
+    public class HomeController(
         IUserServices userServices,
         ICurrentUser currentUser,
-        IErrorLogService errorLogService)
+        IErrorLogService errorLogService) : Controller
     {
-        _userServices = userServices;
-        _currentUser = currentUser;
-        _errorLogService = errorLogService;
-    }
 
     public IActionResult Index()
     {
-        //var users = _userServices.GetAll();
+        //var users = userServices.GetAll();
         return View();
     }
 
@@ -43,12 +33,12 @@ public class HomeController : Controller
     public async Task<IActionResult> LogInAsync(string password, string user)
     {
 
-        var existingUser = _userServices.Authenticate(user, password);
+        var existingUser = userServices.Authenticate(user, password);
         //Usuario existingUser = new() { Nombre = "Dev", Apellido = "Test"};
         //existingUser.IdUsuario = new Guid();
         if (existingUser is not null)
         {
-            existingUser.Permisos = _userServices.GetPermissions(existingUser.IdUsuario);
+            existingUser.Permisos = userServices.GetPermissions(existingUser.IdUsuario);
             existingUser.Permisos ??= new();
             var claims = new List<Claim>
             {
@@ -74,13 +64,13 @@ public class HomeController : Controller
 
     public IActionResult UsuarioExistente(string userName)
     {
-        var existingUser = _userServices.CheckUserExist(userName);
+        var existingUser = userServices.CheckUserExist(userName);
         if (existingUser)
         {
             var userSecureQuestion = ViewData["securityQuestion"];
             var userEmail = ViewData["userEmail"];
 
-            Usuario? userInfo = _userServices.GetUserByName(userName);
+            Usuario? userInfo = userServices.GetUserByName(userName);
             ViewData["username"] = userInfo.NombreUsuario.ToString();
             userSecureQuestion = userInfo.PreguntaSeg.ToString(); // usa el servicio para recuperar la pregunta de seguridad del usuario, y se la asigna a un ViewData
             userEmail= userInfo.Correo.ToString();
@@ -106,7 +96,7 @@ public class HomeController : Controller
 
     public IActionResult CheckAnswer(string hiddenUsername, string answer)
     {
-        string? preguntaSegCheck = _userServices.CheckAnswer(answer);
+        string? preguntaSegCheck = userServices.CheckAnswer(answer);
         if (preguntaSegCheck != null)
         {
             TempData["Success"] = "Respuesta Correcta";
@@ -114,7 +104,7 @@ public class HomeController : Controller
         }else
         {
             TempData["Error"] = "Respuesta Incorrecta";
-            Usuario? userInfo = _userServices.GetUserByName(hiddenUsername);  
+            Usuario? userInfo = userServices.GetUserByName(hiddenUsername);  
             var userSecureQuestion = userInfo.PreguntaSeg.ToString(); // usa el servicio para recuperar la pregunta de seguridad del usuario, y se la asigna a un ViewData
             var userEmail = userInfo.Correo.ToString();
             object[] userInformation = { hiddenUsername, userSecureQuestion, userEmail };
@@ -127,7 +117,7 @@ public class HomeController : Controller
     {
         var userEmail = ViewData["userEmail"];
 
-        Usuario? userInfo = _userServices.GetUserByName(hiddenUsername);
+        Usuario? userInfo = userServices.GetUserByName(hiddenUsername);
         ViewData["username"] = userInfo.NombreUsuario.ToString();
         userEmail = userInfo.Correo.ToString();
 
@@ -140,7 +130,7 @@ public class HomeController : Controller
         object[] userInformation = { hiddenUsername, userEmailCesored };
 
 
-        bool emailCheck = _userServices.CheckEmails(email, emailConfirmed, hiddenUsername);
+        bool emailCheck = userServices.CheckEmails(email, emailConfirmed, hiddenUsername);
         if (emailCheck)
         {
             TempData["Success"] = "Correo enviado";
@@ -168,8 +158,8 @@ public class HomeController : Controller
     public IActionResult CrearNuevaClave(string newPassword, string newPasswordConfirmed, string usModel)
     {
         string hiddenUsername = Request.Query["hiddenUsername"];
-        Usuario? userInfo = _userServices.GetUserByName(usModel);
-        bool checkPassword = _userServices.CheckNewPassword(newPassword, newPasswordConfirmed, userInfo.IdUsuario);
+        Usuario? userInfo = userServices.GetUserByName(usModel);
+        bool checkPassword = userServices.CheckNewPassword(newPassword, newPasswordConfirmed, userInfo.IdUsuario);
         if (checkPassword == true)
         {
             TempData["Success"] = "Has cambiado tu contraseña";
@@ -199,15 +189,15 @@ public class HomeController : Controller
     {
         try
         {
-            if (_currentUser.Usuario is { } usuarioActual)
+            if (currentUser.Usuario is { } usuarioActual)
             {
-                _userServices.ChangePassword(usuarioActual.IdUsuario, Password);
+                userServices.ChangePassword(usuarioActual.IdUsuario, Password);
             }
             return RedirectToAction("Index");
         }
         catch (Exception ex)
         {
-            await _errorLogService.RegistrarAsync(ex, "Controlado", Request.Path, Request.Method, HttpContext.TraceIdentifier);
+            await errorLogService.RegistrarAsync(ex, "Controlado", Request.Path, Request.Method, HttpContext.TraceIdentifier);
             return View("Error");
         }
     }
@@ -222,14 +212,14 @@ public class HomeController : Controller
         }
         catch (Exception ex)
         {
-            await _errorLogService.RegistrarAsync(ex, "Controlado", Request.Path, Request.Method, HttpContext.TraceIdentifier);
+            await errorLogService.RegistrarAsync(ex, "Controlado", Request.Path, Request.Method, HttpContext.TraceIdentifier);
             return View("Error");
         }
     }
 
     public ActionResult Editar(Guid id)
     {
-        var user = _userServices.GetUser(id);
+        var user = userServices.GetUser(id);
         return View("Editar", user);
     }
 
@@ -239,7 +229,7 @@ public class HomeController : Controller
         var exceptionFeature = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
         if (exceptionFeature?.Error is { } exception)
         {
-            await _errorLogService.RegistrarAsync(
+            await errorLogService.RegistrarAsync(
                 exception,
                 "No controlado",
                 exceptionFeature.Path,

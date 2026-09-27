@@ -36,31 +36,23 @@ namespace ClinicaServices
         void createPdf(string inHtmlPath, string toPdfPath);
 
     }
-    public class ConsultaServices : IConsultaServices
+    public class ConsultaServices(ClinicaContext dbContext, IRecetaServices recetaServices, IErrorLogService errorLogService) : IConsultaServices
     {
-        private readonly ClinicaContext _dbContext;
-        private readonly IRecetaServices _recetaServices;
-        private readonly IErrorLogService _errorLogService;
-        public ConsultaServices(ClinicaContext dbContext, IRecetaServices recetaServices, IErrorLogService errorLogService)
-        {
-            _dbContext = dbContext;
-            _recetaServices = recetaServices;
-            _errorLogService = errorLogService;
-        }    
+
 
         public Consulta GetConsulta(Guid id)
         {
-            //return _dbContext.Usuarios.Find(id);
-            return _dbContext.Consulta.FirstOrDefault(p => p.IdConsulta == id);
+            //return dbContext.Usuarios.Find(id);
+            return dbContext.Consulta.FirstOrDefault(p => p.IdConsulta == id);
         }
 
         public List<Consulta> GetAll()
         {
-            return _dbContext.Consulta.Where(x => x.Eliminada == false).ToList();
+            return dbContext.Consulta.Where(x => x.Eliminada == false).ToList();
         }
         public List<Consulta> GetAllByPacienteId(Guid pacienteId)
         {
-            return _dbContext.Consulta.Where(x=>x.IdPaciente== pacienteId && x.Eliminada == false).ToList();
+            return dbContext.Consulta.Where(x=>x.IdPaciente== pacienteId && x.Eliminada == false).ToList();
         }
 
         public List<Consulta> GetAllByPacienteId(Guid pacienteId, DateTime from, DateTime to)
@@ -68,7 +60,7 @@ namespace ClinicaServices
             var fromDate = from.Date;
             var toDateExclusive = to.Date.AddDays(1);
 
-            return _dbContext.Consulta
+            return dbContext.Consulta
                 .Where(x => x.IdPaciente == pacienteId
                     && x.Fecha >= fromDate
                     && x.Fecha < toDateExclusive
@@ -81,7 +73,7 @@ namespace ClinicaServices
             var fromDate = from.Date;
             var toDateExclusive = to.Date.AddDays(1);
 
-            return _dbContext.Consulta.Include(x => x.PacienteInformacion)
+            return dbContext.Consulta.Include(x => x.PacienteInformacion)
                 .Where(x => x.Fecha >= fromDate
                     && x.Fecha < toDateExclusive
                     && x.Eliminada == false)
@@ -90,47 +82,47 @@ namespace ClinicaServices
 
         public List<Consulta> GetAllByMonth(int month)
         {
-            return _dbContext.Consulta.Where(x => x.Fecha.Month.Equals(month) && x.Fecha.Year.Equals(DateTime.Today.Year) && x.Eliminada == false).ToList();
+            return dbContext.Consulta.Where(x => x.Fecha.Month.Equals(month) && x.Fecha.Year.Equals(DateTime.Today.Year) && x.Eliminada == false).ToList();
         }
 
         public List<Consulta> GetAllPaidByMonth(int month)
         {
-            return _dbContext.Consulta.Where(x => x.Fecha.Month.Equals(month) && x.Fecha.Year.Equals(DateTime.Today.Year) && x.Pagada && x.Eliminada == false).ToList();
+            return dbContext.Consulta.Where(x => x.Fecha.Month.Equals(month) && x.Fecha.Year.Equals(DateTime.Today.Year) && x.Pagada && x.Eliminada == false).ToList();
         }
 
         public List<Consulta> GetAllOpen()
         {
-            return _dbContext.Consulta.Where(x => !x.Terminada && x.Eliminada == false).ToList();
+            return dbContext.Consulta.Where(x => !x.Terminada && x.Eliminada == false).ToList();
         }
 
         public List<Consulta> GetAllNotPaid()
         {
-            return _dbContext.Consulta.Include(x => x.PacienteInformacion).Where(x => x.Terminada && !x.Pagada && x.Eliminada == false).ToList();
+            return dbContext.Consulta.Include(x => x.PacienteInformacion).Where(x => x.Terminada && !x.Pagada && x.Eliminada == false).ToList();
         }
 
         public int CountOpen()
         {
-            return _dbContext.Consulta.Count(x => !x.Terminada && !x.Eliminada);
+            return dbContext.Consulta.Count(x => !x.Terminada && !x.Eliminada);
         }
 
         public int CountNotPaid()
         {
-            return _dbContext.Consulta.Count(x => x.Terminada && !x.Pagada && !x.Eliminada);
+            return dbContext.Consulta.Count(x => x.Terminada && !x.Pagada && !x.Eliminada);
         }
 
         public int CountByMonth(int month)
         {
-            return _dbContext.Consulta.Count(x => x.Fecha.Month == month && x.Fecha.Year == DateTime.Today.Year && !x.Eliminada);
+            return dbContext.Consulta.Count(x => x.Fecha.Month == month && x.Fecha.Year == DateTime.Today.Year && !x.Eliminada);
         }
 
         public decimal SumPaidByMonth(int month)
         {
-            return _dbContext.Consulta.Where(x => x.Fecha.Month == month && x.Fecha.Year == DateTime.Today.Year && x.Pagada && !x.Eliminada).Sum(x => x.Total);
+            return dbContext.Consulta.Where(x => x.Fecha.Month == month && x.Fecha.Year == DateTime.Today.Year && x.Pagada && !x.Eliminada).Sum(x => x.Total);
         }
 
         public PagedResult<Consulta> GetPaginatedOpen(int start, int length, string search, int sortColumn, string sortDir)
         {
-            var query = _dbContext.Consulta.Include(x => x.PacienteInformacion).AsNoTracking()
+            var query = dbContext.Consulta.Include(x => x.PacienteInformacion).AsNoTracking()
                 .Where(x => !x.Terminada && !x.Eliminada);
             var total = query.Count();
 
@@ -173,16 +165,16 @@ namespace ClinicaServices
                 try
                 {
                     consulta.Terminada = true;
-                    _dbContext.Consulta.Remove(consulta);
-                    _dbContext.SaveChanges();
+                    dbContext.Consulta.Remove(consulta);
+                    dbContext.SaveChanges();
                 }
                 catch (DbUpdateException ex)
                 {
-                    _errorLogService.Registrar(ex, "Controlado", nameof(DeleteConsulta));
+                    errorLogService.Registrar(ex, "Controlado", nameof(DeleteConsulta));
                     if (ex.InnerException != null && ex.InnerException.Message.Contains("The DELETE statement conflicted with the REFERENCE constraint"))
                     {
                         // Desmarcar el estado Deleted para evitar que vuelva a intentar borrar
-                        _dbContext.Entry(consulta).State = EntityState.Modified;
+                        dbContext.Entry(consulta).State = EntityState.Modified;
 
                         consulta.Eliminada = true;
                         UpdateConsulta(consulta);
@@ -202,7 +194,7 @@ namespace ClinicaServices
         //    else
         //    {
         //        //DE ESTA FORMA NO SE NECESITA IR POR TODOS LOS USUARIOS, SINO SE FILTRAN DIRECTOS EN DB, LO CUAL LO HACE MAS RÁPIDO
-        //        List<Consulta> result = _dbContext.Consulta.Where(x =>
+        //        List<Consulta> result = dbContext.Consulta.Where(x =>
         //        x.IdConsulta.ToString().Contains(input) ||
         //        x.Diagnostico.Contains(input) ||
         //        x.Fecha.ToString().Contains(input) ||
@@ -225,12 +217,12 @@ namespace ClinicaServices
         public void UpdateConsulta(Consulta consulta)
         {
           consulta.BeforeSaveChanges();
-         _dbContext.SaveChanges();
+         dbContext.SaveChanges();
         }
 
         public void AddConsulta(Consulta consulta)
         {
-            //var consultaExistente = _dbContext.Consulta.FirstOrDefault(X => X.IdConsulta == consulta.IdConsulta && !X.Terminada);
+            //var consultaExistente = dbContext.Consulta.FirstOrDefault(X => X.IdConsulta == consulta.IdConsulta && !X.Terminada);
             //if consultaExistente.
 
             consulta.IdConsulta = Guid.NewGuid();
@@ -239,10 +231,10 @@ namespace ClinicaServices
             consulta.Eliminada = false;
             consulta.Pagada = false;
             consulta.BeforeSaveChanges();
-            _dbContext.Consulta.Add(consulta);
-            _dbContext.SaveChanges();
+            dbContext.Consulta.Add(consulta);
+            dbContext.SaveChanges();
 
-            _recetaServices.Create(new Receta { IdConsulta = consulta.IdConsulta });
+            recetaServices.Create(new Receta { IdConsulta = consulta.IdConsulta });
         }
 
         public void createPdf(string inHtmlPath, string toPdfPath)
@@ -256,7 +248,7 @@ namespace ClinicaServices
             }
 
 
-            //_recetaServices.Create(new Receta { IdConsulta = consulta.IdConsulta });
+            //recetaServices.Create(new Receta { IdConsulta = consulta.IdConsulta });
 
         }
     }

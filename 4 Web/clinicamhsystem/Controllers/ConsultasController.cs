@@ -9,30 +9,23 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace clinicaWeb.Controllers;
 [SecurityFilter("Consultas")]
-public class ConsultasController : ErrorHandlingController
+public class ConsultasController(IConsultaServices consultaServices, IPacienteServices pacienteServices) : ErrorHandlingController
 {
-    private readonly IPacienteServices _pacienteServices;
-    private readonly IConsultaServices _consultaServices;
     private string inhtmlPath = "C:\\Users\\futjo\\source\\repos\\ClinicaProject\\4 Web\\clinicamhsystem\\Views\\Consultas\\consultaBase.html";
     private string toPdfPath = "C:\\Users\\futjo\\OneDrive\\Receta.pdf";
 
-    public ConsultasController(IConsultaServices consultaServices, IPacienteServices pacienteServices)
-    {
-        _consultaServices = consultaServices;
-        _pacienteServices = pacienteServices;
-    }
 
     // GET: UsuariosController
     public ActionResult Index()
     {
-        var pacientes = _pacienteServices.GetAll();
+        var pacientes = pacienteServices.GetAll();
         return View(new ConsultasViewModel { Consultas = new(), Pacientes = pacientes });
     }
 
     [HttpPost]
     public IActionResult GetConsultasTable(DataTableRequest request)
     {
-        var result = _consultaServices.GetPaginatedOpen(request.Start, request.Length, request.SearchValue, request.SortColumn, request.SortDir);
+        var result = consultaServices.GetPaginatedOpen(request.Start, request.Length, request.SearchValue, request.SortColumn, request.SortDir);
 
         var data = result.Data.Select(c => new
         {
@@ -58,12 +51,12 @@ public class ConsultasController : ErrorHandlingController
     {
         if (String.IsNullOrEmpty(input))
         {
-            var consultas = _consultaServices.GetAll();
+            var consultas = consultaServices.GetAll();
             return RedirectToAction("Index", consultas);
         }
         else
         {
-            var idResult = _consultaServices.SearchConsulta(input);
+            var idResult = consultaServices.SearchConsulta(input);
             return RedirectToAction("Search", idResult);
         }
     }
@@ -72,7 +65,7 @@ public class ConsultasController : ErrorHandlingController
     // GET: ConsultasController/Details/5
     public ActionResult Detalles(Guid id)
     {
-        var consultas = _consultaServices.GetConsulta(id);
+        var consultas = consultaServices.GetConsulta(id);
         return View("Detalles", consultas);
     }
 
@@ -89,7 +82,7 @@ public class ConsultasController : ErrorHandlingController
     {
         try
         {
-            _consultaServices.AddConsulta(consulta);
+            consultaServices.AddConsulta(consulta);
         }
         catch (Exception ex)
         {           
@@ -102,7 +95,7 @@ public class ConsultasController : ErrorHandlingController
     // GET: ConsultasController/Edit/5
     public ActionResult Editar(Guid id)
     {
-        var consultas = _consultaServices.GetConsulta(id);
+        var consultas = consultaServices.GetConsulta(id);
         return RedirectToAction("Editar", consultas);
     }
     */
@@ -114,8 +107,8 @@ public class ConsultasController : ErrorHandlingController
     //{
     //    try
     //    {
-    //        _consultaServices.UpdateConsulta(consulta);
-    //        var consultas = _consultaServices.GetAll();
+    //        consultaServices.UpdateConsulta(consulta);
+    //        var consultas = consultaServices.GetAll();
     //        return RedirectToAction("Index", consultas);
     //    }
     //    catch
@@ -131,7 +124,7 @@ public class ConsultasController : ErrorHandlingController
     {
         try
         {
-            _consultaServices.DeleteConsulta(id);
+            consultaServices.DeleteConsulta(id);
         }
         catch (Exception ex)
         {
@@ -143,7 +136,7 @@ public class ConsultasController : ErrorHandlingController
 
     public ActionResult crearPdf()
     {
-        _consultaServices.createPdf(inhtmlPath, toPdfPath);
+        consultaServices.createPdf(inhtmlPath, toPdfPath);
         return View("Index");
         
     }

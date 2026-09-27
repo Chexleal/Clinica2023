@@ -6,11 +6,11 @@ namespace ClinicaServices.Storage;
 
 // Guarda solo RUTA en BD; el binario vive en Azure Blob (contenedor mhsystem-prd).
 // Dev local: Azurite (StorageConnectionString=UseDevelopmentStorage=true) o LocalStorageService.
-public class AzureBlobStorageService : IStorageService
+public class AzureBlobStorageService(string connectionString, string containerName = "mhsystem-prd") : IStorageService
 {
-    private readonly BlobContainerClient _container;
+    private readonly BlobContainerClient _container = InitContainer(connectionString, containerName);
 
-    public AzureBlobStorageService(string connectionString, string containerName = "mhsystem-prd")
+    private static BlobContainerClient InitContainer(string connectionString, string containerName)
     {
         if (string.IsNullOrWhiteSpace(connectionString))
             throw new ArgumentException("Falta StorageConnectionString.", nameof(connectionString));
@@ -18,8 +18,9 @@ public class AzureBlobStorageService : IStorageService
             throw new ArgumentException("Falta el nombre del contenedor.", nameof(containerName));
 
         var service = new BlobServiceClient(connectionString);
-        _container = service.GetBlobContainerClient(containerName);
-        _container.CreateIfNotExists(PublicAccessType.None);
+        var container = service.GetBlobContainerClient(containerName);
+        container.CreateIfNotExists(PublicAccessType.None);
+        return container;
     }
 
     public async Task<string> SaveAsync(IFormFile file, string relativePath)
@@ -55,6 +56,8 @@ public class AzureBlobStorageService : IStorageService
             ".pdf" => "application/pdf",
             ".jpg" or ".jpeg" => "image/jpeg",
             ".png" => "image/png",
+            ".webp" => "image/webp",
+            ".gif" => "image/gif",
             _ => "application/octet-stream"
         };
     }

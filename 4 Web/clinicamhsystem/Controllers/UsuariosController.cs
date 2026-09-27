@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace clinicaWeb.Controllers;
 [SecurityFilter("Usuarios")]
-public class UsuariosController : ErrorHandlingController
+public class UsuariosController(IUserServices userServices) : ErrorHandlingController
 {
-    private readonly IUserServices _userServices;
+
     private static List<string> permisos = new()
     {
         "SuperAdmin",
@@ -18,20 +18,16 @@ public class UsuariosController : ErrorHandlingController
         "ContinuarConsulta",
         "Pacientes",
         "Pagos",
+        "Gastos",
         "Reportes",
         "Servicios",
         "Configuraciones"
     };
 
-    public UsuariosController(IUserServices userServices)
-    {
-        _userServices = userServices;
-    }
-
     // GET: UsuariosController
     public ActionResult Index()
     {
-        var users = _userServices.GetAll();
+        var users = userServices.GetAll();
         return View(new UsuariosViewModel { Usuarios= users,Permisos=permisos } );
     }
 
@@ -48,7 +44,7 @@ public class UsuariosController : ErrorHandlingController
     {
         try
         {             
-            _userServices.AddUser(usuario, permissionsList);
+            userServices.AddUser(usuario, permissionsList);
 
         }
         catch (Exception ex)
@@ -64,8 +60,8 @@ public class UsuariosController : ErrorHandlingController
     {
         try
         {
-            _userServices.UpdateUser(usuario, permissionsListEdit);
-            var users = _userServices.GetAll();
+            userServices.UpdateUser(usuario, permissionsListEdit);
+            var users = userServices.GetAll();
             return RedirectToAction("Index", users);
         }
         catch (Exception ex)
@@ -81,13 +77,13 @@ public class UsuariosController : ErrorHandlingController
     {
         try
         {
-            _userServices.DeleteUser(id);
+            userServices.DeleteUser(id);
         }
         catch (Exception ex)
         {
             RegistrarError(ex);
         }
-        var users = _userServices.GetAll();
+        var users = userServices.GetAll();
         return RedirectToAction("Index",users);
     }
 
@@ -97,21 +93,21 @@ public class UsuariosController : ErrorHandlingController
     {
         try
         {
-            _userServices.SetActive(id,state);
+            userServices.SetActive(id,state);
         }
         catch (Exception ex)
         {
             RegistrarError(ex);
         }
-        var users = _userServices.GetAll();
+        var users = userServices.GetAll();
         return RedirectToAction("Index", users);
     }
 
     [HttpGet]
     public IActionResult GetUsuario(Guid usuarioId)
     {
-        var usuario = _userServices.GetUser(usuarioId);
-        usuario.Permisos = _userServices.GetPermissions(usuario.IdUsuario);
+        var usuario = userServices.GetUser(usuarioId);
+        usuario.Permisos = userServices.GetPermissions(usuario.IdUsuario);
         return PartialView("Editar", new UsuariosViewModel { Usuario = usuario, Permisos = permisos }  );
     }
 }

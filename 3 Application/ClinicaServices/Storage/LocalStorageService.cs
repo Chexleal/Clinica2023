@@ -3,14 +3,15 @@ using Microsoft.AspNetCore.Http;
 
 namespace ClinicaServices.Storage;
 
-public class LocalStorageService : IStorageService
+public class LocalStorageService(IWebHostEnvironment env) : IStorageService
 {
-    private readonly string _rootPath;
+    private readonly string _rootPath = InitRoot(env);
 
-    public LocalStorageService(IWebHostEnvironment env)
+    private static string InitRoot(IWebHostEnvironment env)
     {
-        _rootPath = Path.Combine(env.WebRootPath, "uploads");
-        if (!Directory.Exists(_rootPath)) Directory.CreateDirectory(_rootPath);
+        var rootPath = Path.Combine(env.WebRootPath, "uploads");
+        if (!Directory.Exists(rootPath)) Directory.CreateDirectory(rootPath);
+        return rootPath;
     }
 
     public async Task<string> SaveAsync(IFormFile file, string relativePath)
@@ -47,6 +48,8 @@ public class LocalStorageService : IStorageService
             ".pdf" => "application/pdf",
             ".jpg" or ".jpeg" => "image/jpeg",
             ".png" => "image/png",
+            ".webp" => "image/webp",
+            ".gif" => "image/gif",
             _ => "application/octet-stream"
         };
     }

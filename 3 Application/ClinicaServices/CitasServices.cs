@@ -18,51 +18,45 @@ namespace ClinicaServices
         void Delete(Guid id);
         DateTime GetNextCita(DateTime fecha, Guid idPaciente);
     }
-    public class CitaServices : ICitaServices
+    public class CitaServices(ClinicaContext dbContext) : ICitaServices
     {
-        private readonly ClinicaContext _dbContext;
-        public CitaServices(ClinicaContext dbContext)
-        {
-            _dbContext = dbContext;
-
-        }
 
         public void Add(Cita cita)
         {
             cita.IdCita = Guid.NewGuid();
-            _dbContext.Cita.Add(cita);
-            _dbContext.SaveChanges();
+            dbContext.Cita.Add(cita);
+            dbContext.SaveChanges();
         }
 
         public List<Cita> GetAll()
         {
-            return _dbContext.Cita.ToList();
+            return dbContext.Cita.ToList();
         }
 
         public List<Cita> GetAllForToday()
         {
-            return _dbContext.Cita.Where(x => x.FechaHora.Year == DateTime.Today.Year && x.FechaHora.Month == DateTime.Today.Month && x.FechaHora.Day == DateTime.Today.Day).ToList();
+            return dbContext.Cita.Where(x => x.FechaHora.Year == DateTime.Today.Year && x.FechaHora.Month == DateTime.Today.Month && x.FechaHora.Day == DateTime.Today.Day).ToList();
         }
 
         public int CountForToday()
         {
-            return _dbContext.Cita.Count(x => x.FechaHora.Year == DateTime.Today.Year && x.FechaHora.Month == DateTime.Today.Month && x.FechaHora.Day == DateTime.Today.Day);
+            return dbContext.Cita.Count(x => x.FechaHora.Year == DateTime.Today.Year && x.FechaHora.Month == DateTime.Today.Month && x.FechaHora.Day == DateTime.Today.Day);
         }
 
 
         public void Delete(Guid id)
         {
-            Cita cita = _dbContext.Cita.FirstOrDefault(p => p.IdCita == id);
+            Cita cita = dbContext.Cita.FirstOrDefault(p => p.IdCita == id);
             if (cita is not null)
             {
-                _dbContext.Cita.Remove(cita);
-                _dbContext.SaveChanges();
+                dbContext.Cita.Remove(cita);
+                dbContext.SaveChanges();
             }
         }
 
         public DateTime GetNextCita(DateTime fecha, Guid idPaciente)
         {
-            Cita cita = _dbContext.Cita.FirstOrDefault(p => p.IdPaciente == idPaciente && p.FechaHora>= fecha);
+            Cita cita = dbContext.Cita.FirstOrDefault(p => p.IdPaciente == idPaciente && p.FechaHora>= fecha);
 
             return cita is null ? new DateTime() : cita.FechaHora;
         }

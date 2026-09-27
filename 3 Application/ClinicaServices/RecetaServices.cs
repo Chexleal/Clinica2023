@@ -23,22 +23,16 @@ public interface IRecetaServices
 
     Guid DeleteDetalle(Guid idDetalleReceta);
 }
-public class RecetaServices : IRecetaServices
+public class RecetaServices(ClinicaContext dbContext) : IRecetaServices
 {
-    private readonly ClinicaContext _dbContext;
-    public RecetaServices(ClinicaContext dbContext)
-    {
-        _dbContext = dbContext;
-       
-    }
 
     public void AddDetalleReceta(DetalleReceta detalleReceta)
     {
         detalleReceta.IdDetalleReceta=Guid.NewGuid();
         detalleReceta.Medicamento = detalleReceta.Medicamento.TextoCatalogo();
         detalleReceta.BeforeSaveChanges();
-        _dbContext.DetalleReceta.Add(detalleReceta);
-        _dbContext.SaveChanges();
+        dbContext.DetalleReceta.Add(detalleReceta);
+        dbContext.SaveChanges();
 
         InsertarMedicamento(detalleReceta.Medicamento);
     }
@@ -47,28 +41,28 @@ public class RecetaServices : IRecetaServices
     {
         var limpio = medicamento.TextoCatalogo();
         if (string.IsNullOrWhiteSpace(limpio)) return;
-        var existingMed = _dbContext.Medicamento.FirstOrDefault(x => x.Nombre == limpio);
+        var existingMed = dbContext.Medicamento.FirstOrDefault(x => x.Nombre == limpio);
         if (existingMed is null)
         {
-            _dbContext.Medicamento.Add(new Medicamento { IdMedicamento = Guid.NewGuid(), Nombre = limpio });
-            _dbContext.SaveChanges();
+            dbContext.Medicamento.Add(new Medicamento { IdMedicamento = Guid.NewGuid(), Nombre = limpio });
+            dbContext.SaveChanges();
         }
     }
 
     public Receta Get(Guid id)
     {
-        return _dbContext.Receta.FirstOrDefault(p => p.IdReceta == id);
+        return dbContext.Receta.FirstOrDefault(p => p.IdReceta == id);
     }
 
     public Receta GetByConsulta(Guid id)
     {
-        return _dbContext.Receta.FirstOrDefault(p => p.IdConsulta == id);
+        return dbContext.Receta.FirstOrDefault(p => p.IdConsulta == id);
     }
 
     public void Update(Receta receta)
     {
         receta.Descripcion ??= string.Empty;
-        _dbContext.SaveChanges();
+        dbContext.SaveChanges();
     }
 
     public void recetaConverter()
@@ -82,19 +76,19 @@ public class RecetaServices : IRecetaServices
             receta.IdReceta = Guid.NewGuid();
             receta.Fecha = DateTime.Now;
             receta.Descripcion ??= string.Empty;
-           _dbContext.Receta.Add(receta);
-            _dbContext.SaveChanges();
+           dbContext.Receta.Add(receta);
+            dbContext.SaveChanges();
     }
 
     public List<DetalleReceta> GetAllDetalles(Guid id)
     {
-        return _dbContext.DetalleReceta.Where(x => x.IdReceta == id).ToList();
+        return dbContext.DetalleReceta.Where(x => x.IdReceta == id).ToList();
     }
 
     public List<Medicamento> GetAllMedicamentos()
     {
-        var lista = _dbContext.Medicamento.OrderBy(x => x.Nombre).ToList();
-        AuditoriaNombres.Completar(_dbContext, lista);
+        var lista = dbContext.Medicamento.OrderBy(x => x.Nombre).ToList();
+        AuditoriaNombres.Completar(dbContext, lista);
         return lista;
     }
 
@@ -102,27 +96,27 @@ public class RecetaServices : IRecetaServices
     {
         var limpio = nombre.TextoCatalogo();
         if (string.IsNullOrWhiteSpace(limpio)) throw new ArgumentException("Nombre requerido.");
-        var existente = _dbContext.Medicamento.FirstOrDefault(x => x.Nombre.ToLower() == limpio.ToLower());
+        var existente = dbContext.Medicamento.FirstOrDefault(x => x.Nombre.ToLower() == limpio.ToLower());
         if (existente is not null) return existente;
         var nuevo = new Medicamento { IdMedicamento = Guid.NewGuid(), Nombre = limpio };
-        _dbContext.Medicamento.Add(nuevo);
-        _dbContext.SaveChanges();
+        dbContext.Medicamento.Add(nuevo);
+        dbContext.SaveChanges();
         return nuevo;
     }
 
     public void EliminarMedicamento(Guid id)
     {
-        var med = _dbContext.Medicamento.FirstOrDefault(x => x.IdMedicamento == id);
+        var med = dbContext.Medicamento.FirstOrDefault(x => x.IdMedicamento == id);
         if (med is null) return;
-        _dbContext.Medicamento.Remove(med);
-        _dbContext.SaveChanges();
+        dbContext.Medicamento.Remove(med);
+        dbContext.SaveChanges();
     }
 
     public Guid DeleteDetalle(Guid idDetalleReceta)
     {
-        var detalle= _dbContext.DetalleReceta.FirstOrDefault(x => x.IdDetalleReceta == idDetalleReceta);
-        _dbContext.DetalleReceta.Remove(detalle);
-        _dbContext.SaveChanges();
+        var detalle= dbContext.DetalleReceta.FirstOrDefault(x => x.IdDetalleReceta == idDetalleReceta);
+        dbContext.DetalleReceta.Remove(detalle);
+        dbContext.SaveChanges();
 
         return detalle.IdReceta;
     }

@@ -7,22 +7,14 @@ using Microsoft.AspNetCore.Mvc;
 namespace clinicaWeb.Controllers
 {
     [SecurityFilter("Inicio")]
-    public class InicioController : Controller
+    public class InicioController(IConsultaServices consultaServices, ICitaServices citaServices) : Controller
     {
-        private readonly IConsultaServices _consultaServices;
-        private readonly ICitaServices _citaServices;
-
-        public InicioController(IConsultaServices consultaServices, ICitaServices citaServices)
-        {
-            _consultaServices = consultaServices;
-            _citaServices = citaServices;
-        }
 
         public IActionResult Index()
         {
-            var citasParaHoy = _citaServices.CountForToday();
-            var consultasAbiertas = _consultaServices.CountOpen();
-            var consultasPendientesPago = _consultaServices.CountNotPaid();
+            var citasParaHoy = citaServices.CountForToday();
+            var consultasAbiertas = consultaServices.CountOpen();
+            var consultasPendientesPago = consultaServices.CountNotPaid();
 
             //    var graficaConsultas = new List<ChartData>
             //{
@@ -40,16 +32,16 @@ namespace clinicaWeb.Controllers
 
             var dataConsultas = new List<int>
             {
-                _consultaServices.CountByMonth(DateTime.Today.AddMonths(-2).Month),
-                _consultaServices.CountByMonth(DateTime.Today.AddMonths(-1).Month),
-                _consultaServices.CountByMonth(DateTime.Today.Month)
+                consultaServices.CountByMonth(DateTime.Today.AddMonths(-2).Month),
+                consultaServices.CountByMonth(DateTime.Today.AddMonths(-1).Month),
+                consultaServices.CountByMonth(DateTime.Today.Month)
             };
 
             var dataIngresos = new List<decimal>
             {
-                _consultaServices.SumPaidByMonth(DateTime.Today.AddMonths(-2).Month),
-                _consultaServices.SumPaidByMonth(DateTime.Today.AddMonths(-1).Month),
-                _consultaServices.SumPaidByMonth(DateTime.Today.Month)
+                consultaServices.SumPaidByMonth(DateTime.Today.AddMonths(-2).Month),
+                consultaServices.SumPaidByMonth(DateTime.Today.AddMonths(-1).Month),
+                consultaServices.SumPaidByMonth(DateTime.Today.Month)
             };
 
             //DataIngresos

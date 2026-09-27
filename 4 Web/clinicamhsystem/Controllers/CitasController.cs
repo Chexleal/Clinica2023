@@ -8,23 +8,13 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace clinicaWeb.Controllers;
 [SecurityFilter("Citas")]
-public class CitasController : ErrorHandlingController
+public class CitasController(IPacienteServices pacienteServices, ICitaServices citaServices, ICurrentUser currentUser) : ErrorHandlingController
 {
-    private readonly IPacienteServices _pacienteServices;
-    private readonly ICitaServices _citaServices;
-    private readonly ICurrentUser _currentUser;
-
-    public CitasController(IPacienteServices pacienteServices, ICitaServices citaServices, ICurrentUser currentUser)
-    {
-        _pacienteServices = pacienteServices;
-        _citaServices = citaServices;
-        _currentUser = currentUser;
-    }
     // GET: CitasController
     public ActionResult Index()
     {
-        var pacientes = _pacienteServices.GetAll();
-        var citas = _citaServices.GetAll();
+        var pacientes = pacienteServices.GetAll();
+        var citas = citaServices.GetAll();
 
         //List<(string, Cita)> eventos = new List<(string, Cita)>();
 
@@ -39,7 +29,7 @@ public class CitasController : ErrorHandlingController
     [HttpPost]
     public ActionResult Add(Guid IdPaciente, string destiny, string Fecha, string Hora)
     {
-        if (_currentUser.Usuario is not { } usuarioActual)
+        if (currentUser.Usuario is not { } usuarioActual)
         {
             return RedirectToAction("Index");
         }
@@ -61,7 +51,7 @@ public class CitasController : ErrorHandlingController
         }
         DateTime combinedDateTime = new DateTime(fecha.Year, fecha.Month, fecha.Day, hora.Hour, hora.Minute, 0);
 
-        Paciente paciente = _pacienteServices.GetPacienteById(IdPaciente);
+        Paciente paciente = pacienteServices.GetPacienteById(IdPaciente);
         if (paciente is null)
         {
             return NotFound("Paciente no encontrado.");
@@ -74,7 +64,7 @@ public class CitasController : ErrorHandlingController
             IdUsuario = usuarioActual.IdUsuario,
             Titulo = paciente.Nombre + " " + paciente.Apellido
         };
-        _citaServices.Add(cita);
+        citaServices.Add(cita);
 
         bool esAjax = string.Equals(Request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.OrdinalIgnoreCase);
         if (esAjax)
@@ -89,7 +79,7 @@ public class CitasController : ErrorHandlingController
     [HttpGet]
     public List<Cita> Get()
     {
-        return _citaServices.GetAll();
+        return citaServices.GetAll();
     }
 
 
@@ -99,20 +89,20 @@ public class CitasController : ErrorHandlingController
         //Guid id_gui = new Guid(id.ToString());
         try
         {
-            _citaServices.Delete(id);
+            citaServices.Delete(id);
         }
         catch (Exception ex)
         {
             RegistrarError(ex);
         }
-        //var pacientes = _pacienteServices.GetAll();
-        //var citas = _citaServices.GetAll();
+        //var pacientes = pacienteServices.GetAll();
+        //var citas = citaServices.GetAll();
 
         //List<(string, Cita)> eventos = new List<(string, Cita)>();
 
         //foreach (var cita in citas)
         //{
-        //    eventos.Add((_pacienteServices.GetPacienteById(cita.IdPaciente).Nombre + " " + _pacienteServices.GetPacienteById(cita.IdPaciente).Apellido, cita));
+        //    eventos.Add((pacienteServices.GetPacienteById(cita.IdPaciente).Nombre + " " + pacienteServices.GetPacienteById(cita.IdPaciente).Apellido, cita));
         //}
 
         return RedirectToAction("Index");
@@ -121,10 +111,10 @@ public class CitasController : ErrorHandlingController
     [HttpPost]
     public IActionResult Calendar(Guid pacienteId)
     {
-        var pacientes = _pacienteServices.GetAll();
+        var pacientes = pacienteServices.GetAll();
         var paciente = pacientes.FirstOrDefault(x => x.IdPaciente == pacienteId);
 
-        var citas = _citaServices.GetAll();
+        var citas = citaServices.GetAll();
 
         List<(string, Cita)> eventos = new List<(string, Cita)>();
 

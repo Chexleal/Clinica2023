@@ -1,0 +1,198 @@
+@model List<ClinicaDomain.Gasto>
+@{
+    ViewData["Title"] = "Gastos";
+    var categorias = (List<ClinicaDomain.CategoriaGasto>)(ViewBag.Categorias ?? new List<ClinicaDomain.CategoriaGasto>());
+    var categoriasTodas = (List<ClinicaDomain.CategoriaGasto>)(ViewBag.CategoriasTodas ?? new List<ClinicaDomain.CategoriaGasto>());
+    var metodos = (List<ClinicaDomain.MetodoPago>)(ViewBag.Metodos ?? new List<ClinicaDomain.MetodoPago>());
+    var catMap = categoriasTodas.ToDictionary(c => c.IdCategoriaGasto, c => c.Nombre);
+    var metMap = metodos.ToDictionary(m => m.IdMetodoPago, m => m.Nombre);
+    var total = (decimal)(ViewBag.Total ?? 0);
+    var catSel = (Guid?)ViewBag.CategoriaId;
+    string CatNombre(Guid id) => catMap.TryGetValue(id, out var n) ? n : "—";
+    string MetNombre(Guid id) => metMap.TryGetValue(id, out var n) ? n : "—";
+}
+<div class="card shadow-lg p-3 mb-4 mt-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h4 class="mb-0"><i class="fa-solid fa-money-bill-wave" style="color:#2d8f77"></i> Gastos</h4>
+        <div class="d-flex gap-2 align-items-center">
+            <span class="badge bg-secondary">Total período: Q@(total.ToString("0.00"))</span>
+            <a href="@Url.Action("CategoriasGasto","Configuraciones")" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-tags"></i> Categorías</a>
+        </div>
+    </div>
+    <div class="card-body">
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger py-2">@TempData["Error"]</div>
+        }
+        @if (TempData["Ok"] != null)
+        {
+            <div class="alert alert-success py-2">@TempData["Ok"]</div>
+        }
+        <h6>Registrar gasto</h6>
+        <form method="POST" action="@Url.Action("Crear","Gastos")" enctype="multipart/form-data" class="row g-2 mb-3">
+            <div class="col-2"><label class="fw-bold small">Fecha *</label><input required type="date" name="Fecha" value="@DateTime.Today.ToString("yyyy-MM-dd")" max="@DateTime.Today.ToString("yyyy-MM-dd")" class="form-control form-control-sm" /></div>
+            <div class="col-3">
+                <label class="fw-bold small">Categoría *</label>
+                <select required name="IdCategoriaGasto" class="form-select form-select-sm">
+                    <option value="">Seleccione...</option>
+                    @foreach (var c in categorias)
+                    {
+                        <option value="@c.IdCategoriaGasto">@c.Nombre</option>
+                    }
+                </select>
+            </div>
+            <div class="col-4"><label class="fw-bold small">Concepto *</label><input required name="Concepto" maxlength="250" class="form-control form-control-sm" placeholder="Ej. Pago de luz junio" /></div>
+            <div class="col-3"><label class="fw-bold small">Monto Q *</label><input required name="Monto" type="number" step="0.01" min="0.01" class="form-control form-control-sm" placeholder="0.00" /></div>
+            <div class="col-3"><label class="fw-bold small">Proveedor / Beneficiario</label><input name="Proveedor" maxlength="200" class="form-control form-control-sm" placeholder="Opcional" /></div>
+            <div class="col-2"><label class="fw-bold small">No. comprobante</label><input name="NumeroComprobante" maxlength="80" class="form-control form-control-sm" placeholder="Factura/recibo" /></div>
+            <div class="col-3">
+                <label class="fw-bold small">Pagado con *</label>
+                <select required name="IdMetodoPago" class="form-select form-select-sm">
+                    <option value="">Seleccione...</option>
+                    @foreach (var m in metodos)
+                    {
+                        <option value="@m.IdMetodoPago">@m.Nombre</option>
+                    }
+                </select>
+            </div>
+            <div class="col-2"><label class="fw-bold small">Referencia</label><input name="Referencia" maxlength="80" class="form-control form-control-sm" placeholder="Cheque/transf." /></div>
+            <div class="col-2"><label class="fw-bold small">Observaciones</label><input name="Observaciones" maxlength="300" class="form-control form-control-sm" placeholder="Opcional" /></div>
+            <div class="col-4"><label class="fw-bold small">Comprobante (foto/PDF, máx 20 MB)</label><input type="file" name="comprobante" accept="image/*,.pdf" class="form-control form-control-sm" /></div>
+            <div class="col-12"><button class="btn btn-dark btn-sm">Registrar gasto</button></div>
+        </form>
+
+        <hr class="mt-1 mb-3" />
+        <form method="GET" action="@Url.Action("Index","Gastos")" class="row g-2 mb-3">
+            <div class="col-3"><label class="fw-bold small">Del</label><input type="date" name="from" value="@ViewBag.From" class="form-control form-control-sm" /></div>
+            <div class="col-3"><label class="fw-bold small">Al</label><input type="date" name="to" value="@ViewBag.To" class="form-control form-control-sm" /></div>
+            <div class="col-4">
+                <label class="fw-bold small">Categoría</label>
+                <select name="categoriaId" class="form-select form-select-sm">
+                    <option value="">Todas</option>
+                    @foreach (var c in categorias)
+                    {
+                        @if (catSel.HasValue && catSel.Value == c.IdCategoriaGasto)
+                        {
+                            <option value="@c.IdCategoriaGasto" selected>@c.Nombre</option>
+                        }
+                        else
+                        {
+                            <option value="@c.IdCategoriaGasto">@c.Nombre</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-2"><label class="fw-bold small d-block">&nbsp;</label><button class="btn btn-dark btn-sm w-100">Filtrar</button></div>
+        </form>
+
+        <div class="table-responsive">
+            <table id="table" class="table table-sm table-hover tabla-config" data-search-placeholder="Buscar gasto" data-export-name="Gastos">
+                <thead class="table-dark"><tr><th>Fecha</th><th>Categoría</th><th>Concepto</th><th>Proveedor</th><th>Comprobante</th><th>Tipo pago</th><th class="text-end">Monto</th><th></th></tr></thead>
+                <tbody>
+                    @foreach (var g in Model)
+                    {
+                        <tr>
+                            <td class="text-nowrap">@g.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td>@CatNombre(g.IdCategoriaGasto)</td>
+                            <td>@g.Concepto</td>
+                            <td class="small text-muted">@(string.IsNullOrWhiteSpace(g.Proveedor) ? "—" : g.Proveedor)</td>
+                            <td class="small">@(string.IsNullOrWhiteSpace(g.NumeroComprobante) ? "—" : g.NumeroComprobante)
+                                @if (!string.IsNullOrWhiteSpace(g.RutaComprobante))
+                                {
+                                    <a href="@Url.Action("VerComprobante","Gastos",new{id=g.IdGasto})" target="_blank" title="@g.NombreComprobante"><i class="fa-solid fa-paperclip"></i> Ver</a>
+                                }
+                            </td>
+                            <td class="small">@MetNombre(g.IdMetodoPago)@(string.IsNullOrWhiteSpace(g.Referencia) ? "" : $" ({g.Referencia})")</td>
+                            <td class="text-end fw-bold">Q@(g.Monto.ToString("0.00"))</td>
+                            <td class="text-nowrap">
+                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editar-@g.IdGasto" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                                <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#anular-@g.IdGasto" title="Anular">Anular</button>
+                                <div class="modal fade" id="editar-@g.IdGasto" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <form method="POST" action="@Url.Action("Actualizar","Gastos")" enctype="multipart/form-data">
+                                            <div class="modal-content">
+                                                <div class="modal-header"><h6>Editar gasto</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                                <div class="modal-body row g-2 text-start">
+                                                    <input hidden name="IdGasto" value="@g.IdGasto" />
+                                                    <div class="col-4"><label class="small fw-bold">Fecha *</label><input required type="date" name="Fecha" value="@g.Fecha.ToString("yyyy-MM-dd")" max="@DateTime.Today.ToString("yyyy-MM-dd")" class="form-control form-control-sm" /></div>
+                                                    <div class="col-8"><label class="small fw-bold">Categoría *</label>
+                                                        <select required name="IdCategoriaGasto" class="form-select form-select-sm">
+                                                            @foreach (var c in categorias)
+                                                            {
+                                                                @if (c.IdCategoriaGasto == g.IdCategoriaGasto)
+                                                                {
+                                                                    <option value="@c.IdCategoriaGasto" selected>@c.Nombre</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@c.IdCategoriaGasto">@c.Nombre</option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-12"><label class="small fw-bold">Concepto *</label><input required name="Concepto" value="@g.Concepto" maxlength="250" class="form-control form-control-sm" /></div>
+                                                    <div class="col-6"><label class="small fw-bold">Monto Q *</label><input required name="Monto" type="number" step="0.01" min="0.01" value="@g.Monto.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)" class="form-control form-control-sm" /></div>
+                                                    <div class="col-6"><label class="small">Proveedor</label><input name="Proveedor" value="@g.Proveedor" maxlength="200" class="form-control form-control-sm" /></div>
+                                                    <div class="col-6"><label class="small">No. comprobante</label><input name="NumeroComprobante" value="@g.NumeroComprobante" maxlength="80" class="form-control form-control-sm" /></div>
+                                                    <div class="col-6"><label class="small fw-bold">Tipo pago *</label>
+                                                        <select required name="IdMetodoPago" class="form-select form-select-sm">
+                                                            @foreach (var m in metodos)
+                                                            {
+                                                                @if (m.IdMetodoPago == g.IdMetodoPago)
+                                                                {
+                                                                    <option value="@m.IdMetodoPago" selected>@m.Nombre</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@m.IdMetodoPago">@m.Nombre</option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-6"><label class="small">Referencia</label><input name="Referencia" value="@g.Referencia" maxlength="80" class="form-control form-control-sm" /></div>
+                                                    <div class="col-6"><label class="small">Observaciones</label><input name="Observaciones" value="@g.Observaciones" maxlength="300" class="form-control form-control-sm" /></div>
+                                                    <div class="col-12">
+                                                        <label class="small">Comprobante (foto/PDF, máx 20 MB)</label>
+                                                        @if (!string.IsNullOrWhiteSpace(g.RutaComprobante))
+                                                        {
+                                                            <div class="small mb-1"><a href="@Url.Action("VerComprobante","Gastos",new{id=g.IdGasto})" target="_blank"><i class="fa-solid fa-paperclip"></i> @g.NombreComprobante</a></div>
+                                                            <div class="form-check"><input class="form-check-input" type="checkbox" name="quitarComprobante" value="true" id="quitar-@g.IdGasto" /><label class="form-check-label small" for="quitar-@g.IdGasto">Quitar comprobante actual</label></div>
+                                                        }
+                                                        <input type="file" name="comprobante" accept="image/*,.pdf" class="form-control form-control-sm mt-1" />
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary btn-sm">Guardar</button></div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                                <div class="modal fade" id="anular-@g.IdGasto" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <form method="POST" action="@Url.Action("Anular","Gastos")">
+                                            <div class="modal-content">
+                                                <div class="modal-header"><h6>Anular gasto Q@(g.Monto.ToString("0.00"))</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                                <div class="modal-body">
+                                                    <input hidden name="id" value="@g.IdGasto" />
+                                                    <label class="small fw-bold">Motivo *</label>
+                                                    <input required name="motivo" maxlength="200" class="form-control form-control-sm" placeholder="Motivo de anulación" />
+                                                </div>
+                                                <div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-danger btn-sm">Anular</button></div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="8" class="text-center text-muted">Sin gastos en el período.</td></tr>
+                    }
+                </tbody>
+                <tfoot class="table-dark fw-bold">
+                    <tr><td colspan="6">Total</td><td class="text-end">Q@(total.ToString("0.00"))</td><td></td></tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>

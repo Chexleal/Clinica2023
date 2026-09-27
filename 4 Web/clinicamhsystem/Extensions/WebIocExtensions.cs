@@ -36,6 +36,8 @@ public static class WebIocExtensions
         services.AddScoped<IMovimientoInventarioService, MovimientoInventarioService>();
         services.AddScoped<IVentaService, VentaService>();
         services.AddScoped<IMetodoPagoService, MetodoPagoService>();
+        services.AddScoped<ICategoriaGastoService, CategoriaGastoService>();
+        services.AddScoped<IGastoService, GastoService>();
         // Storage: Azure Blob si hay StorageConnectionString, si no Local (wwwroot/uploads).
         var blobConn = configuration["StorageConnectionString"];
         var blobContainer = configuration["StorageContainerName"];

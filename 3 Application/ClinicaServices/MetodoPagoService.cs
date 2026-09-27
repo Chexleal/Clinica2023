@@ -12,27 +12,25 @@ public interface IMetodoPagoService
     void EnsureSeed();
 }
 
-public class MetodoPagoService : IMetodoPagoService
+public class MetodoPagoService(ClinicaContext db) : IMetodoPagoService
 {
-    private readonly ClinicaContext _db;
-    public MetodoPagoService(ClinicaContext db) { _db = db; }
 
     public List<MetodoPago> GetAll(bool soloActivos = true)
     {
-        if (!_db.MetodosPago.Any()) EnsureSeed();
-        var q = _db.MetodosPago.AsQueryable();
+        if (!db.MetodosPago.Any()) EnsureSeed();
+        var q = db.MetodosPago.AsQueryable();
         if (soloActivos) q = q.Where(x => x.Activo);
         return q.OrderBy(x => x.Nombre).ToList();
     }
 
     public MetodoPago? Get(Guid id) =>
-        _db.MetodosPago.FirstOrDefault(x => x.IdMetodoPago == id);
+        db.MetodosPago.FirstOrDefault(x => x.IdMetodoPago == id);
 
     public MetodoPago Crear(string nombre, bool requiereReferencia)
     {
         var limpio = nombre.TextoCatalogo();
         if (string.IsNullOrWhiteSpace(limpio)) throw new ArgumentException("Nombre requerido.");
-        var existente = _db.MetodosPago.FirstOrDefault(x => x.Nombre.ToLower() == limpio.ToLower());
+        var existente = db.MetodosPago.FirstOrDefault(x => x.Nombre.ToLower() == limpio.ToLower());
         if (existente is not null) return existente;
         var nuevo = new MetodoPago
         {
@@ -41,8 +39,8 @@ public class MetodoPagoService : IMetodoPagoService
             RequiereReferencia = requiereReferencia,
             Activo = true
         };
-        _db.MetodosPago.Add(nuevo);
-        _db.SaveChanges();
+        db.MetodosPago.Add(nuevo);
+        db.SaveChanges();
         return nuevo;
     }
 
@@ -51,12 +49,12 @@ public class MetodoPagoService : IMetodoPagoService
         var m = Get(id);
         if (m is null) return;
         m.Activo = activo;
-        _db.SaveChanges();
+        db.SaveChanges();
     }
 
     public void EnsureSeed()
     {
-        if (_db.MetodosPago.Any()) return;
+        if (db.MetodosPago.Any()) return;
         var seeds = new (string Nombre, bool Ref)[]
         {
             ("EFECTIVO", false),
@@ -68,7 +66,7 @@ public class MetodoPagoService : IMetodoPagoService
         };
         foreach (var s in seeds)
         {
-            _db.MetodosPago.Add(new MetodoPago
+            db.MetodosPago.Add(new MetodoPago
             {
                 IdMetodoPago = Guid.NewGuid(),
                 Nombre = s.Nombre,
@@ -76,6 +74,6 @@ public class MetodoPagoService : IMetodoPagoService
                 Activo = true
             });
         }
-        _db.SaveChanges();
+        db.SaveChanges();
     }
 }

@@ -51,9 +51,10 @@
                             <div class="form-group">
                                 <label class="control-label">Tipo</label>
                                 <select name="tipo" id="tipo_reporte" class="form-control">
-                                    <option value="todos" selected="@(tipoSel == "todos" ? "selected" : null)">Todos (servicios + productos)</option>
+                                    <option value="todos" selected="@(tipoSel == "todos" ? "selected" : null)">Todos (servicios + productos + gastos)</option>
                                     <option value="servicios" selected="@(tipoSel == "servicios" ? "selected" : null)">Solo servicios</option>
                                     <option value="productos" selected="@(tipoSel == "productos" ? "selected" : null)">Solo productos</option>
+                                    <option value="gastos" selected="@(tipoSel == "gastos" ? "selected" : null)">Solo gastos</option>
                                 </select>
                             </div>
                         </div>
@@ -213,7 +214,8 @@
                 {
                     var tipoTitulo = (ViewBag.TipoFiltro as string) ?? Model.TipoFiltro ?? "todos";                    var nombreReporte = tipoTitulo == "servicios" ? "Resumen de ingresos por servicios"
                         : tipoTitulo == "productos" ? "Resumen de ingresos por productos"
-                        : "Resumen de ingresos por servicios y productos";
+                        : tipoTitulo == "gastos" ? "Resumen de gastos"
+                        : "Balance del período (ingresos y gastos)";
                     <h5 class="enc table-title encabezado fw-normal" id="tabla-encabezado">
                         <span class="centered-span">
                             @nombreReporte<br /><br>
@@ -221,8 +223,8 @@
                         </span>
                         <br>
                         <div class="small text-muted fw-normal" style="font-size:0.8rem;">
-                            Solo cobros efectivos del rango (ventas pagadas y legados de consultas terminadas y pagadas).
-                            Criterio de fechas: ventas por fecha de venta (caja), legados por fecha de consulta.
+                            Ingresos en positivo y gastos en negativo en la misma tabla; el Balance es el total general.
+                            Criterio de fechas: ventas por fecha de venta (caja), legados por fecha de consulta, gastos por fecha de gasto.
                             Lo pendiente de cobro va en la tabla "Cobros pendientes".
                         </div>
                         <br>
@@ -257,9 +259,10 @@
                 var pagosPorVenta = (ViewBag.PagosPorVenta as Dictionary<Guid, List<ClinicaDomain.VentaPago>>) ?? new Dictionary<Guid, List<ClinicaDomain.VentaPago>>();
                 var metodosMap = (ViewBag.MetodosMap as Dictionary<Guid, string>) ?? new Dictionary<Guid, string>();
                 var tipoFiltro = (((ViewBag.TipoFiltro as string) ?? Model.TipoFiltro ?? "todos").Trim().ToLower());
-                if (tipoFiltro != "servicios" && tipoFiltro != "productos") { tipoFiltro = "todos"; }
+                if (tipoFiltro != "servicios" && tipoFiltro != "productos" && tipoFiltro != "gastos") { tipoFiltro = "todos"; }
                 var verServicios = tipoFiltro == "todos" || tipoFiltro == "servicios";
                 var verProductos = tipoFiltro == "todos" || tipoFiltro == "productos";
+                var verGastos = tipoFiltro == "todos" || tipoFiltro == "gastos";
                 string MetodoDeVenta(Guid idVenta)
                 {
                     if (!pagosPorVenta.TryGetValue(idVenta, out var lista) || lista.Count == 0) return "—";
@@ -284,10 +287,10 @@
                                 <th>Total</th>
                             </tr>
                             <script>
-                                var custom_file_name = "Resumen Servicios (@Model.From.ToString("dd-MM-yyyy") - @Model.To.ToString("dd-MM-yyyy"))"
+                                var custom_file_name = "Balance (@Model.From.ToString("dd-MM-yyyy") - @Model.To.ToString("dd-MM-yyyy"))"
                                 var num_columns = [1, 2, 3]
                                 var encabezado = document.getElementById("tabla-encabezado").textContent;
-                                var titulo = "Resumen de ingresos"
+                                var titulo = "Balance del período"
                                 var fechas = "Del  @Model.From.ToString("dd/MM/yyyy")       Al  @Model.To.ToString("dd/MM/yyyy")"
                             </script>
                         }
@@ -342,6 +345,9 @@
                     @{
                         var granCantidadFoot = 0;
                         var granTotalFoot = 0.0M;
+                        var granIngresosFoot = 0.0M;
+                        var granMovGastosFoot = 0;
+                        var granGastosFoot = 0.0M;
                         if (Model.Paciente != null)
                         {
                             foreach (var consulta in Model.Paciente.Consulta.Where(x => x.Terminada && x.Pagada && x.Fecha.Date >= Model.From.Date && x.Fecha.Date <= Model.To.Date))
@@ -526,20 +532,77 @@
                                 </tr>
                             }
                             }
+                            // Gastos del rango (egresos): filas en negativo en la misma tabla.
+                            // Se muestran con filtro Todos o Solo gastos.
+                            var gastosRep = (ViewBag.Gastos as List<ClinicaDomain.Gasto>) ?? new List<ClinicaDomain.Gasto>();
+                            var catGastoMap = (ViewBag.CategoriasGastoMap as Dictionary<Guid, string>) ?? new Dictionary<Guid, string>();
+                            var granMovGastos = 0;
+                            var granGastos = 0.0M;
+                            var gruposGasto = gastosRep.GroupBy(g => g.IdCategoriaGasto)
+                                .OrderBy(g => catGastoMap.TryGetValue(g.Key, out var ng) ? ng : "").ToList();
+                            if (verGastos)
+                            {
+                            foreach (var gg in gruposGasto)
+                            {
+                                var nombreCat = catGastoMap.TryGetValue(gg.Key, out var ncat) ? ncat : "—";
+                                var movsG = gg.OrderBy(x => x.Fecha).ToList();
+                                var totG = movsG.Sum(x => x.Monto);
+                                granMovGastos += movsG.Count;
+                                granGastos += totG;
+                                var microGId = $"micro-gasto-{gg.Key}";
+                                microStore[microGId] = movsG
+                                    .Select(x => (x.Fecha, "—", "Gasto", 1M, -x.Monto, metodosMap.TryGetValue(x.IdMetodoPago, out var nmx) ? nmx : "—"))
+                                    .ToList();
+                                microTitulos[microGId] = $"{nombreCat} (gasto)";
+                                <tr class="macro-row fila-gasto">
+                                    <td><button type="button" class="btn-micro btn btn-sm btn-outline-primary" data-micro="@microGId" title="Ver detalle">+</button></td>
+                                    <td>@nombreCat (gasto)</td>
+                                    <td>@movsG.Count</td>
+                                    <td class="text-danger">Q @(-totG)</td>
+                                </tr>
+                            }
+                            }
                             granCantidadFoot = granCantidad;
                             granTotalFoot = granTotal;
+                            granIngresosFoot = granTotal;
+                            granMovGastosFoot = granMovGastos;
+                            granGastosFoot = -granGastos;
                         }
                     }
                 </tbody>
                 @if (Model.EsServicio || Model.VerTodosPacientes)
                 {
                     <tfoot class="table-dark fw-bold">
-                        <tr>
-                            <td></td>
-                            <td>Total general</td>
-                            <td>@granCantidadFoot</td>
-                            <td>Q @granTotalFoot</td>
-                        </tr>
+                        @if (Model.EsServicio)
+                        {
+                            <tr>
+                                <td></td>
+                                <td>Total ingresos</td>
+                                <td>@granCantidadFoot</td>
+                                <td>Q @granIngresosFoot</td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>Total gastos</td>
+                                <td>@granMovGastosFoot</td>
+                                <td>Q @granGastosFoot</td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>Balance</td>
+                                <td></td>
+                                <td>Q @(granIngresosFoot + granGastosFoot)</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr>
+                                <td></td>
+                                <td>Total general</td>
+                                <td>@granCantidadFoot</td>
+                                <td>Q @granTotalFoot</td>
+                            </tr>
+                        }
                     </tfoot>
                 }
             </table>
@@ -566,6 +629,10 @@
                                 var diasConMov = microStore.SelectMany(kv => kv.Value.Select(m => m.Fecha.Date)).Distinct().OrderBy(f => f).ToList();
                                 var granCantDia = 0M;
                                 var granTotDia = 0M;
+                                var granIngDia = 0M;
+                                var granGasDia = 0M;
+                                var granCantIngDia = 0M;
+                                var granCantGasDia = 0M;
                                 foreach (var dia in diasConMov)
                                 {
                                     // Mismo grano que el micro Por servicio: un movimiento por línea,
@@ -582,8 +649,16 @@
                                     movsDia = movsDia.OrderBy(x => x.Servicio).ThenBy(x => x.Paciente).ToList();
                                     var cantDia = movsDia.Sum(f => f.Cantidad);
                                     var totDia = movsDia.Sum(f => f.Subtotal);
+                                    var cantIngDia = movsDia.Where(f => f.Origen != "Gasto").Sum(f => f.Cantidad);
+                                    var ingDia = movsDia.Where(f => f.Origen != "Gasto").Sum(f => f.Subtotal);
+                                    var cantGasDia = movsDia.Where(f => f.Origen == "Gasto").Sum(f => f.Cantidad);
+                                    var gasDia = movsDia.Where(f => f.Origen == "Gasto").Sum(f => f.Subtotal);
                                     granCantDia += cantDia;
                                     granTotDia += totDia;
+                                    granCantIngDia += cantIngDia;
+                                    granIngDia += ingDia;
+                                    granCantGasDia += cantGasDia;
+                                    granGasDia += gasDia;
                                     var microDiaId = $"micro-dia-{dia:yyyyMMdd}";
                                     microDiaStore[microDiaId] = movsDia;
                                     <tr class="macro-row">
@@ -598,15 +673,27 @@
                         <tfoot class="table-dark fw-bold">
                             <tr>
                                 <td></td>
-                                <td>Total general</td>
-                                <td>@granCantDia</td>
-                                <td>Q @granTotDia</td>
+                                <td>Total ingresos</td>
+                                <td>@granCantIngDia</td>
+                                <td>Q @granIngDia</td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>Total gastos</td>
+                                <td>@granCantGasDia</td>
+                                <td>Q @granGasDia</td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>Balance</td>
+                                <td></td>
+                                <td>Q @(granIngDia + granGasDia)</td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
             }
-            @if (Model.EsServicio)
+            @if (Model.EsServicio && tipoFiltro != "gastos")
             {
                 // Sumatoria por tipo de pago (prorrateada por línea para respetar el filtro servicios/productos).
                 // Solo cobros efectivos: ventas Pagadas + legados de consultas terminadas y pagadas.
@@ -660,7 +747,7 @@
                 var totalMetodos = totalesMetodo.Values.Sum();
                 <div class="mt-4" id="totalesPorPago">
                     <h5 class="fw-bold mb-1">Totales por tipo de pago @(tipoFiltro == "todos" ? "" : (tipoFiltro == "servicios" ? "(solo servicios)" : "(solo productos)"))</h5>
-                    <div class="small text-muted mb-2">Si una venta se pagó con varios tipos, el monto se reparte proporcionalmente entre sus líneas. Los cobros legados (de consultas terminadas y pagadas, sin registro de tipo de pago) se agrupan en SIN REGISTRO. Lo pendiente de cobro no suma aquí: va en la tabla "Cobros pendientes".</div>
+                    <div class="small text-muted mb-2">Si una venta se pagó con varios tipos, el monto se reparte proporcionalmente entre sus líneas. Los cobros legados (de consultas terminadas y pagadas, sin registro de tipo de pago) se agrupan en SIN REGISTRO. Lo pendiente de cobro no suma aquí: va en la tabla "Cobros pendientes". Los gastos no se incluyen aquí: restan en la tabla principal (Balance).</div>
                     <div class="table-responsive">
                     <table id="tablaTotalesPago" class="table table-striped">
                         <thead class="table-dark">
@@ -677,7 +764,7 @@
                             }
                             @if (totalesMetodo.Count == 0)
                             {
-                                <tr><td colspan="3" class="text-center text-muted">Sin movimientos en el rango.</td></tr>
+                                <tr><td class="text-muted">Sin movimientos en el rango.</td><td></td><td></td></tr>
                             }
                         </tbody>
                         <tfoot class="table-dark fw-bold">
@@ -747,7 +834,7 @@
                             }
                             @if (filasPend.Count == 0)
                             {
-                                <tr><td colspan="7" class="text-center text-muted">Sin cobros pendientes en el rango.</td></tr>
+                                <tr><td class="text-muted">Sin cobros pendientes en el rango.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
                             }
                         </tbody>
                         <tfoot class="table-dark fw-bold">
@@ -798,7 +885,7 @@
                                                         <tbody>
                                                             @foreach (var m in g.OrderBy(x => x.Paciente).ThenBy(x => x.Origen))
                                                             {
-                                                                <tr>
+                                                                <tr class="@(m.Origen == "Gasto" ? "fila-gasto" : "")">
                                                                     <td>@m.Paciente</td>
                                                                     <td>@m.Origen</td>
                                                                     <td><span class="badge bg-light text-dark border">@m.MetodoPago</span></td>
@@ -853,7 +940,7 @@
                                                         <tbody>
                                                             @foreach (var f in gs.OrderBy(x => x.Paciente).ThenBy(x => x.Origen))
                                                             {
-                                                                <tr>
+                                                                <tr class="@(f.Origen == "Gasto" ? "fila-gasto" : "")">
                                                                     <td>@f.Paciente</td>
                                                                     <td>@f.Origen</td>
                                                                     <td><span class="badge bg-light text-dark border">@f.MetodoPago</span></td>
@@ -919,7 +1006,7 @@
     var idxColor = 0;
     foreach (var kv in microStore)
     {
-        if (kv.Key.StartsWith("micro-prod-")) { continue; }
+        if (kv.Key.StartsWith("micro-prod-") || kv.Key.StartsWith("micro-gasto-")) { continue; }
         var porDia = diasRango.Select(dt => kv.Value.Where(m => m.Fecha.Date == dt).Sum(m => m.Subtotal)).ToList();
         if (porDia.All(v => v == 0)) { continue; }
         var tituloDs = microTitulos.ContainsKey(kv.Key) ? microTitulos[kv.Key] : kv.Key;
@@ -935,10 +1022,28 @@
             dsList.Add(new { label = "Productos", data = porDiaProd, backgroundColor = paletaChart[idxColor % paletaChart.Length] });
         }
     }
+    // Gastos por día y categoría (montos en positivo para graficar).
+    var paletaGastos = new[] { "#EF9A9A", "#E57373", "#EF5350", "#E53935", "#C62828", "#FF8A80", "#FF5252", "#D32F2F" };
+    var dsGastosList = new List<object>();
+    var idxGasto = 0;
+    foreach (var kv in microStore.Where(kv => kv.Key.StartsWith("micro-gasto-")))
+    {
+        var porDiaGasto = diasRango.Select(dt => -kv.Value.Where(m => m.Fecha.Date == dt).Sum(m => m.Subtotal)).ToList();
+        if (porDiaGasto.All(v => v == 0)) { continue; }
+        var tituloGasto = microTitulos.ContainsKey(kv.Key) ? microTitulos[kv.Key] : kv.Key;
+        dsGastosList.Add(new { label = tituloGasto, data = porDiaGasto, backgroundColor = paletaGastos[idxGasto % paletaGastos.Length] });
+        idxGasto++;
+    }
     <div class="card w-100 shadow-lg mt-5" id="grafica-card">
         <div class="card-header bg-white">
             <h3 class="titulo">Ingresos por día</h3>
         </div>
+        @if (!dsList.Any())
+        {
+            <div class="card-body pt-0"><div class="text-muted small">Sin ingresos en el rango con este filtro.</div></div>
+        }
+        else
+        {
         <div class="card-body pt-0">
             <div class="small text-muted mb-1">Cada barra se divide por servicio (detalle). Pase el cursor para ver el desglose.</div>
             <input type="hidden" id="labelsIngresosDia" value='@Html.Raw(JsonConvert.SerializeObject(diasLabels))'>
@@ -947,7 +1052,24 @@
                 <canvas id="graficaIngresosServicios"></canvas>
             </div>
         </div>
+        }
     </div>
+    @if (dsGastosList.Any())
+    {
+        <div class="card w-100 shadow-lg mt-5" id="grafica-gastos-card">
+            <div class="card-header bg-white">
+                <h3 class="titulo">Gastos por día</h3>
+            </div>
+            <div class="card-body pt-0">
+                <div class="small text-muted mb-1">Cada barra se divide por categoría de gasto (montos en positivo). Pase el cursor para ver el desglose.</div>
+                <input type="hidden" id="labelsGastosDia" value='@Html.Raw(JsonConvert.SerializeObject(diasLabels))'>
+                <input type="hidden" id="datasetsGastosDia" value='@Html.Raw(JsonConvert.SerializeObject(dsGastosList))'>
+                <div class="grafica-servicios-wrap">
+                    <canvas id="graficaGastosDia"></canvas>
+                </div>
+            </div>
+        </div>
+    }
 }
 
 <!-- Modal Detalles total -->

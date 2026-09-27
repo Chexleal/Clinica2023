@@ -14,17 +14,15 @@ public interface ICatalogoIndicacionService
     void Eliminar(Guid id);
 }
 
-public class CatalogoIndicacionService : ICatalogoIndicacionService
+public class CatalogoIndicacionService(ClinicaContext db) : ICatalogoIndicacionService
 {
-    private readonly ClinicaContext _db;
-    public CatalogoIndicacionService(ClinicaContext db) => _db = db;
 
     public List<CatalogoIndicacion> GetAll()
     {
         try
         {
-            var lista = _db.CatalogoIndicaciones.Where(c=>c.FechaEliminacion==null).OrderBy(c=>c.Tipo).ThenBy(c=>c.Descripcion).ToList();
-            AuditoriaNombres.Completar(_db, lista);
+            var lista = db.CatalogoIndicaciones.Where(c=>c.FechaEliminacion==null).OrderBy(c=>c.Tipo).ThenBy(c=>c.Descripcion).ToList();
+            AuditoriaNombres.Completar(db, lista);
             return lista;
         }
         catch { return new List<CatalogoIndicacion>(); }
@@ -34,8 +32,8 @@ public class CatalogoIndicacionService : ICatalogoIndicacionService
     {
         try
         {
-            var lista = _db.CatalogoIndicaciones.Where(c=>c.Tipo==tipo && c.Activo && c.FechaEliminacion==null).OrderBy(c=>c.Descripcion).ToList();
-            AuditoriaNombres.Completar(_db, lista);
+            var lista = db.CatalogoIndicaciones.Where(c=>c.Tipo==tipo && c.Activo && c.FechaEliminacion==null).OrderBy(c=>c.Descripcion).ToList();
+            AuditoriaNombres.Completar(db, lista);
             return lista;
         }
         catch { return new List<CatalogoIndicacion>(); }
@@ -43,7 +41,7 @@ public class CatalogoIndicacionService : ICatalogoIndicacionService
 
     public CatalogoIndicacion? GetById(Guid id)
     {
-        try { return _db.CatalogoIndicaciones.FirstOrDefault(c=>c.IdCatalogo==id); }
+        try { return db.CatalogoIndicaciones.FirstOrDefault(c=>c.IdCatalogo==id); }
         catch { return null; }
     }
 
@@ -52,27 +50,27 @@ public class CatalogoIndicacionService : ICatalogoIndicacionService
         item.IdCatalogo = Guid.NewGuid();
         item.Codigo = item.Codigo.TextoCatalogo();
         item.Descripcion = item.Descripcion.TextoCatalogo();
-        _db.CatalogoIndicaciones.Add(item);
-        _db.SaveChanges();
+        db.CatalogoIndicaciones.Add(item);
+        db.SaveChanges();
         return item;
     }
 
     public void Actualizar(CatalogoIndicacion item)
     {
-        var db = _db.CatalogoIndicaciones.FirstOrDefault(c=>c.IdCatalogo==item.IdCatalogo);
-        if(db==null) return;
-        db.Tipo = item.Tipo;
-        db.Codigo = item.Codigo.TextoCatalogo();
-        db.Descripcion = item.Descripcion.TextoCatalogo();
-        db.Activo = item.Activo;
-        _db.SaveChanges();
+        var actual = db.CatalogoIndicaciones.FirstOrDefault(c=>c.IdCatalogo==item.IdCatalogo);
+        if(actual==null) return;
+        actual.Tipo = item.Tipo;
+        actual.Codigo = item.Codigo.TextoCatalogo();
+        actual.Descripcion = item.Descripcion.TextoCatalogo();
+        actual.Activo = item.Activo;
+        db.SaveChanges();
     }
 
     public void Eliminar(Guid id)
     {
-        var db = _db.CatalogoIndicaciones.FirstOrDefault(c=>c.IdCatalogo==id);
-        if(db==null) return;
-        _db.CatalogoIndicaciones.Remove(db);
-        _db.SaveChanges();
+        var actual = db.CatalogoIndicaciones.FirstOrDefault(c=>c.IdCatalogo==id);
+        if(actual==null) return;
+        db.CatalogoIndicaciones.Remove(actual);
+        db.SaveChanges();
     }
 }

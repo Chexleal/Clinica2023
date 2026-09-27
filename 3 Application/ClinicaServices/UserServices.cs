@@ -30,15 +30,9 @@ public interface IUserServices
 
     List<RolDetalle> GetPermissions(Guid idUser);
 }
-public class UserServices : IUserServices
+public class UserServices(ClinicaContext dbContext, IErrorLogService errorLogService) : IUserServices
 {
-    private readonly ClinicaContext _dbContext;
-    private readonly IErrorLogService _errorLogService;
-    public UserServices(ClinicaContext dbContext, IErrorLogService errorLogService)
-    {
-        _dbContext = dbContext;
-        _errorLogService = errorLogService;
-    }
+
 
     public void AddUser(Usuario user, List<string> permissionsList)
     {
@@ -46,8 +40,8 @@ public class UserServices : IUserServices
         user.EstadoEliminado = false;
         user.UsuarioActivo = true;
         user.BeforeChanges();
-        _dbContext.Usuarios.Add(user);
-        _dbContext.SaveChanges();
+        dbContext.Usuarios.Add(user);
+        dbContext.SaveChanges();
 
         foreach (var permission in permissionsList)
         {
@@ -58,24 +52,24 @@ public class UserServices : IUserServices
                 Permiso = permission,
                 Descripcion = permission
             };
-            _dbContext.RolDetalles.Add(rolDetalle);
+            dbContext.RolDetalles.Add(rolDetalle);
         }
-        _dbContext.SaveChanges();
+        dbContext.SaveChanges();
     }
 
     public Usuario Authenticate(string user, string password)
     {
-        var userItem = _dbContext.Usuarios.FirstOrDefault(x => x.Password == password && x.NombreUsuario == user);
+        var userItem = dbContext.Usuarios.FirstOrDefault(x => x.Password == password && x.NombreUsuario == user);
         return userItem;
     }
 
     public List<Usuario> GetAll()
     {
-        List<Usuario> result = _dbContext.Usuarios.Where(x =>
+        List<Usuario> result = dbContext.Usuarios.Where(x =>
         x.EstadoEliminado.Equals(false)).ToList();
 
         return result;
-        //return _dbContext.Usuarios.ToList();
+        //return dbContext.Usuarios.ToList();
     }
 
     public bool RecoverAccount(string userEmail, string userName,string respuestaSeg)
@@ -127,7 +121,7 @@ public class UserServices : IUserServices
         }
         catch (Exception ex)
         {
-            _errorLogService.Registrar(ex, "Controlado", nameof(RecoverAccount));
+            errorLogService.Registrar(ex, "Controlado", nameof(RecoverAccount));
             Console.WriteLine("Error al enviar correo electrónico: " + ex.Message);
             return false;
         }
@@ -135,14 +129,14 @@ public class UserServices : IUserServices
 
     public bool CheckUserExist(string userName)
     {
-        var userItem = _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == userName);
+        var userItem = dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == userName);
         if (userItem == null) return false;
         return true;
     }
 
     public string? SecurityQuestion(string userName)
     {
-        var userItem = _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario.ToLower().Trim() == userName.ToLower().Trim());
+        var userItem = dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario.ToLower().Trim() == userName.ToLower().Trim());
         if (userItem == null)
         {
 
@@ -157,16 +151,16 @@ public class UserServices : IUserServices
 
     public string? CheckAnswer(string answer)
     {
-        var userItem = _dbContext.Usuarios.FirstOrDefault(x => x.RespuestaSeg.ToLower().Trim() == answer.ToLower().Trim());
+        var userItem = dbContext.Usuarios.FirstOrDefault(x => x.RespuestaSeg.ToLower().Trim() == answer.ToLower().Trim());
         if (userItem != null) return userItem.RespuestaSeg.ToString();
         return null;
     }
 
     public bool CheckEmails(string email, string emailConfirmed, string username)
     {
-        var emailOnData = _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == username && x.Correo == email);
+        var emailOnData = dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == username && x.Correo == email);
         if(emailOnData != null) {
-            var userName = _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == emailOnData.NombreUsuario);
+            var userName = dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == emailOnData.NombreUsuario);
             var answer = userName.RespuestaSeg.ToString();
 
             if (emailOnData != null)
@@ -190,7 +184,7 @@ public class UserServices : IUserServices
 
     public bool UpdateNewPassword(string newPassword, string userName)
     {
-        var user = _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == userName);
+        var user = dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario == userName);
         if (user != null)
         {
             return true;
@@ -202,7 +196,7 @@ public class UserServices : IUserServices
     public bool CheckNewPassword(string newPassword, string newPasswordConfirmed, Guid idUsuario)
     {
         bool checkedPassword = newPassword.Equals(newPasswordConfirmed);
-        var user = _dbContext.Usuarios.FirstOrDefault(x => x.IdUsuario == idUsuario);
+        var user = dbContext.Usuarios.FirstOrDefault(x => x.IdUsuario == idUsuario);
         
         if (checkedPassword && user != null)
         {
@@ -214,12 +208,12 @@ public class UserServices : IUserServices
 
     public Usuario? GetUser(Guid id)
     {
-        return _dbContext.Usuarios.FirstOrDefault(p => p.IdUsuario == id);
+        return dbContext.Usuarios.FirstOrDefault(p => p.IdUsuario == id);
     }
 
     public Usuario GetUserByName(string userName)
     {
-        return _dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario.ToLower().Trim() == userName.ToLower().Trim());
+        return dbContext.Usuarios.FirstOrDefault(x => x.NombreUsuario.ToLower().Trim() == userName.ToLower().Trim());
     }
 
     public void UpdateUser(Usuario user, List<string> permissionsListEdit)
@@ -244,8 +238,8 @@ public class UserServices : IUserServices
             userDB.TipoSange = user.TipoSange;
 
             userDB.BeforeChanges();
-            var permisionsOld =  _dbContext.RolDetalles.Where(x => x.UsuarioId == userDB.IdUsuario).ToList();
-            _dbContext.RolDetalles.RemoveRange(permisionsOld);
+            var permisionsOld =  dbContext.RolDetalles.Where(x => x.UsuarioId == userDB.IdUsuario).ToList();
+            dbContext.RolDetalles.RemoveRange(permisionsOld);
             foreach (var permission in permissionsListEdit)
             {
                 RolDetalle rolDetalle = new()
@@ -255,9 +249,9 @@ public class UserServices : IUserServices
                     Permiso = permission,
                     Descripcion = permission
                 };
-                _dbContext.RolDetalles.Add(rolDetalle);
+                dbContext.RolDetalles.Add(rolDetalle);
             }
-            _dbContext.SaveChanges();
+            dbContext.SaveChanges();
         }
     }
 
@@ -268,7 +262,7 @@ public class UserServices : IUserServices
         {
             userDB.UsuarioActivo = state;
         }
-        _dbContext.SaveChanges();
+        dbContext.SaveChanges();
     }
 
     public void DeleteUser(Guid id)
@@ -277,13 +271,13 @@ public class UserServices : IUserServices
         if (user is not null)
         {
             user.EstadoEliminado = true;
-            _dbContext.SaveChanges();
+            dbContext.SaveChanges();
         }
     }
 
     public List<RolDetalle> GetPermissions(Guid idUser)
     {
-        var permissions = _dbContext.RolDetalles.Where(x => x.UsuarioId == idUser).ToList();
+        var permissions = dbContext.RolDetalles.Where(x => x.UsuarioId == idUser).ToList();
         return permissions;
     }
 
@@ -295,7 +289,7 @@ public class UserServices : IUserServices
         {
             usuario.Password = Password;
             usuario.BeforeChanges();
-            _dbContext.SaveChanges();
+            dbContext.SaveChanges();
         }
     }
 }

@@ -16,16 +16,14 @@ public interface IEstudioImagenService
     Task DeleteEstudioAsync(Guid idEstudio, Storage.IStorageService storage);
 }
 
-public class EstudioImagenService : IEstudioImagenService
+public class EstudioImagenService(ClinicaContext db) : IEstudioImagenService
 {
-    private readonly ClinicaContext _db;
-    public EstudioImagenService(ClinicaContext db) => _db = db;
 
     public List<EstudioImagen> GetByPaciente(Guid idPaciente)
     {
         try
         {
-            var lista = _db.EstudiosImagen.Include(e => e.Archivos).Include(e => e.Orden)
+            var lista = db.EstudiosImagen.Include(e => e.Archivos).Include(e => e.Orden)
                .Where(e => e.IdPaciente == idPaciente && e.FechaEliminacion == null)
                .OrderByDescending(e => e.FechaEstudio).ToList();
             CompletarNombres(lista);
@@ -38,7 +36,7 @@ public class EstudioImagenService : IEstudioImagenService
     {
         try
         {
-            var lista = _db.EstudiosImagen.Include(e => e.Archivos).Include(e => e.Orden)
+            var lista = db.EstudiosImagen.Include(e => e.Archivos).Include(e => e.Orden)
                .Where(e => e.IdConsulta == idConsulta && e.FechaEliminacion == null)
                .OrderByDescending(e => e.FechaEstudio).ToList();
             CompletarNombres(lista);
@@ -49,17 +47,17 @@ public class EstudioImagenService : IEstudioImagenService
 
     private void CompletarNombres(List<EstudioImagen> lista)
     {
-        AuditoriaNombres.Completar(_db, lista);
+        AuditoriaNombres.Completar(db, lista);
     }
 
     public EstudioImagen? GetById(Guid id) =>
-        _db.EstudiosImagen.Include(e => e.Archivos).FirstOrDefault(e => e.IdEstudio == id);
+        db.EstudiosImagen.Include(e => e.Archivos).FirstOrDefault(e => e.IdEstudio == id);
 
     public List<EstudioImagen> GetByOrden(Guid idOrden)
     {
         try
         {
-            var lista = _db.EstudiosImagen.Include(e => e.Archivos).Include(e => e.Orden)
+            var lista = db.EstudiosImagen.Include(e => e.Archivos).Include(e => e.Orden)
                .Where(e => e.IdOrden == idOrden && e.FechaEliminacion == null)
                .OrderByDescending(e => e.FechaEstudio).ToList();
             CompletarNombres(lista);
@@ -68,14 +66,14 @@ public class EstudioImagenService : IEstudioImagenService
         catch { return new List<EstudioImagen>(); }
     }
 
-    public ArchivoEstudio? GetArchivo(Guid id) => _db.ArchivosEstudio.FirstOrDefault(a => a.IdArchivo == id);
+    public ArchivoEstudio? GetArchivo(Guid id) => db.ArchivosEstudio.FirstOrDefault(a => a.IdArchivo == id);
 
     public async Task<EstudioImagen> CrearEstudioAsync(EstudioImagen estudio, List<Microsoft.AspNetCore.Http.IFormFile> files, Storage.IStorageService storage)
     {
         estudio.IdEstudio = Guid.NewGuid();
         estudio.FechaEstudio = estudio.FechaEstudio == default ? DateTime.Now : estudio.FechaEstudio;
-        _db.EstudiosImagen.Add(estudio);
-        await _db.SaveChangesAsync();
+        db.EstudiosImagen.Add(estudio);
+        await db.SaveChangesAsync();
 
         foreach (var file in files)
         {
@@ -92,15 +90,15 @@ public class EstudioImagenService : IEstudioImagenService
                 MimeType = storage.GetContentType(file.FileName),
                 TamanoBytes = file.Length
             };
-            _db.ArchivosEstudio.Add(archivo);
+            db.ArchivosEstudio.Add(archivo);
         }
-        await _db.SaveChangesAsync();
+        await db.SaveChangesAsync();
         return estudio;
     }
 
     public async Task<int> AgregarArchivosAsync(Guid idEstudio, List<Microsoft.AspNetCore.Http.IFormFile> files, Storage.IStorageService storage)
     {
-        var estudio = _db.EstudiosImagen.FirstOrDefault(e => e.IdEstudio == idEstudio);
+        var estudio = db.EstudiosImagen.FirstOrDefault(e => e.IdEstudio == idEstudio);
         if (estudio == null) return 0;
 
         foreach (var file in files)
@@ -109,7 +107,7 @@ public class EstudioImagenService : IEstudioImagenService
             var relPath = $"estudios/{estudio.IdPaciente}/{estudio.IdEstudio}/{safeName}";
             await storage.SaveAsync(file, relPath);
 
-            _db.ArchivosEstudio.Add(new ArchivoEstudio
+            db.ArchivosEstudio.Add(new ArchivoEstudio
             {
                 IdArchivo = Guid.NewGuid(),
                 IdEstudio = estudio.IdEstudio,
@@ -119,33 +117,33 @@ public class EstudioImagenService : IEstudioImagenService
                 TamanoBytes = file.Length
             });
         }
-        await _db.SaveChangesAsync();
+        await db.SaveChangesAsync();
         return files.Count;
     }
 
     public async Task DeleteArchivoAsync(Guid idArchivo, Storage.IStorageService storage)
     {
-        var arch = _db.ArchivosEstudio.FirstOrDefault(a => a.IdArchivo == idArchivo);
+        var arch = db.ArchivosEstudio.FirstOrDefault(a => a.IdArchivo == idArchivo);
         if (arch == null) return;
         try { await storage.DeleteAsync(arch.RutaStorage); } catch { }
-        _db.ArchivosEstudio.Remove(arch);
-        await _db.SaveChangesAsync();
+        db.ArchivosEstudio.Remove(arch);
+        await db.SaveChangesAsync();
         // Si era último archivo del estudio, opcionalmente borrar estudio vacío
-        var count = _db.ArchivosEstudio.Count(a => a.IdEstudio == arch.IdEstudio);
+        var count = db.ArchivosEstudio.Count(a => a.IdEstudio == arch.IdEstudio);
         if (count == 0)
         {
-            var est = _db.EstudiosImagen.FirstOrDefault(e => e.IdEstudio == arch.IdEstudio);
-            if (est != null) { _db.EstudiosImagen.Remove(est); await _db.SaveChangesAsync(); }
+            var est = db.EstudiosImagen.FirstOrDefault(e => e.IdEstudio == arch.IdEstudio);
+            if (est != null) { db.EstudiosImagen.Remove(est); await db.SaveChangesAsync(); }
         }
     }
 
     public async Task DeleteEstudioAsync(Guid idEstudio, Storage.IStorageService storage)
     {
-        var est = _db.EstudiosImagen.Include(e => e.Archivos).FirstOrDefault(e => e.IdEstudio == idEstudio);
+        var est = db.EstudiosImagen.Include(e => e.Archivos).FirstOrDefault(e => e.IdEstudio == idEstudio);
         if (est == null) return;
         foreach (var a in est.Archivos) { try { await storage.DeleteAsync(a.RutaStorage); } catch { } }
-        _db.ArchivosEstudio.RemoveRange(est.Archivos);
-        _db.EstudiosImagen.Remove(est);
-        await _db.SaveChangesAsync();
+        db.ArchivosEstudio.RemoveRange(est.Archivos);
+        db.EstudiosImagen.Remove(est);
+        await db.SaveChangesAsync();
     }
 }

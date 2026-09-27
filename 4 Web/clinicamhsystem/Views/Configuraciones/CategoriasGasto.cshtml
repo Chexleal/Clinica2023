@@ -1,0 +1,68 @@
+@model List<ClinicaDomain.CategoriaGasto>
+@{
+    ViewData["Title"] = "Categorías de gasto";
+}
+<div class="card shadow-lg p-3 mb-4">
+    <div class="card-header bg-white d-flex align-items-center gap-2">
+        <a href="@Url.Action("Index","Configuraciones")" class="btn btn-outline-secondary btn-sm" title="Volver a Configuraciones"><i class="fa-solid fa-arrow-left"></i></a>
+        <h4 class="mb-0"><i class="fa-solid fa-tags" style="color:#2d8f77"></i> Categorías de gasto</h4>
+    </div>
+    <div class="card-body">
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger py-2">@TempData["Error"]</div>
+        }
+        <form method="post" action="@Url.Action("CrearCategoriaGasto")" class="row g-2 align-items-end mb-3">
+            <div class="col-12 col-md-8">
+                <label class="fw-bold small">Nombre</label>
+                <input name="nombre" class="form-control form-control-sm" style="text-transform:uppercase;" placeholder="Ej: Servicios básicos" maxlength="120" required />
+            </div>
+            <div class="col-12 col-md-4">
+                <button type="submit" class="btn btn-dark btn-sm w-100"><i class="fa-solid fa-plus"></i> Agregar</button>
+            </div>
+        </form>
+        <hr class="mt-1 mb-3" />
+        <div class="table-responsive">
+            <table class="table table-sm table-hover tabla-config" data-search-placeholder="Buscar categoría" data-export-name="CategoriasGasto">
+                <thead class="table-dark"><tr><th>Nombre</th><th>Activo</th><th></th></tr></thead>
+                <tbody>
+                @foreach(var c in Model.OrderBy(x => x.Nombre)){
+                    <tr>
+                        <td>@c.Nombre</td>
+                        <td>
+                            <form method="post" action="@Url.Action("ToggleCategoriaGasto")" style="display:inline">
+                                <input type="hidden" name="id" value="@c.IdCategoriaGasto" />
+                                <button type="submit" class="btn btn-sm @(c.Activo?"btn-success":"btn-secondary")">@(c.Activo?"Activa":"Inactiva")</button>
+                            </form>
+                        </td>
+                        <td class="text-end text-nowrap">
+                            <partial name="_AuditInfo" model="c" />
+                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editar-@c.IdCategoriaGasto" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                            <div class="modal fade" id="editar-@c.IdCategoriaGasto" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <form method="post" action="@Url.Action("ActualizarCategoriaGasto")">
+                                        <div class="modal-content">
+                                            <div class="modal-header"><h6 class="mb-0">Editar categoría</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                            <div class="modal-body row g-2 text-start">
+                                                <input type="hidden" name="id" value="@c.IdCategoriaGasto" />
+                                                <div class="col-12"><label class="small fw-bold">Nombre</label><input required name="nombre" value="@c.Nombre" class="form-control form-control-sm" style="text-transform:uppercase;" maxlength="120" /></div>
+                                            </div>
+                                            <div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary btn-sm">Guardar</button></div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <partial name="_DataTablesButtonsScripts" />
+    <script src="~/js/pages/audit-info.js" asp-append-version="true"></script>
+    <script src="~/js/pages/tablas-config.js" asp-append-version="true"></script>
+}

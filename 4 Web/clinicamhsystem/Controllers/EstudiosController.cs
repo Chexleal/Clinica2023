@@ -7,39 +7,25 @@ using Microsoft.AspNetCore.Mvc;
 namespace clinicaWeb.Controllers;
 
 [SecurityFilter("Inicio")]
-public class EstudiosController : Controller
+public class EstudiosController(IEstudioImagenService estudioService, IOrdenEstudioService ordenService, IPacienteServices pacienteServices, IStorageService storage, ICatalogoIndicacionService catalogoService) : Controller
 {
-    private readonly IEstudioImagenService _estudioService;
-    private readonly IOrdenEstudioService _ordenService;
-    private readonly IPacienteServices _pacienteServices;
-    private readonly IStorageService _storage;
-    private readonly ICatalogoIndicacionService _catalogoService;
-
-    public EstudiosController(IEstudioImagenService estudioService, IOrdenEstudioService ordenService, IPacienteServices pacienteServices, IStorageService storage, ICatalogoIndicacionService catalogoService)
-    {
-        _estudioService = estudioService;
-        _ordenService = ordenService;
-        _pacienteServices = pacienteServices;
-        _storage = storage;
-        _catalogoService = catalogoService;
-    }
 
     // Area de carga - usada por asistente/recepcion, no por el doctor en consulta
     public IActionResult Index(Guid? pacienteId, Guid? consultaId, Guid? idOrden)
     {
         ViewBag.PacienteId = pacienteId;
         ViewBag.ConsultaId = consultaId;
-        ViewBag.PacienteActual = pacienteId.HasValue ? _pacienteServices.GetPacienteById(pacienteId.Value) : null;
-        ViewBag.OrdenesPendientes = pacienteId.HasValue ? _ordenService.GetPendientesByPaciente(pacienteId.Value) : new List<OrdenEstudio>();
+        ViewBag.PacienteActual = pacienteId.HasValue ? pacienteServices.GetPacienteById(pacienteId.Value) : null;
+        ViewBag.OrdenesPendientes = pacienteId.HasValue ? ordenService.GetPendientesByPaciente(pacienteId.Value) : new List<OrdenEstudio>();
         // Para poder agregar faltantes a una orden ya atendida: el combo muestra TODAS (no solo pendientes)
-        ViewBag.OrdenesPaciente = pacienteId.HasValue ? _ordenService.GetByPaciente(pacienteId.Value) : new List<OrdenEstudio>();
-        var ordenSel = idOrden.HasValue ? _ordenService.GetById(idOrden.Value) : null;
+        ViewBag.OrdenesPaciente = pacienteId.HasValue ? ordenService.GetByPaciente(pacienteId.Value) : new List<OrdenEstudio>();
+        var ordenSel = idOrden.HasValue ? ordenService.GetById(idOrden.Value) : null;
         if (ordenSel != null && pacienteId.HasValue && ordenSel.IdPaciente != pacienteId.Value) ordenSel = null;
         ViewBag.IdOrdenSeleccionada = ordenSel?.IdOrden;
         ViewBag.TipoOrdenSeleccionada = ordenSel != null ? (int?)ordenSel.Tipo : null;
-        ViewBag.Estudios = pacienteId.HasValue ? _estudioService.GetByPaciente(pacienteId.Value) : new List<EstudioImagen>();
-        ViewBag.TodasPendientes = _ordenService.GetAllPendientes();
-        ViewBag.TodasExternas = _ordenService.GetAllExternasPendientes();
+        ViewBag.Estudios = pacienteId.HasValue ? estudioService.GetByPaciente(pacienteId.Value) : new List<EstudioImagen>();
+        ViewBag.TodasPendientes = ordenService.GetAllPendientes();
+        ViewBag.TodasExternas = ordenService.GetAllExternasPendientes();
         ViewBag.EsSoloLectura = false;
         return View();
     }
@@ -47,9 +33,9 @@ public class EstudiosController : Controller
     [HttpGet]
     public IActionResult ImprimirOrden(Guid idOrden)
     {
-        var orden = _ordenService.GetByIdDetallado(idOrden);
+        var orden = ordenService.GetByIdDetallado(idOrden);
         if (orden == null) return NotFound();
-        var paciente = orden.Paciente ?? _pacienteServices.GetPacienteById(orden.IdPaciente);
+        var paciente = orden.Paciente ?? pacienteServices.GetPacienteById(orden.IdPaciente);
         if (paciente == null) return NotFound();
         return View("~/Views/Shared/OrdenPdf.cshtml", new clinicaWeb.Models.GenerarOrdenModel
         {
@@ -63,7 +49,7 @@ public class EstudiosController : Controller
     [HttpPost]
     public IActionResult MarcarOrdenImpresa(Guid idOrden)
     {
-        _ordenService.MarcarImpresa(idOrden);
+        ordenService.MarcarImpresa(idOrden);
         return Json(new { ok = true });
     }
 
@@ -71,9 +57,9 @@ public class EstudiosController : Controller
     public IActionResult ImprimirOrdenesPorConsulta(Guid idConsulta)
     {
         // Una sola hoja con todas las externas sin cerrar de la consulta (un clic en caja)
-        var ordenes = _ordenService.GetExternasByConsulta(idConsulta);
+        var ordenes = ordenService.GetExternasByConsulta(idConsulta);
         if (!ordenes.Any()) return NotFound();
-        var paciente = ordenes.First().Paciente ?? _pacienteServices.GetPacienteById(ordenes.First().IdPaciente);
+        var paciente = ordenes.First().Paciente ?? pacienteServices.GetPacienteById(ordenes.First().IdPaciente);
         if (paciente == null) return NotFound();
         return View("~/Views/Shared/OrdenesPdf.cshtml", new clinicaWeb.Models.GenerarOrdenesModel
         {
@@ -87,10 +73,10 @@ public class EstudiosController : Controller
     public IActionResult MarcarOrdenExterna(Guid idOrden, bool esExterna)
     {
         // La operadora puede mover una pendiente interna a externa (y viceversa si se equivocó)
-        var orden = _ordenService.GetById(idOrden);
+        var orden = ordenService.GetById(idOrden);
         if (orden == null) return NotFound();
         if (orden.Estado == EstadoOrden.Completada) return BadRequest("La orden ya fue completada");
-        _ordenService.SetEsExterna(idOrden, esExterna);
+        ordenService.SetEsExterna(idOrden, esExterna);
         return Json(new { ok = true, esExterna });
     }
 
@@ -98,9 +84,9 @@ public class EstudiosController : Controller
     public IActionResult CompletarOrden(Guid idOrden)
     {
         // Quita de Externas (y de pendientes) sin subir archivo: ej. resultado recibido en físico
-        var orden = _ordenService.GetById(idOrden);
+        var orden = ordenService.GetById(idOrden);
         if (orden == null) return NotFound();
-        _ordenService.ActualizarEstado(idOrden, EstadoOrden.Completada);
+        ordenService.ActualizarEstado(idOrden, EstadoOrden.Completada);
         return Json(new { ok = true });
     }
 
@@ -108,15 +94,15 @@ public class EstudiosController : Controller
     public IActionResult DeleteOrden(Guid idOrden)
     {
         // Baja lógica: sale de todas las listas pero se conserva auditoría
-        _ordenService.Eliminar(idOrden);
+        ordenService.Eliminar(idOrden);
         return Json(new { ok = true });
     }
 
     [HttpGet]
     public IActionResult GetEstudios(Guid idPaciente)
     {
-        var estudios = _estudioService.GetByPaciente(idPaciente);
-        ViewBag.TodasPendientes = _ordenService.GetAllPendientes();
+        var estudios = estudioService.GetByPaciente(idPaciente);
+        ViewBag.TodasPendientes = ordenService.GetAllPendientes();
         ViewBag.EsSoloLectura = false;
         return PartialView("~/Views/ContinuarConsulta/Partials/_estudiosLista.cshtml", estudios);
     }
@@ -124,7 +110,7 @@ public class EstudiosController : Controller
     [HttpGet]
     public IActionResult GetOrdenes(Guid idPaciente)
     {
-        var ordenes = _ordenService.GetByPaciente(idPaciente);
+        var ordenes = ordenService.GetByPaciente(idPaciente);
         return PartialView("~/Views/ContinuarConsulta/Partials/_ordenesTabla.cshtml", ordenes);
     }
 
@@ -132,26 +118,26 @@ public class EstudiosController : Controller
     public IActionResult GetPacientesSelect(string? q, int page = 1)
     {
         const int take = 20;
-        var (datos, hayMas) = _pacienteServices.BuscarSelect(q, page, take);
+        var (datos, hayMas) = pacienteServices.BuscarSelect(q, page, take);
         return Json(new { results = datos.Select(p => new { id = p.IdPaciente, text = p.Nombre + " " + p.Apellido + " - " + p.Dpi }), more = hayMas });
     }
 
     [HttpGet]
     public IActionResult GetOrdenesPendientes(Guid idPaciente)
     {
-        var ordenes = _ordenService.GetPendientesByPaciente(idPaciente);
+        var ordenes = ordenService.GetPendientesByPaciente(idPaciente);
         return Json(ordenes.Select(o=> new { o.IdOrden, o.Tipo, o.Indicacion, Fecha=o.FechaOrden.ToString("dd/MM/yyyy") }));
     }
 
     [HttpGet]
     public IActionResult GetPendientesRefresh(Guid? idPaciente)
     {
-        var todas = _ordenService.GetAllPendientes()
+        var todas = ordenService.GetAllPendientes()
             .Select(o => new { idOrden = o.IdOrden, idPaciente = o.IdPaciente, fecha = o.FechaOrden.ToString("dd/MM/yyyy"), paciente = o.Paciente != null ? o.Paciente.Nombre + " " + o.Paciente.Apellido : "-", tipo = o.Tipo.ToString(), indicacion = o.Indicacion }).ToList();
-        var externas = _ordenService.GetAllExternasPendientes()
+        var externas = ordenService.GetAllExternasPendientes()
             .Select(o => new { idOrden = o.IdOrden, idPaciente = o.IdPaciente, fecha = o.FechaOrden.ToString("dd/MM/yyyy"), paciente = o.Paciente != null ? o.Paciente.Nombre + " " + o.Paciente.Apellido : "-", tipo = o.Tipo.ToString(), indicacion = o.Indicacion, estado = o.Estado.ToString() }).ToList();
         var pac = idPaciente.HasValue
-            ? _ordenService.GetByPaciente(idPaciente.Value)
+            ? ordenService.GetByPaciente(idPaciente.Value)
                 .Select(o => new { idOrden = o.IdOrden, fecha = o.FechaOrden.ToString("dd/MM/yyyy"), tipo = o.Tipo.ToString(), tipoId = (int)o.Tipo, indicacion = o.Indicacion, estado = o.Estado.ToString(), estadoId = (int)o.Estado, esExterna = o.EsExterna }).ToList<object>()
             : new List<object>();
         return Json(new { todas = todas, externas = externas, paciente = pac });
@@ -173,10 +159,10 @@ public class EstudiosController : Controller
             Descripcion = descripcion ?? "",
             Modalidad = tipo == TipoEstudio.Resonancia ? ModalidadDicom.MR : tipo == TipoEstudio.Tomografia ? ModalidadDicom.CT : ModalidadDicom.DX
         };
-        await _estudioService.CrearEstudioAsync(estudio, files, _storage);
-        if (idOrden.HasValue) _ordenService.ActualizarEstado(idOrden.Value, EstadoOrden.Completada);
-        var estudios = idOrden.HasValue ? _estudioService.GetByOrden(idOrden.Value) : _estudioService.GetByPaciente(idPaciente);
-        ViewBag.TodasPendientes = _ordenService.GetAllPendientes();
+        await estudioService.CrearEstudioAsync(estudio, files, storage);
+        if (idOrden.HasValue) ordenService.ActualizarEstado(idOrden.Value, EstadoOrden.Completada);
+        var estudios = idOrden.HasValue ? estudioService.GetByOrden(idOrden.Value) : estudioService.GetByPaciente(idPaciente);
+        ViewBag.TodasPendientes = ordenService.GetAllPendientes();
         ViewBag.EsSoloLectura = false;
         // Contexto para el botón "Agregar más" del cuadrito de abajo
         ViewBag.IdOrden = idOrden;
@@ -188,9 +174,9 @@ public class EstudiosController : Controller
     [HttpGet]
     public IActionResult GetEstudiosPorOrden(Guid idOrden)
     {
-        var estudios = _estudioService.GetByOrden(idOrden);
+        var estudios = estudioService.GetByOrden(idOrden);
         ViewBag.EsSoloLectura = false;
-        var orden = _ordenService.GetById(idOrden);
+        var orden = ordenService.GetById(idOrden);
         ViewBag.IdOrden = idOrden;
         ViewBag.IdPaciente = orden?.IdPaciente;
         ViewBag.TipoOrden = orden != null ? (int)orden.Tipo : (estudios.FirstOrDefault() != null ? (int)estudios.FirstOrDefault()!.Tipo : 1);
@@ -200,18 +186,18 @@ public class EstudiosController : Controller
     [HttpGet]
     public async Task<IActionResult> VerArchivo(Guid idArchivo)
     {
-        var arch = _estudioService.GetArchivo(idArchivo);
+        var arch = estudioService.GetArchivo(idArchivo);
         if (arch == null) return NotFound();
-        var bytes = await _storage.ReadAsync(arch.RutaStorage);
+        var bytes = await storage.ReadAsync(arch.RutaStorage);
         return File(bytes, arch.MimeType); // inline: el navegador muestra PDF/imagen en pestana
     }
 
     [HttpGet]
     public async Task<IActionResult> GetArchivoBytes(Guid idArchivo)
     {
-        var arch = _estudioService.GetArchivo(idArchivo);
+        var arch = estudioService.GetArchivo(idArchivo);
         if (arch == null) return NotFound();
-        var bytes = await _storage.ReadAsync(arch.RutaStorage);
+        var bytes = await storage.ReadAsync(arch.RutaStorage);
         return File(bytes, arch.MimeType);
     }
 
@@ -221,12 +207,12 @@ public class EstudiosController : Controller
     public async Task<IActionResult> AppendArchivos(Guid idEstudio, List<IFormFile> files)
     {
         if (files == null || !files.Any()) return BadRequest("Sin archivos");
-        var est = _estudioService.GetById(idEstudio);
+        var est = estudioService.GetById(idEstudio);
         if (est == null) return NotFound("Estudio no encontrado");
-        await _estudioService.AgregarArchivosAsync(idEstudio, files, _storage);
+        await estudioService.AgregarArchivosAsync(idEstudio, files, storage);
         // Refrescar el mismo grupo (la misma orden) para que el faltante aparezca en su tarjeta
-        var estudios = est.IdOrden.HasValue ? _estudioService.GetByOrden(est.IdOrden.Value) : _estudioService.GetByPaciente(est.IdPaciente);
-        ViewBag.TodasPendientes = _ordenService.GetAllPendientes();
+        var estudios = est.IdOrden.HasValue ? estudioService.GetByOrden(est.IdOrden.Value) : estudioService.GetByPaciente(est.IdPaciente);
+        ViewBag.TodasPendientes = ordenService.GetAllPendientes();
         ViewBag.EsSoloLectura = false;
         ViewBag.IdOrden = est.IdOrden;
         ViewBag.IdPaciente = est.IdPaciente;
@@ -237,16 +223,16 @@ public class EstudiosController : Controller
     [HttpPost]
     public async Task<IActionResult> DeleteArchivo(Guid idArchivo)
     {
-        var arch = _estudioService.GetArchivo(idArchivo);
-        var estCtx = arch != null ? _estudioService.GetById(arch.IdEstudio) : null;
+        var arch = estudioService.GetArchivo(idArchivo);
+        var estCtx = arch != null ? estudioService.GetById(arch.IdEstudio) : null;
         Guid? idPaciente = arch?.Estudio?.IdPaciente ?? estCtx?.IdPaciente;
         var idOrdenCtx = estCtx?.IdOrden;
-        await _estudioService.DeleteArchivoAsync(idArchivo, _storage);
+        await estudioService.DeleteArchivoAsync(idArchivo, storage);
         if (idPaciente.HasValue)
         {
             // Si venía de una orden, mantener el contexto para no perder el botón "Agregar más"
-            var estudios = idOrdenCtx.HasValue ? _estudioService.GetByOrden(idOrdenCtx.Value) : _estudioService.GetByPaciente(idPaciente.Value);
-            ViewBag.TodasPendientes = _ordenService.GetAllPendientes();
+            var estudios = idOrdenCtx.HasValue ? estudioService.GetByOrden(idOrdenCtx.Value) : estudioService.GetByPaciente(idPaciente.Value);
+            ViewBag.TodasPendientes = ordenService.GetAllPendientes();
         ViewBag.EsSoloLectura = false;
             ViewBag.IdOrden = idOrdenCtx;
             ViewBag.IdPaciente = idPaciente;
@@ -259,15 +245,15 @@ public class EstudiosController : Controller
     [HttpPost]
     public async Task<IActionResult> DeleteEstudio(Guid idEstudio)
     {
-        var est = _estudioService.GetById(idEstudio);
+        var est = estudioService.GetById(idEstudio);
         var idPaciente = est?.IdPaciente;
         var idOrdenCtx = est?.IdOrden;
         var tipoCtx = est != null ? (int)est.Tipo : 1;
-        await _estudioService.DeleteEstudioAsync(idEstudio, _storage);
+        await estudioService.DeleteEstudioAsync(idEstudio, storage);
         if (idPaciente.HasValue)
         {
-            var estudios = idOrdenCtx.HasValue ? _estudioService.GetByOrden(idOrdenCtx.Value) : _estudioService.GetByPaciente(idPaciente.Value);
-            ViewBag.TodasPendientes = _ordenService.GetAllPendientes();
+            var estudios = idOrdenCtx.HasValue ? estudioService.GetByOrden(idOrdenCtx.Value) : estudioService.GetByPaciente(idPaciente.Value);
+            ViewBag.TodasPendientes = ordenService.GetAllPendientes();
         ViewBag.EsSoloLectura = false;
             ViewBag.IdOrden = idOrdenCtx;
             ViewBag.IdPaciente = idPaciente;
@@ -280,7 +266,7 @@ public class EstudiosController : Controller
     // ===== CATALOGO =====
     public IActionResult Catalogo()
     {
-        var list = _catalogoService.GetAll();
+        var list = catalogoService.GetAll();
         return View(list);
     }
 
@@ -288,22 +274,22 @@ public class EstudiosController : Controller
     public IActionResult CrearCatalogo(TipoEstudio tipo, string codigo, string descripcion)
     {
         if(string.IsNullOrWhiteSpace(descripcion)) return BadRequest("Descripcion requerida");
-        _catalogoService.Crear(new CatalogoIndicacion{ Tipo=tipo, Codigo=codigo??"", Descripcion=descripcion.Trim(), Activo=true });
+        catalogoService.Crear(new CatalogoIndicacion{ Tipo=tipo, Codigo=codigo??"", Descripcion=descripcion.Trim(), Activo=true });
         return RedirectToAction("Catalogo");
     }
 
     [HttpPost]
     public IActionResult ToggleCatalogo(Guid id)
     {
-        var item = _catalogoService.GetById(id);
-        if(item!=null){ item.Activo=!item.Activo; _catalogoService.Actualizar(item); }
+        var item = catalogoService.GetById(id);
+        if(item!=null){ item.Activo=!item.Activo; catalogoService.Actualizar(item); }
         return RedirectToAction("Catalogo");
     }
 
     [HttpPost]
     public IActionResult EliminarCatalogo(Guid id)
     {
-        _catalogoService.Eliminar(id);
+        catalogoService.Eliminar(id);
         return RedirectToAction("Catalogo");
     }
 }

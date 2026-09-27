@@ -9,43 +9,21 @@ using System.Text.Json;
 
 namespace clinicaWeb.Controllers;
 [SecurityFilter("Pagos")]
-public class PagosController : ErrorHandlingController
+public class PagosController(IConsultaServices consultaServices, IDetallesServices detallesServices,
+    IServiciosServices serviciosServices, IVentaService ventaService, IProductoService productoService,
+    IPacienteServices pacienteServices, IMetodoPagoService metodos, IOrdenEstudioService ordenService,
+    IRecetaServices recetaServices) : ErrorHandlingController
 {
-    private readonly IConsultaServices _consultaServices;
-    private readonly IDetallesServices _detallesServices;
-    private readonly IServiciosServices _serviciosServices;
-    private readonly IVentaService _ventaService;
-    private readonly IProductoService _productoService;
-    private readonly IPacienteServices _pacienteServices;
-    private readonly IMetodoPagoService _metodos;
-    private readonly IOrdenEstudioService _ordenService;
-    private readonly IRecetaServices _recetaServices;
-
-    public PagosController(IConsultaServices consultaServices, IDetallesServices detallesServices,
-        IServiciosServices serviciosServices, IVentaService ventaService, IProductoService productoService,
-        IPacienteServices pacienteServices, IMetodoPagoService metodos, IOrdenEstudioService ordenService,
-        IRecetaServices recetaServices)
-    {
-        _consultaServices = consultaServices;
-        _detallesServices = detallesServices;
-        _serviciosServices = serviciosServices;
-        _ventaService = ventaService;
-        _productoService = productoService;
-        _pacienteServices = pacienteServices;
-        _metodos = metodos;
-        _ordenService = ordenService;
-        _recetaServices = recetaServices;
-    }
 
     // GET: PagosController
     public ActionResult Index()
     {
-        var consultas = _consultaServices.GetAllNotPaid();
-        var servicios = _serviciosServices.GetAll();
+        var consultas = consultaServices.GetAllNotPaid();
+        var servicios = serviciosServices.GetAll();
         // Externas sin cerrar por consulta origen (no por paciente: no se repiten en otras consultas)
         try
         {
-            var todasExt = _ordenService.GetAllExternasPendientes().Where(o => o.IdConsulta.HasValue).ToList();
+            var todasExt = ordenService.GetAllExternasPendientes().Where(o => o.IdConsulta.HasValue).ToList();
             ViewBag.ExternasPorConsulta = todasExt
                 .GroupBy(o => o.IdConsulta!.Value)
                 .ToDictionary(g => g.Key, g => g.OrderByDescending(o => o.FechaOrden).ToList());
@@ -57,19 +35,19 @@ public class PagosController : ErrorHandlingController
     private DetallesPagarViewModel ArmarModelo(Guid idconsulta)
     {
         // Vía 1 (consulta): una sola venta pendiente por consulta.
-        var venta = _ventaService.GetOrCreatePorConsulta(idconsulta);
+        var venta = ventaService.GetOrCreatePorConsulta(idconsulta);
         MigrarLegadoSiAplica(idconsulta, venta.IdVenta);
-        var detallesVenta = _ventaService.GetDetalles(venta.IdVenta);
-        var servicios = _serviciosServices.GetAll();
-        var consulta = _consultaServices.GetConsulta(idconsulta);
-        var productos = _productoService.GetAll();
-        var paciente = consulta is null ? null : _pacienteServices.GetPacienteById(consulta.IdPaciente);
+        var detallesVenta = ventaService.GetDetalles(venta.IdVenta);
+        var servicios = serviciosServices.GetAll();
+        var consulta = consultaServices.GetConsulta(idconsulta);
+        var productos = productoService.GetAll();
+        var paciente = consulta is null ? null : pacienteServices.GetPacienteById(consulta.IdPaciente);
         ViewBag.PacienteNombre = paciente is null ? "—" : $"{paciente.Nombre} {paciente.Apellido}".Trim();
         ViewBag.AtencionFecha = consulta is null
             ? "—"
             : DateManager.GetDisplayDate(consulta.FechaCreacion, consulta.Fecha).ToString("dd/MM/yyyy HH:mm", System.Globalization.CultureInfo.GetCultureInfo("es-GT"));
         // Órdenes externas nacidas en esta consulta: avisar en caja para imprimir/entregar
-        try { ViewBag.OrdenesExternas = consulta is null ? new List<OrdenEstudio>() : _ordenService.GetExternasByConsulta(idconsulta); }
+        try { ViewBag.OrdenesExternas = consulta is null ? new List<OrdenEstudio>() : ordenService.GetExternasByConsulta(idconsulta); }
         catch { ViewBag.OrdenesExternas = new List<OrdenEstudio>(); }
         // Se mantiene Detalles (legado) vacío para compatibilidad con reportes antiguos.
         return new DetallesPagarViewModel
@@ -80,24 +58,24 @@ public class PagosController : ErrorHandlingController
             Venta = venta,
             VentaDetalles = detallesVenta,
             Productos = productos,
-            Metodos = _metodos.GetAll(),
-            Pagos = _ventaService.GetPagos(venta.IdVenta)
+            Metodos = metodos.GetAll(),
+            Pagos = ventaService.GetPagos(venta.IdVenta)
         };
     }
 
     /// <summary>Migración transparente: viejos DetalleCobro -> VentaDetalle (una sola vez).</summary>
     private void MigrarLegadoSiAplica(Guid idConsulta, Guid idVenta)
     {
-        var legados = _detallesServices.GetDetallesByConsulta(idConsulta);
+        var legados = detallesServices.GetDetallesByConsulta(idConsulta);
         if (!legados.Any()) return;
-        if (_ventaService.GetDetalles(idVenta).Any()) return;
+        if (ventaService.GetDetalles(idVenta).Any()) return;
         foreach (var l in legados.ToList())
         {
             try
             {
-                _ventaService.AddServicio(idVenta, l.IdMotivoCobro, l.Cantidad <= 0 ? 1 : l.Cantidad, l.Valor,
+                ventaService.AddServicio(idVenta, l.IdMotivoCobro, l.Cantidad <= 0 ? 1 : l.Cantidad, l.Valor,
                     string.IsNullOrWhiteSpace(l.Producto) ? l.NombreServicio : $"{l.NombreServicio} - {l.Producto}");
-                _detallesServices.Delete(l.IdDetalleCobro);
+                detallesServices.Delete(l.IdDetalleCobro);
             }
             catch
             {
@@ -116,23 +94,23 @@ public class PagosController : ErrorHandlingController
     public IActionResult OrdenesExternas(Guid idconsulta)
     {
         // Parcial para la modal: externas nacidas en esta consulta, impresión individual
-        return PartialView("_OrdenesExternas", _ordenService.GetExternasByConsulta(idconsulta));
+        return PartialView("_OrdenesExternas", ordenService.GetExternasByConsulta(idconsulta));
     }
 
     [HttpGet]
     public IActionResult VerConsulta(Guid idconsulta)
     {
         // Solo lectura para caja (parcial para panel lateral): no requiere rol de consulta, no permite editar
-        var consulta = _consultaServices.GetConsulta(idconsulta);
+        var consulta = consultaServices.GetConsulta(idconsulta);
         if (consulta is null) return NotFound();
-        var paciente = _pacienteServices.GetPacienteById(consulta.IdPaciente);
-        var receta = _recetaServices.GetByConsulta(idconsulta);
+        var paciente = pacienteServices.GetPacienteById(consulta.IdPaciente);
+        var receta = recetaServices.GetByConsulta(idconsulta);
         return PartialView("VerConsulta", new clinicaWeb.Models.GenerarRecetaModel
         {
             Consulta = consulta,
             Paciente = paciente!,
             Receta = receta!,
-            DetallesReceta = receta is null ? new() : _recetaServices.GetAllDetalles(receta.IdReceta)
+            DetallesReceta = receta is null ? new() : recetaServices.GetAllDetalles(receta.IdReceta)
         });
     }
 
@@ -155,8 +133,8 @@ public class PagosController : ErrorHandlingController
                     return Content($"Valor no válido: '{precio}'. Usa solo números, ej. 120.50");
                 }
             }
-            var venta = _ventaService.GetOrCreatePorConsulta(idConsulta);
-            _ventaService.AddServicio(venta.IdVenta, idMotivoCobro,
+            var venta = ventaService.GetOrCreatePorConsulta(idConsulta);
+            ventaService.AddServicio(venta.IdVenta, idMotivoCobro,
                 cantidad <= 0 ? 1 : cantidad, precioParsed, descripcion, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento);
         }
         catch (Exception ex)
@@ -181,8 +159,8 @@ public class PagosController : ErrorHandlingController
                     return Content($"Valor no válido: '{precio}'. Usa solo números, ej. 120.50");
                 }
             }
-            _ventaService.AddProducto(idVenta, idProducto, cantidad <= 0 ? 1 : cantidad, loteId, precioParsed, descripcion, esSobrePedido, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento);
-            var venta = _ventaService.GetVenta(idVenta);
+            ventaService.AddProducto(idVenta, idProducto, cantidad <= 0 ? 1 : cantidad, loteId, precioParsed, descripcion, esSobrePedido, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento);
+            var venta = ventaService.GetVenta(idVenta);
             return PartialView("Detalles", ArmarModelo(venta!.IdConsulta!.Value));
         }
         catch (Exception ex)
@@ -198,8 +176,8 @@ public class PagosController : ErrorHandlingController
     {
         try
         {
-            _ventaService.AgregarProductoExpress(idVenta, nombre, precio, cantidad <= 0 ? 1 : cantidad, costo, null, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento);
-            var venta = _ventaService.GetVenta(idVenta);
+            ventaService.AgregarProductoExpress(idVenta, nombre, precio, cantidad <= 0 ? 1 : cantidad, costo, null, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento);
+            var venta = ventaService.GetVenta(idVenta);
             return PartialView("Detalles", ArmarModelo(venta!.IdConsulta!.Value));
         }
         catch (Exception ex)
@@ -215,8 +193,8 @@ public class PagosController : ErrorHandlingController
     {
         try
         {
-            _ventaService.AgregarServicioExpress(idVenta, descripcion, precio, cantidad <= 0 ? 1 : cantidad, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento);
-            var venta = _ventaService.GetVenta(idVenta);
+            ventaService.AgregarServicioExpress(idVenta, descripcion, precio, cantidad <= 0 ? 1 : cantidad, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento);
+            var venta = ventaService.GetVenta(idVenta);
             return PartialView("Detalles", ArmarModelo(venta!.IdConsulta!.Value));
         }
         catch (Exception ex)
@@ -232,7 +210,7 @@ public class PagosController : ErrorHandlingController
     {
         try
         {
-            _ventaService.AplicarDescuento(id, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento);
+            ventaService.AplicarDescuento(id, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento);
         }
         catch (Exception ex)
         {
@@ -248,7 +226,7 @@ public class PagosController : ErrorHandlingController
     {
         try
         {
-            _detallesServices.Delete(id);
+            detallesServices.Delete(id);
         }
         catch (Exception ex)
         {
@@ -262,7 +240,7 @@ public class PagosController : ErrorHandlingController
     {
         try
         {
-            _ventaService.RemoveDetalle(id);
+            ventaService.RemoveDetalle(id);
         }
         catch (Exception ex)
         {
@@ -276,8 +254,8 @@ public class PagosController : ErrorHandlingController
     {
         try
         {
-            var venta = _ventaService.GetOrCreatePorConsulta(idConsulta);
-            _ventaService.AgregarPago(venta.IdVenta, metodoId, monto, referencia);
+            var venta = ventaService.GetOrCreatePorConsulta(idConsulta);
+            ventaService.AgregarPago(venta.IdVenta, metodoId, monto, referencia);
             return PartialView("Detalles", ArmarModelo(idConsulta));
         }
         catch (Exception ex)
@@ -293,7 +271,7 @@ public class PagosController : ErrorHandlingController
     {
         try
         {
-            _ventaService.EliminarPago(idPago);
+            ventaService.EliminarPago(idPago);
         }
         catch (Exception ex)
         {
@@ -308,10 +286,10 @@ public class PagosController : ErrorHandlingController
         try
         {
             // id = IdConsulta (compatibilidad con la vista actual).
-            var venta = _ventaService.GetOrCreatePorConsulta(id);
-            _ventaService.FinalizarPago(venta.IdVenta);
+            var venta = ventaService.GetOrCreatePorConsulta(id);
+            ventaService.FinalizarPago(venta.IdVenta);
             // Compatibilidad: el flag antiguo también queda marcado vía SincronizarConsulta.
-            try { _detallesServices.Pagar(id); } catch { }
+            try { detallesServices.Pagar(id); } catch { }
         }
         catch (Exception ex)
         {
@@ -325,8 +303,8 @@ public class PagosController : ErrorHandlingController
     {
         try
         {
-            var venta = _ventaService.GetOrCreatePorConsulta(idConsulta);
-            _ventaService.DejarPendientePago(venta.IdVenta, responsable, fechaPromesa);
+            var venta = ventaService.GetOrCreatePorConsulta(idConsulta);
+            ventaService.DejarPendientePago(venta.IdVenta, responsable, fechaPromesa);
         }
         catch (Exception ex)
         {

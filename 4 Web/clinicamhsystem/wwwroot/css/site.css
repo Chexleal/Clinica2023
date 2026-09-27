@@ -586,6 +586,25 @@ table td {
     color: white;
 }
 
+/* Hover visible para botones negros: el de Bootstrap es casi imperceptible */
+.btn-dark {
+    transition: background-color var(--transition), box-shadow var(--transition), transform var(--transition);
+}
+
+.btn-dark:hover:not(:disabled),
+.btn-dark:focus-visible:not(:disabled) {
+    background-color: #000;
+    border-color: #000;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .35);
+    transform: translateY(-1px);
+}
+
+.btn-dark:active:not(:disabled) {
+    transform: none;
+    box-shadow: none;
+}
+
 .option {
     background-color: transparent;
     border: 0px;

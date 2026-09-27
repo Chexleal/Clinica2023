@@ -288,15 +288,21 @@
                             <option value="99">Otro</option>
                         </select>
                     </div>
-                    <div class="col-12 col-md-4">
+                    <div class="col-12 col-md-3">
                         <label class="fw-bold small">Catalogo (por tipo)</label>
                         <select id="ordenCatalogo" class="form-select form-select-sm">
                             <option value="">-- Selecciona indicacion --</option>
                         </select>
                     </div>
-                    <div class="col-12 col-md-4">
+                    <div class="col-12 col-md-3">
                         <label class="fw-bold small">Indicacion</label>
                         <input name="indicacion" id="ordenIndicacion" class="form-control form-control-sm" placeholder="Se llena desde catalogo o escribe Otra..." maxlength="500" required />
+                    </div>
+                    <div class="col-12 col-md-2">
+                        <div class="form-check mt-4">
+                            <input class="form-check-input" type="checkbox" name="esExterna" id="ordenExterna" value="true">
+                            <label class="form-check-label small" for="ordenExterna" title="Examen fuera de la clínica: se imprime y no entra a la cola de pendientes internos">Externa <i class="fa-solid fa-print text-muted"></i></label>
+                        </div>
                     </div>
                     <div class="col-12 col-md-2">
                         <button type="submit" class="btn btn-dark btn-sm w-100"><i class="fa-solid fa-plus"></i> Generar orden</button>

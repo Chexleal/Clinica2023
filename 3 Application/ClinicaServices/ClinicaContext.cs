@@ -519,6 +519,7 @@ public partial class ClinicaContext : DbContext
             entity.Property(e => e.Estado).HasColumnName("estado");
             entity.Property(e => e.Indicacion).HasMaxLength(500).IsUnicode(false).HasColumnName("indicacion");
             entity.Property(e => e.FechaOrden).HasColumnName("fecha_orden");
+            entity.Property(e => e.EsExterna).HasColumnName("es_externa").HasDefaultValue(false);
             entity.HasOne(d => d.Paciente).WithMany().HasForeignKey(d => d.IdPaciente).HasConstraintName("FK_Orden_Paciente");
             entity.HasOne(d => d.Consulta).WithMany().HasForeignKey(d => d.IdConsulta).IsRequired(false).HasConstraintName("FK_Orden_Consulta");
         });

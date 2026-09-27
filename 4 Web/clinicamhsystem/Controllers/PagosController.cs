@@ -18,10 +18,13 @@ public class PagosController : ErrorHandlingController
     private readonly IProductoService _productoService;
     private readonly IPacienteServices _pacienteServices;
     private readonly IMetodoPagoService _metodos;
+    private readonly IOrdenEstudioService _ordenService;
+    private readonly IRecetaServices _recetaServices;
 
     public PagosController(IConsultaServices consultaServices, IDetallesServices detallesServices,
         IServiciosServices serviciosServices, IVentaService ventaService, IProductoService productoService,
-        IPacienteServices pacienteServices, IMetodoPagoService metodos)
+        IPacienteServices pacienteServices, IMetodoPagoService metodos, IOrdenEstudioService ordenService,
+        IRecetaServices recetaServices)
     {
         _consultaServices = consultaServices;
         _detallesServices = detallesServices;
@@ -30,6 +33,8 @@ public class PagosController : ErrorHandlingController
         _productoService = productoService;
         _pacienteServices = pacienteServices;
         _metodos = metodos;
+        _ordenService = ordenService;
+        _recetaServices = recetaServices;
     }
 
     // GET: PagosController
@@ -37,6 +42,15 @@ public class PagosController : ErrorHandlingController
     {
         var consultas = _consultaServices.GetAllNotPaid();
         var servicios = _serviciosServices.GetAll();
+        // Externas sin cerrar por consulta origen (no por paciente: no se repiten en otras consultas)
+        try
+        {
+            var todasExt = _ordenService.GetAllExternasPendientes().Where(o => o.IdConsulta.HasValue).ToList();
+            ViewBag.ExternasPorConsulta = todasExt
+                .GroupBy(o => o.IdConsulta!.Value)
+                .ToDictionary(g => g.Key, g => g.OrderByDescending(o => o.FechaOrden).ToList());
+        }
+        catch { ViewBag.ExternasPorConsulta = new Dictionary<Guid, List<OrdenEstudio>>(); }
         return View(new PagarConsultaViewModel { Consultas = consultas, Servicios = servicios });
     }
 
@@ -54,6 +68,9 @@ public class PagosController : ErrorHandlingController
         ViewBag.AtencionFecha = consulta is null
             ? "—"
             : DateManager.GetDisplayDate(consulta.FechaCreacion, consulta.Fecha).ToString("dd/MM/yyyy HH:mm", System.Globalization.CultureInfo.GetCultureInfo("es-GT"));
+        // Órdenes externas nacidas en esta consulta: avisar en caja para imprimir/entregar
+        try { ViewBag.OrdenesExternas = consulta is null ? new List<OrdenEstudio>() : _ordenService.GetExternasByConsulta(idconsulta); }
+        catch { ViewBag.OrdenesExternas = new List<OrdenEstudio>(); }
         // Se mantiene Detalles (legado) vacío para compatibilidad con reportes antiguos.
         return new DetallesPagarViewModel
         {
@@ -93,6 +110,30 @@ public class PagosController : ErrorHandlingController
     public IActionResult Detalles(Guid idconsulta)
     {
         return PartialView("Detalles", ArmarModelo(idconsulta));
+    }
+
+    [HttpGet]
+    public IActionResult OrdenesExternas(Guid idconsulta)
+    {
+        // Parcial para la modal: externas nacidas en esta consulta, impresión individual
+        return PartialView("_OrdenesExternas", _ordenService.GetExternasByConsulta(idconsulta));
+    }
+
+    [HttpGet]
+    public IActionResult VerConsulta(Guid idconsulta)
+    {
+        // Solo lectura para caja (parcial para panel lateral): no requiere rol de consulta, no permite editar
+        var consulta = _consultaServices.GetConsulta(idconsulta);
+        if (consulta is null) return NotFound();
+        var paciente = _pacienteServices.GetPacienteById(consulta.IdPaciente);
+        var receta = _recetaServices.GetByConsulta(idconsulta);
+        return PartialView("VerConsulta", new clinicaWeb.Models.GenerarRecetaModel
+        {
+            Consulta = consulta,
+            Paciente = paciente!,
+            Receta = receta!,
+            DetallesReceta = receta is null ? new() : _recetaServices.GetAllDetalles(receta.IdReceta)
+        });
     }
 
 

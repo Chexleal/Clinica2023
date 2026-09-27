@@ -188,11 +188,39 @@ public class ContinuarConsulta : Controller
 
     // ===== ÓRDENES =====
     [HttpPost]
-    public IActionResult CrearOrden(Guid idPaciente, Guid? idConsulta, TipoEstudio tipo, string indicacion)
+    public IActionResult CrearOrden(Guid idPaciente, Guid? idConsulta, TipoEstudio tipo, string indicacion, bool esExterna = false)
     {
-        var orden = new OrdenEstudio { IdPaciente = idPaciente, IdConsulta = idConsulta, Tipo = tipo, Indicacion = indicacion ?? "", Estado = EstadoOrden.Pendiente };
+        var orden = new OrdenEstudio { IdPaciente = idPaciente, IdConsulta = idConsulta, Tipo = tipo, Indicacion = indicacion ?? "", Estado = EstadoOrden.Pendiente, EsExterna = esExterna };
         _ordenService.Crear(orden);
-        return Json(new { ok = true, idOrden = orden.IdOrden });
+        return Json(new { ok = true, idOrden = orden.IdOrden, esExterna = orden.EsExterna });
+    }
+
+    [HttpGet]
+    public IActionResult ImprimirOrden(Guid idOrden)
+    {
+        var orden = _ordenService.GetByIdDetallado(idOrden);
+        if (orden == null) return NotFound();
+        var paciente = orden.Paciente ?? _pacienteServices.GetPacienteById(orden.IdPaciente);
+        if (paciente == null) return NotFound();
+        Consulta? consulta = orden.Consulta;
+        if (consulta == null && orden.IdConsulta.HasValue)
+        {
+            try { consulta = _consultaServices.GetConsulta(orden.IdConsulta.Value); } catch { consulta = null; }
+        }
+        return View("~/Views/Shared/OrdenPdf.cshtml", new clinicaWeb.Models.GenerarOrdenModel
+        {
+            Orden = orden,
+            Paciente = paciente,
+            Consulta = consulta,
+            Medico = User?.Identity?.Name ?? ""
+        });
+    }
+
+    [HttpPost]
+    public IActionResult MarcarOrdenImpresa(Guid idOrden)
+    {
+        _ordenService.MarcarImpresa(idOrden);
+        return Json(new { ok = true });
     }
 
     [HttpGet]

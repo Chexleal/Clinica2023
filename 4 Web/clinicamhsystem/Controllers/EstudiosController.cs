@@ -39,8 +39,77 @@ public class EstudiosController : Controller
         ViewBag.TipoOrdenSeleccionada = ordenSel != null ? (int?)ordenSel.Tipo : null;
         ViewBag.Estudios = pacienteId.HasValue ? _estudioService.GetByPaciente(pacienteId.Value) : new List<EstudioImagen>();
         ViewBag.TodasPendientes = _ordenService.GetAllPendientes();
+        ViewBag.TodasExternas = _ordenService.GetAllExternasPendientes();
         ViewBag.EsSoloLectura = false;
         return View();
+    }
+
+    [HttpGet]
+    public IActionResult ImprimirOrden(Guid idOrden)
+    {
+        var orden = _ordenService.GetByIdDetallado(idOrden);
+        if (orden == null) return NotFound();
+        var paciente = orden.Paciente ?? _pacienteServices.GetPacienteById(orden.IdPaciente);
+        if (paciente == null) return NotFound();
+        return View("~/Views/Shared/OrdenPdf.cshtml", new clinicaWeb.Models.GenerarOrdenModel
+        {
+            Orden = orden,
+            Paciente = paciente,
+            Consulta = orden.Consulta,
+            Medico = User?.Identity?.Name ?? ""
+        });
+    }
+
+    [HttpPost]
+    public IActionResult MarcarOrdenImpresa(Guid idOrden)
+    {
+        _ordenService.MarcarImpresa(idOrden);
+        return Json(new { ok = true });
+    }
+
+    [HttpGet]
+    public IActionResult ImprimirOrdenesPorConsulta(Guid idConsulta)
+    {
+        // Una sola hoja con todas las externas sin cerrar de la consulta (un clic en caja)
+        var ordenes = _ordenService.GetExternasByConsulta(idConsulta);
+        if (!ordenes.Any()) return NotFound();
+        var paciente = ordenes.First().Paciente ?? _pacienteServices.GetPacienteById(ordenes.First().IdPaciente);
+        if (paciente == null) return NotFound();
+        return View("~/Views/Shared/OrdenesPdf.cshtml", new clinicaWeb.Models.GenerarOrdenesModel
+        {
+            Paciente = paciente,
+            Ordenes = ordenes,
+            Medico = User?.Identity?.Name ?? ""
+        });
+    }
+
+    [HttpPost]
+    public IActionResult MarcarOrdenExterna(Guid idOrden, bool esExterna)
+    {
+        // La operadora puede mover una pendiente interna a externa (y viceversa si se equivocó)
+        var orden = _ordenService.GetById(idOrden);
+        if (orden == null) return NotFound();
+        if (orden.Estado == EstadoOrden.Completada) return BadRequest("La orden ya fue completada");
+        _ordenService.SetEsExterna(idOrden, esExterna);
+        return Json(new { ok = true, esExterna });
+    }
+
+    [HttpPost]
+    public IActionResult CompletarOrden(Guid idOrden)
+    {
+        // Quita de Externas (y de pendientes) sin subir archivo: ej. resultado recibido en físico
+        var orden = _ordenService.GetById(idOrden);
+        if (orden == null) return NotFound();
+        _ordenService.ActualizarEstado(idOrden, EstadoOrden.Completada);
+        return Json(new { ok = true });
+    }
+
+    [HttpPost]
+    public IActionResult DeleteOrden(Guid idOrden)
+    {
+        // Baja lógica: sale de todas las listas pero se conserva auditoría
+        _ordenService.Eliminar(idOrden);
+        return Json(new { ok = true });
     }
 
     [HttpGet]
@@ -79,11 +148,13 @@ public class EstudiosController : Controller
     {
         var todas = _ordenService.GetAllPendientes()
             .Select(o => new { idOrden = o.IdOrden, idPaciente = o.IdPaciente, fecha = o.FechaOrden.ToString("dd/MM/yyyy"), paciente = o.Paciente != null ? o.Paciente.Nombre + " " + o.Paciente.Apellido : "-", tipo = o.Tipo.ToString(), indicacion = o.Indicacion }).ToList();
+        var externas = _ordenService.GetAllExternasPendientes()
+            .Select(o => new { idOrden = o.IdOrden, idPaciente = o.IdPaciente, fecha = o.FechaOrden.ToString("dd/MM/yyyy"), paciente = o.Paciente != null ? o.Paciente.Nombre + " " + o.Paciente.Apellido : "-", tipo = o.Tipo.ToString(), indicacion = o.Indicacion, estado = o.Estado.ToString() }).ToList();
         var pac = idPaciente.HasValue
             ? _ordenService.GetByPaciente(idPaciente.Value)
-                .Select(o => new { idOrden = o.IdOrden, fecha = o.FechaOrden.ToString("dd/MM/yyyy"), tipo = o.Tipo.ToString(), tipoId = (int)o.Tipo, indicacion = o.Indicacion, estado = o.Estado.ToString(), estadoId = (int)o.Estado }).ToList<object>()
+                .Select(o => new { idOrden = o.IdOrden, fecha = o.FechaOrden.ToString("dd/MM/yyyy"), tipo = o.Tipo.ToString(), tipoId = (int)o.Tipo, indicacion = o.Indicacion, estado = o.Estado.ToString(), estadoId = (int)o.Estado, esExterna = o.EsExterna }).ToList<object>()
             : new List<object>();
-        return Json(new { todas = todas, paciente = pac });
+        return Json(new { todas = todas, externas = externas, paciente = pac });
     }
 
     [HttpPost]

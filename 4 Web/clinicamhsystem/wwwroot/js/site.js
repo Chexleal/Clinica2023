@@ -44,20 +44,52 @@ if ($.fn.dataTable && $.fn.dataTable.ext && $.fn.dataTable.ext.type && $.fn.data
     });
 }
 
-document.getElementById("toggle-button").addEventListener("click", function () {
+// Sidebar: toggle accesible con persistencia en desktop y drawer en móvil.
+// .hidden = cerrado en todos los tamaños.
+(function () {
     var sidebar = document.querySelector(".menu");
-    var toggleButton = document.querySelector(".toggle-button");
-    var container = document.querySelector(".container-larger");
-    if (sidebar.classList.contains("hidden")) {
-        sidebar.classList.remove("hidden");
-        toggleButton.classList.remove("hidden-tgb");
-        container.classList.remove("hidden");
-    } else {
-        sidebar.classList.add("hidden");
-        container.classList.add("hidden");
-        toggleButton.classList.add("hidden-tgb");
+    var toggleButton = document.getElementById("toggle-button");
+    var overlay = document.getElementById("sidebar-overlay");
+    if (!sidebar || !toggleButton) return;
+
+    var STORAGE_KEY = "traumha-sidebar-collapsed";
+    var isMobile = function () { return window.matchMedia("(max-width: 991px)").matches; };
+
+    function applyState(collapsed, save) {
+        sidebar.classList.toggle("hidden", collapsed);
+        toggleButton.setAttribute("aria-expanded", collapsed ? "false" : "true");
+        if (overlay) overlay.hidden = collapsed || !isMobile();
+        document.body.classList.toggle("sidebar-open", !collapsed && isMobile());
+        if (save && !isMobile()) {
+            try { localStorage.setItem(STORAGE_KEY, collapsed ? "1" : "0"); } catch (e) { /* noop */ }
+        }
     }
-});
+
+    function initialState() {
+        if (isMobile()) return true; // móvil arranca cerrado
+        try { return localStorage.getItem(STORAGE_KEY) === "1"; } catch (e) { return false; }
+    }
+
+    toggleButton.addEventListener("click", function () {
+        applyState(!sidebar.classList.contains("hidden"), true);
+    });
+
+    if (overlay) overlay.addEventListener("click", function () { applyState(true, false); });
+
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && isMobile() && !sidebar.classList.contains("hidden")) {
+            applyState(true, false);
+            toggleButton.focus();
+        }
+    });
+
+    // Al cambiar de tamaño, re-evaluar overlay sin perder preferencia de desktop
+    window.addEventListener("resize", function () {
+        if (overlay) overlay.hidden = sidebar.classList.contains("hidden") || !isMobile();
+    });
+
+    applyState(initialState(), false);
+})();
 
 function parseDate(stringDate) {
 

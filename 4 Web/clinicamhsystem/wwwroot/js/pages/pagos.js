@@ -38,7 +38,7 @@ function CreateTable() {
         buttons: DataTablesCommon.exportButtons('Consultas', [1, 2, 3, 4], false),
         columnDefs: [
             {
-                targets: [4, 5], // �ndice de la columna que deseas truncar
+                targets: [4], // Motivo de consulta: truncar texto largo (0=Acciones, 1=Fecha, 2=Nombre, 3=Apellido, 4=Motivo)
                 render: function (data, type, row) {
                     if (type === 'display' && data.length > 30) {
                         return '<span title="' + data + '">' + data.substr(0, 30) + '...</span>';

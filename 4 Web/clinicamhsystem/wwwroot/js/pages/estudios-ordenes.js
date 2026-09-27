@@ -17,7 +17,12 @@ $(function(){
                 const indic = $('#formCrearOrden input[name="indicacion"]').val();
                 $('#selOrden').append(`<option value="${res.idOrden}" selected>${tipoText} - ${indic}</option>`);
                 $('#formCrearOrden input[name="indicacion"]').val('');
+                $('#formCrearOrden input[name="esExterna"]').prop('checked', false);
                 Swal.fire({icon:'success', title:'Orden creada', timer:1200, showConfirmButton:false});
+                // Si es externa: abrir impresión en nueva pestaña (no entra a cola interna)
+                if(res.esExterna){
+                    window.open('/ContinuarConsulta/ImprimirOrden?idOrden=' + res.idOrden, '_blank');
+                }
             }
          })
          .fail(function(xhr){ Swal.fire({icon:'error', title:'Error', text: xhr.responseText}); });

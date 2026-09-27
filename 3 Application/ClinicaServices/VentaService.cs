@@ -8,6 +8,8 @@ public interface IVentaService
 {
     Venta GetOrCreatePorConsulta(Guid idConsulta);
     Venta CrearVentaLibre(Guid? idPaciente, string? observaciones = null);
+    /// <summary>Elimina una venta libre Pendiente sin líneas ni pagos (clic accidental en Nueva venta). Devuelve true si la eliminó.</summary>
+    bool DescartarSiVacia(Guid idVenta);
     Venta? GetVenta(Guid idVenta);
     List<Venta> GetPendientes(int top = 100);
     List<Venta> GetPendientesPago(int top = 100);
@@ -121,6 +123,17 @@ public class VentaService : IVentaService
 
     public Venta? GetVenta(Guid idVenta) =>
         _db.Ventas.FirstOrDefault(v => v.IdVenta == idVenta);
+
+    public bool DescartarSiVacia(Guid idVenta)
+    {
+        var v = _db.Ventas.FirstOrDefault(x => x.IdVenta == idVenta);
+        if (v is null || v.Estado != "Pendiente" || v.IdConsulta.HasValue) return false;
+        if (_db.VentaDetalles.Any(d => d.IdVenta == idVenta)) return false;
+        if (_db.VentaPagos.Any(p => p.IdVenta == idVenta)) return false;
+        _db.Ventas.Remove(v);
+        _db.SaveChanges();
+        return true;
+    }
 
     public List<Venta> GetPendientes(int top = 100) =>
         _db.Ventas.Where(v => v.Estado == "Pendiente" && v.IdConsulta == null).OrderByDescending(v => v.Fecha).Take(top).ToList();

@@ -1,0 +1,64 @@
+@model clinicaWeb.Models.GenerarRecetaModel
+@using ClinicaInfrastructure
+@{
+    var c = Model.Consulta;
+    var p = Model.Paciente;
+    var edad = "";
+    try { edad = DateManager.GetAge(p.FechaNacimiento); } catch { edad = ""; }
+}
+<div class="d-flex align-items-center gap-2 mb-3">
+    <div class="rounded-circle bg-success bg-opacity-10 d-flex align-items-center justify-content-center" style="width:44px;height:44px;">
+        <i class="fa-solid fa-user text-success"></i>
+    </div>
+    <div>
+        <div class="fw-bold">@p.Nombre @p.Apellido</div>
+        <small class="text-muted">@edad · @p.Genero · DPI @p.Dpi · Tel @p.Telefono</small>
+    </div>
+</div>
+<p class="small text-muted"><i class="fa-regular fa-calendar"></i> Atención: @DateManager.GetDisplayDate(c.FechaCreacion, c.Fecha).ToString("dd/MM/yyyy HH:mm", System.Globalization.CultureInfo.GetCultureInfo("es-GT"))</p>
+
+<div class="accordion" id="verConsultaAcordion">
+    <div class="accordion-item">
+        <h2 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#vcMotivo">Motivo y diagnóstico</button></h2>
+        <div id="vcMotivo" class="accordion-collapse collapse show" data-bs-parent="#verConsultaAcordion">
+            <div class="accordion-body small">
+                <p class="mb-1"><b>Motivo:</b> @c.MotivoConsulta</p>
+                <p class="mb-1"><b>Historia:</b> @c.HistoriaClinica</p>
+                <p class="mb-1"><b>Diagnóstico:</b> @c.Diagnostico</p>
+                <p class="mb-0"><b>Observaciones:</b> @c.Observaciones</p>
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#vcSignos">Signos vitales</button></h2>
+        <div id="vcSignos" class="accordion-collapse collapse" data-bs-parent="#verConsultaAcordion">
+            <div class="accordion-body small">
+                Peso @c.Peso · P/A @c.PresionArterial · Temp @c.Temperatura · SatO2 @c.SaturacionOxigeno · Gluc @c.Glucometro · FC @c.FrecuenciaCardiaca
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#vcReceta">Receta (@(Model.DetallesReceta?.Count ?? 0))</button></h2>
+        <div id="vcReceta" class="accordion-collapse collapse" data-bs-parent="#verConsultaAcordion">
+            <div class="accordion-body small">
+                @if (Model.DetallesReceta == null || !Model.DetallesReceta.Any())
+                {
+                    <span class="text-muted">Sin medicamentos registrados.</span>
+                }
+                else
+                {
+                    <ul class="mb-0 ps-3">
+                        @foreach (var d in Model.DetallesReceta)
+                        {
+                            <li><b>@d.Medicamento</b> @d.Instrucciones</li>
+                        }
+                    </ul>
+                    @if (!string.IsNullOrWhiteSpace(Model.Receta?.Descripcion))
+                    {
+                        <p class="mt-2 mb-0"><b>Observaciones:</b> @Model.Receta.Descripcion</p>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>

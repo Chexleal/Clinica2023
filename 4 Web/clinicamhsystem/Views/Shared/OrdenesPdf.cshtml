@@ -1,0 +1,132 @@
+@using ClinicaInfrastructure
+@using ClinicaDomain
+@model clinicaWeb.Models.GenerarOrdenesModel
+@{
+    Layout = null;
+    var paciente = Model.Paciente;
+    var edad = "";
+    try { edad = DateManager.GetAge(paciente.FechaNacimiento); } catch { edad = ""; }
+    var ids = string.Join(",", Model.Ordenes.Select(o => o.IdOrden));
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="~/css/pages/RecetaStyle.css" asp-append-version="true" />
+    <title>Órdenes de estudio - @paciente.Nombre @paciente.Apellido</title>
+    <style>
+        .orden-bloque { page-break-inside: avoid; }
+        .salto-pagina { page-break-after: always; }
+    </style>
+</head>
+<body>
+    <img src="@Url.Content("~/img/NewLogoOp-wm-baked.png")" alt="" class="watermark" width="900" height="463" decoding="async" aria-hidden="true" onerror="this.style.display='none'" />
+
+<div class="fila">
+  <div class="logo-container">
+    <img src="@Url.Content("~/img/NewLogoOp-print.png")" alt="Logo" onerror="this.onerror=null;this.src='@Url.Content("~/img/NewLogoOp.png")'">
+  </div>
+  <div class="horario">
+    <div><strong>Horario:</strong></div>
+    <div>Lunes a Viernes de 9:00 a 18:00 Hrs.</div>
+    <div>Sábados de 9:00 a 13:00 Hrs.</div>
+  </div>
+</div>
+
+<div class="upper2" style="margin-top:-10px;">
+    <hr style="border: 0.5px solid #0d659b ;">
+    <table style="border-style: none; width:100%;">
+        <tr>
+            <th style="text-align: left;padding-left: 2%;">
+                <h1 style="display: inline; font-size: 13px; font-weight: bold;">Dirección:</h1><br>
+                <b style="font-size: 12px; font-weight: lighter;">Calzada Santa Lucia Norte No. 22</b><br>
+                <b style="font-size: 12px; font-weight: lighter;">Antigua Guatemala</b><br>
+            </th>
+            <th style="text-align: right; padding-right: 1%;">
+                <b style="font-size: 13px; font-weight: bold;">Fecha:</b><br>
+                <b style="font-size: 12px; font-weight: lighter;">@DateTime.Now.ToString("dd/MM/yyyy")</b>
+            </th>
+        </tr>
+    </table>
+</div>
+
+<div class="middle">
+    <hr style="border: 0.5px solid #0d659b ; ">
+    <b style="font-size: 14px;font-weight:bold;margin-left:10px;padding-left: 2%;">ÓRDENES DE ESTUDIO (EXTERNAS)</b>
+    <hr style="border: 0.5px solid #0d659b ;">
+    <div style="margin-left:10px;padding-left:2%;font-size:12px;">
+        <p><b>Paciente:</b> @($"{paciente.Nombre} {paciente.Apellido}") &nbsp;&nbsp; <b>Edad:</b> @edad &nbsp;&nbsp; <b>Género:</b> @paciente.Genero</p>
+        <p><b>DPI:</b> @paciente.Dpi &nbsp;&nbsp; <b>Tel:</b> @paciente.Telefono</p>
+    </div>
+    @for (int i = 0; i < Model.Ordenes.Count; i++)
+    {
+        var orden = Model.Ordenes[i];
+        <div class="orden-bloque @(i < Model.Ordenes.Count - 1 ? "salto-pagina" : "")">
+            <hr class="line">
+            <div style="margin-left:10px;padding-left:2%;font-size:12px;">
+                <p style="font-size:14px;"><b>@(i + 1). Estudio solicitado:</b> @orden.Tipo <small class="text-muted">(@orden.FechaOrden.ToString("dd/MM/yyyy"))</small></p>
+                <p style="font-size:13px;"><b>Indicación:</b></p>
+                <p style="font-size:13px;white-space:pre-wrap;">@orden.Indicacion</p>
+            </div>
+            <br><br>
+            <div style="text-align:center;font-size:12px;">
+                <p>_________________________________</p>
+                <p style="font-size:11px;">Firma y sello</p>
+            </div>
+        </div>
+    }
+    <br>
+    <p style="font-size:11px;font-style:italic;margin-left:10px;padding-left:2%;">Presentar estas órdenes en el laboratorio / centro de diagnóstico externo. Traer resultados a su próxima cita.</p>
+</div>
+
+    <footer class="piePag">
+<div class="under">
+            <hr style="border: 0.5px solid #0d659b ;">
+            <h1 style="display: inline; font-size: 11px; "> Contacto: </h1><br>
+            <p style="display: inline; font-size: 11px; font-weight:lighter"><span class="icon-tel" aria-hidden="true"></span> Tel: 7832-6115 - <span class="icon-cel" aria-hidden="true"></span> Cel: 3787-1021</p><br>
+            <p style="display: inline; font-size: 11px; font-weight:lighter"><span class="icon-mail" aria-hidden="true"></span> Correo: dr.manuelhernandeztyo@gmail.com </p>
+            <p style="display: inline; font-size: 11px; font-weight:lighter;padding-left:5px;"><span class="icon-web" aria-hidden="true"></span> drmanuelhernandez.com </p>
+    <hr style="border: 0.5px solid #0d659b ;">
+            <p style=" text-align: center; font-size: 13px; font-weight:bold"><span class="icon-facebook" aria-hidden="true"></span> Clínicas Dr. Manuel Hernández - Traumatología y Ortopedia del Deporte</p>
+</div>
+    </footer>
+
+    <script>
+    (function(){
+        let printed=false;
+        function doPrint(){
+            if(printed) return;
+            printed=true;
+            requestAnimationFrame(function(){
+                requestAnimationFrame(function(){ window.print(); });
+            });
+            // Marcar todas como impresas sin bloquear el preview
+            try {
+                var ids = '@ids'.split(',');
+                ids.forEach(function(id){
+                    fetch('@Url.Action("MarcarOrdenImpresa", "Estudios")', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: 'idOrden=' + id
+                    });
+                });
+            } catch(e) {}
+        }
+        if(document.fonts && document.fonts.ready){
+            document.fonts.ready.then(function(){ setTimeout(doPrint, 80); });
+        }
+        document.addEventListener('DOMContentLoaded', function(){
+            var logo=document.querySelector('.logo-container img');
+            if(logo && logo.complete){ setTimeout(doPrint, 120); }
+            else if(logo){
+                logo.addEventListener('load', function(){ setTimeout(doPrint, 120); }, {once:true});
+                logo.addEventListener('error', function(){ setTimeout(doPrint, 120); }, {once:true});
+            }
+            setTimeout(doPrint, 700);
+        });
+        window.addEventListener('load', function(){ setTimeout(doPrint, 80); });
+    })();
+    </script>
+</body>
+</html>

@@ -28,6 +28,12 @@ public class VentasController : ErrorHandlingController
     public ActionResult Index(DateTime? from, DateTime? to, string? texto = null)
     {
         var pendientes = _ventas.GetPendientes();
+        // Limpieza silenciosa: vacías de días anteriores (clics accidentales en Nueva venta) no se listan
+        var hoy = DateTime.Today;
+        foreach (var v in pendientes.Where(v => v.Fecha.Date < hoy).ToList())
+        {
+            try { if (_ventas.DescartarSiVacia(v.IdVenta)) pendientes.Remove(v); } catch { }
+        }
         ViewBag.PendientesPago = _ventas.GetPendientesPago();
         ViewBag.SaldosPendientesPago = ((List<ClinicaDomain.Venta>)ViewBag.PendientesPago)
             .ToDictionary(v => v.IdVenta, v => _ventas.SaldoPendiente(v.IdVenta));
@@ -212,6 +218,18 @@ public class VentasController : ErrorHandlingController
         try { _ventas.Anular(id); }
         catch (Exception ex) { RegistrarError(ex); }
         return RedirectToAction("Index");
+    }
+
+    [HttpPost]
+    public ActionResult Descartar(Guid id)
+    {
+        // Solo elimina si sigue vacía; si ya tiene movimiento regresa a Cobrar
+        try
+        {
+            if (_ventas.DescartarSiVacia(id)) return RedirectToAction("Index");
+        }
+        catch (Exception ex) { RegistrarError(ex); }
+        return RedirectToAction("Cobrar", new { id });
     }
 
     /// <summary>Historial + corrección: ver una venta pagada/anulada con sus líneas, pagos y motivo.</summary>

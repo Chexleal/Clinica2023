@@ -14,60 +14,100 @@
     <script src="https://kit.fontawesome.com/184a85cc88.js" crossorigin="anonymous"></script>
 </head>
 <body>
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
 
+    @{
+        var ctrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+        var act = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+        var isCatalogoEstudios = ctrl == "Estudios" && (act == "Catalogo" || act == "CrearCatalogo" || act == "ToggleCatalogo" || act == "EliminarCatalogo");
+        var isConfig = ctrl == "Configuraciones" || isCatalogoEstudios || ctrl == "Servicios" || ctrl == "Inventario";
+        var isEstudiosCarga = ctrl == "Estudios" && !isCatalogoEstudios;
+        var pageTitle = ViewData["Title"]?.ToString() ?? ctrl;
+    }
 
-    <div class="container-menu container-fluid vh-100 d-flex">
-        <button id="toggle-button" class="toggle-button">
-            <i class="fas fa-bars"></i>
-        </button>
-        <nav class="menu">
-
-            <div class="logo mt-4">
-                <a class="logo-button" href="/Inicio">
-                <img src="~/img/NewLogoOp-nav.png" alt="Logo" style="width:100%" class="button">
+    <div class="app-shell">
+        <nav class="menu" id="sidebar" aria-label="Navegación principal">
+            <div class="logo">
+                <a class="logo-button" href="/Inicio" aria-label="Traumha - Inicio">
+                    <img src="~/img/NewLogoOp-sidebar.png" asp-append-version="true" alt="Traumha" class="button" />
+                </a>
             </div>
-            <hr class="mt-4">
-            <b class="saludo nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                Hola <label id="nombreUsuario"></label>
-            </b>
-            <ul class="menu-cuenta dropdown-menu dropdown-menu-end">
-                <li><button data-bs-toggle="modal" data-bs-target="#changePWModal" class="conf-option dropdown-item">Cambiar Contraseña</button></li>
-                <li><button onclick="logout()" class="conf-option dropdown-item">Cerrar Sesión</button></li>
-            </ul>
-            <hr>
-            <div class="botones btn-group-vertical  mt-2">
-                @{
-                    var ctrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
-                    var act = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
-                    var isCatalogoEstudios = ctrl == "Estudios" && (act == "Catalogo" || act == "CrearCatalogo" || act == "ToggleCatalogo" || act == "EliminarCatalogo");
-                    var isConfig = ctrl == "Configuraciones" || isCatalogoEstudios || ctrl == "Servicios" || ctrl == "Inventario";
-                    var isEstudiosCarga = ctrl == "Estudios" && !isCatalogoEstudios;
-                }
-                <a class="menu_bt @((ctrl == "Pacientes") ? "active" : "")" href="/Pacientes"> <i class="fa-solid fa-user-injured fa-xl menu_icon"></i> Pacientes</a>
-                <a class="menu_bt @((ctrl == "Consultas" || ctrl =="ContinuarConsulta") ? "active" : "")" href="/Consultas"><i class="fa-solid fa-notes-medical fa-xl menu_icon"></i>Consultas</a>
-                <a class="menu_bt @(isEstudiosCarga ? "active" : "")" href="/Estudios"><i class="fa-solid fa-x-ray fa-xl menu_icon"></i>Estudios</a>
-                <a class="menu_bt @((ctrl == "Pagos") ? "active" : "")" href="/Pagos"><i class="fa-solid fa-money-bill fa-xl menu_icon"></i> Pagar Consultas</a>
-                <a class="menu_bt @((ctrl == "Ventas") ? "active" : "")" href="/Ventas"><i class="fa-solid fa-cash-register fa-xl menu_icon"></i>Ventas Mostrador</a>
-                <a class="menu_bt @((ctrl == "Citas") ? "active" : "")" href="/Citas"><i class="fa-solid fa-calendar fa-xl menu_icon"></i>Citas</a>
-                <a class="menu_bt @((ctrl == "Reportes") ? "active" : "")" href="/Reportes"><i class="fa-regular fa-file-lines fa-xl menu_icon"></i>Reportes</a>
-                <a class="menu_bt @((ctrl == "Usuarios") ? "active" : "")" href="/Usuarios"><i class="fa-solid fa-users fa-xl menu_icon"></i>Usuarios</a>
-                <a class="menu_bt @(isConfig ? "active" : "")" href="/Configuraciones"><i class="fa-solid fa-gear fa-xl menu_icon"></i>Configuraciones</a>
+
+            <div class="menu-scroll">
+                <p class="menu-heading">Operación</p>
+                <div class="botones btn-group-vertical">
+                    <a class="menu_bt @((ctrl == "Pacientes") ? "active" : "")" href="/Pacientes" @((ctrl == "Pacientes") ? "aria-current=\"page\"" : "")><span class="menu_icon"><i class="fa-solid fa-user-injured"></i></span><span>Pacientes</span></a>
+                    <a class="menu_bt @((ctrl == "Consultas" || ctrl == "ContinuarConsulta") ? "active" : "")" href="/Consultas" @((ctrl == "Consultas" || ctrl == "ContinuarConsulta") ? "aria-current=\"page\"" : "")><span class="menu_icon"><i class="fa-solid fa-notes-medical"></i></span><span>Consultas</span></a>
+                    <a class="menu_bt @(isEstudiosCarga ? "active" : "")" href="/Estudios" @(isEstudiosCarga ? "aria-current=\"page\"" : "")><span class="menu_icon"><i class="fa-solid fa-x-ray"></i></span><span>Estudios</span></a>
+                    <a class="menu_bt @((ctrl == "Citas") ? "active" : "")" href="/Citas" @((ctrl == "Citas") ? "aria-current=\"page\"" : "")><span class="menu_icon"><i class="fa-solid fa-calendar"></i></span><span>Citas</span></a>
+                </div>
+
+                <p class="menu-heading">Caja</p>
+                <div class="botones btn-group-vertical">
+                    <a class="menu_bt @((ctrl == "Pagos") ? "active" : "")" href="/Pagos" @((ctrl == "Pagos") ? "aria-current=\"page\"" : "")><span class="menu_icon"><i class="fa-solid fa-money-bill"></i></span><span>Pagar Consultas</span></a>
+                    <a class="menu_bt @((ctrl == "Ventas") ? "active" : "")" href="/Ventas" @((ctrl == "Ventas") ? "aria-current=\"page\"" : "")><span class="menu_icon"><i class="fa-solid fa-cash-register"></i></span><span>Ventas Mostrador</span></a>
+                </div>
+
+                <p class="menu-heading">Administración</p>
+                <div class="botones btn-group-vertical">
+                    <a class="menu_bt @((ctrl == "Reportes") ? "active" : "")" href="/Reportes" @((ctrl == "Reportes") ? "aria-current=\"page\"" : "")><span class="menu_icon"><i class="fa-regular fa-file-lines"></i></span><span>Reportes</span></a>
+                    <a class="menu_bt @((ctrl == "Usuarios") ? "active" : "")" href="/Usuarios" @((ctrl == "Usuarios") ? "aria-current=\"page\"" : "")><span class="menu_icon"><i class="fa-solid fa-users"></i></span><span>Usuarios</span></a>
+                    <a class="menu_bt @(isConfig ? "active" : "")" href="/Configuraciones" @(isConfig ? "aria-current=\"page\"" : "")><span class="menu_icon"><i class="fa-solid fa-gear"></i></span><span>Configuraciones</span></a>
+                </div>
+            </div>
+
+            <div class="menu-footer">
+                <span class="menu-version">Traumha · Clínica</span>
             </div>
         </nav>
-        <script>
-            var test = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(TempData["UsuarioNombre"]?.ToString() ?? ""));
-            if (test !== "") {
-                localStorage.setItem("UsuarioNombre", test)
-            }
-            var nombreUsuario = localStorage.getItem("UsuarioNombre");
-            document.getElementById("nombreUsuario").textContent = nombreUsuario || "";
-        </script>
-        <div class="container-larger mx-auto px-0 mt-5">
-            <main role="main" class="pb-3">
-                @RenderBody()
-            </main>
+        <div class="sidebar-overlay" id="sidebar-overlay" hidden></div>
+
+        <div class="app-main">
+            <header class="topbar">
+                <button id="toggle-button" class="toggle-button" aria-controls="sidebar" aria-expanded="true" aria-label="Mostrar u ocultar menú">
+                    <i class="fas fa-bars" aria-hidden="true"></i>
+                </button>
+                <div class="topbar-title">
+                    <span class="topbar-breadcrumb">Traumha</span>
+                    <h1 class="topbar-page">@pageTitle</h1>
+                </div>
+                <div class="topbar-user dropdown">
+                    <button class="user-chip" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" title="Cuenta">
+                        <span class="user-avatar" id="avatarInicial" aria-hidden="true">U</span>
+                        <span class="user-meta">
+                            <span class="user-greeting">Hola</span>
+                            <span class="user-name" id="nombreUsuario"></span>
+                        </span>
+                        <i class="fa-solid fa-chevron-down user-caret" aria-hidden="true"></i>
+                    </button>
+                    <ul class="menu-cuenta dropdown-menu dropdown-menu-end">
+                        <li><button data-bs-toggle="modal" data-bs-target="#changePWModal" class="conf-option dropdown-item">Cambiar Contraseña</button></li>
+                        <li><button onclick="logout()" class="conf-option dropdown-item">Cerrar Sesión</button></li>
+                    </ul>
+                </div>
+            </header>
+
+            <div class="container-larger mx-auto">
+                <main role="main" id="contenido" class="pb-3">
+                    @RenderBody()
+                </main>
+            </div>
         </div>
     </div>
+
+    <script>
+        (function () {
+            try {
+                var raw = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(TempData["UsuarioNombre"]?.ToString() ?? ""));
+                if (raw) localStorage.setItem("UsuarioNombre", raw);
+                var nombre = localStorage.getItem("UsuarioNombre") || "";
+                var el = document.getElementById("nombreUsuario");
+                if (el) el.textContent = nombre;
+                var avatar = document.getElementById("avatarInicial");
+                if (avatar) avatar.textContent = (nombre.trim().charAt(0) || "U").toUpperCase();
+            } catch (e) { /* sin nombre de usuario disponible */ }
+        })();
+    </script>
 
     <script src="~/lib/limonte-sweetalert2/sweetalert2.min.js"></script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

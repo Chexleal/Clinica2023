@@ -12,20 +12,20 @@
 }
 @{
     var todas = ViewBag.TodasPendientes as List<OrdenEstudio> ?? new();
+    var externas = ViewBag.TodasExternas as List<OrdenEstudio> ?? new();
     var mostrarCargaDirecta = pacienteId.HasValue && ViewBag.IdOrdenSeleccionada == null;
 }
 <div class="card shadow-lg p-3 mb-4" id="cardTodasPendientes">
     <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <h5 class="mb-0"><i class="fa-solid fa-bell" style="color:#c0392b"></i> Pendientes de sacar <span class="badge bg-danger">@todas.Count</span></h5>
+        <h5 class="mb-0"><i class="fa-solid fa-bell" style="color:#c0392b"></i> Pendientes en clínica <span class="badge bg-danger">@todas.Count</span> <small class="text-muted fw-normal" style="font-size:12px;">(solo internas)</small></h5>
     </div>
     <div class="card-body">
-        
         <div class="table-responsive">
             <table class="table table-sm table-hover">
                 <thead class="table-light"><tr><th>Fecha</th><th>Paciente</th><th>Tipo</th><th>Indicacion</th><th></th></tr></thead>
                 <tbody id="tbodyTodas">
                 @if(!todas.Any()){
-                    <tr class="empty-row"><td colspan="5" class="text-muted small">Sin ordenes pendientes.</td></tr>
+                    <tr class="empty-row"><td colspan="5" class="text-muted small">Sin ordenes pendientes en clínica.</td></tr>
                 }
                 @foreach(var o in todas){
                     <tr>
@@ -33,12 +33,51 @@
                         <td>@(o.Paciente != null ? o.Paciente.Nombre + " " + o.Paciente.Apellido : "-")</td>
                         <td><span class="badge bg-info">@o.Tipo</span></td>
                         <td><small>@o.Indicacion</small></td>
-                        <td><a href="@Url.Action("Index","Estudios", new{ pacienteId=o.IdPaciente, idOrden=o.IdOrden })" class="btn btn-sm btn-outline-primary">Atender</a></td>
+                        <td class="text-end text-nowrap">
+                            <a href="@Url.Action("Index","Estudios", new{ pacienteId=o.IdPaciente, idOrden=o.IdOrden })" class="btn btn-sm btn-outline-primary">Atender</a>
+                            <button type="button" class="btn btn-sm btn-outline-secondary btn-marcar-externa" data-id="@o.IdOrden" title="Es examen externo: sale de la cola y pasa a Externas para imprimir"><i class="fa-solid fa-print"></i> Ext</button>
+                        </td>
                     </tr>
                 }
                 </tbody>
             </table>
         </div>
+    </div>
+</div>
+
+<div class="card shadow p-3 mb-4" id="cardExternas">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h5 class="mb-0"><i class="fa-solid fa-print" style="color:#555"></i> Externas para imprimir <span class="badge bg-secondary" id="badgeExternas">@externas.Count</span> <small class="text-muted fw-normal" style="font-size:12px;">(fuera de la clínica, no entran a la cola)</small></h5>
+        <button class="btn btn-link btn-sm text-muted text-decoration-none p-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExternas" aria-expanded="false" aria-controls="collapseExternas">Mostrar / ocultar</button>
+    </div>
+    <div class="collapse" id="collapseExternas">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead class="table-light"><tr><th>Fecha</th><th>Paciente</th><th>Tipo</th><th>Indicacion</th><th>Estado</th><th></th></tr></thead>
+                <tbody id="tbodyExternas">
+                @if(!externas.Any()){
+                    <tr class="empty-row"><td colspan="6" class="text-muted small">Sin órdenes externas.</td></tr>
+                }
+                @foreach(var o in externas){
+                    <tr>
+                        <td><small>@o.FechaOrden.ToString("dd/MM/yyyy")</small></td>
+                        <td>@(o.Paciente != null ? o.Paciente.Nombre + " " + o.Paciente.Apellido : "-")</td>
+                        <td><span class="badge bg-info">@o.Tipo</span> <span class="badge bg-dark">Ext</span></td>
+                        <td><small>@o.Indicacion</small></td>
+                        <td>@if(o.Estado==EstadoOrden.Impresa){<span class="badge bg-primary">Impresa</span>}else{<span class="badge bg-warning text-dark">Pendiente</span>}</td>
+                        <td class="text-end text-nowrap">
+                            <a href="@Url.Action("ImprimirOrden","Estudios", new{ idOrden=o.IdOrden })" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-print"></i> Imprimir</a>
+                            <button type="button" class="btn btn-sm btn-outline-success btn-completar-externa" data-id="@o.IdOrden" title="Resultado ya recibido: quita de la lista sin subir archivo"><i class="fa-solid fa-check"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-warning btn-revertir-interna" data-id="@o.IdOrden" title="Se generó como externa por error: regresa a la cola de clínica"><i class="fa-solid fa-rotate-left"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-danger btn-del-externa" data-id="@o.IdOrden" title="Cancelar / eliminar orden"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
     </div>
 </div>
 
@@ -125,14 +164,18 @@
                 @foreach(var o in ordenes.OrderByDescending(x => x.FechaOrden)){
                     <tr>
                         <td><small>@o.FechaOrden.ToString("dd/MM/yyyy")</small></td>
-                        <td><span class="badge bg-info">@o.Tipo</span></td>
+                        <td><span class="badge bg-info">@o.Tipo</span> @if(o.EsExterna){<span class="badge bg-dark">Ext</span>}</td>
                         <td><small>@o.Indicacion</small></td>
                         <td>
                             @if(o.Estado==EstadoOrden.Completada){<span class="badge bg-success">Completada</span>}
+                            else if(o.Estado==EstadoOrden.Impresa){<span class="badge bg-primary">Impresa</span>}
                             else if(o.Estado==EstadoOrden.Pendiente){<span class="badge bg-warning text-dark">Pendiente</span>}
                             else{<span class="badge bg-secondary">@o.Estado</span>}
                         </td>
-                        <td class="text-end"><button type="button" class="btn btn-sm btn-outline-primary btn-sel-orden-carga" data-id="@o.IdOrden" data-tipo="@((int)o.Tipo)"><i class="fa-solid fa-check"></i> Seleccionar</button></td>
+                        <td class="text-end text-nowrap">
+                            <a href="@Url.Action("ImprimirOrden","Estudios", new{ idOrden=o.IdOrden })" target="_blank" class="btn btn-sm btn-outline-secondary" title="Imprimir"><i class="fa-solid fa-print"></i></a>
+                            <button type="button" class="btn btn-sm btn-outline-primary btn-sel-orden-carga" data-id="@o.IdOrden" data-tipo="@((int)o.Tipo)"><i class="fa-solid fa-check"></i> Seleccionar</button>
+                        </td>
                     </tr>
                 }
                 </tbody>
@@ -203,6 +246,82 @@
             $('#contEstudiosCarga').html('<div class="text-muted small"><i class="fa-solid fa-inbox"></i> Selecciona una orden para ver o cargar sus estudios.</div>');
         });
         // upload en esta vista usa /Estudios/UploadEstudio
+        function refrescarListas(pid){
+            $.get("/Estudios/GetPendientesRefresh", { idPaciente: pid }, function(d){
+                var sel = $("#selOrdenCarga");
+                var keepOrden = sel.length ? sel.val() : null; // mantener la orden para poder agregar faltantes
+                if (sel.length) {
+                    if (sel.hasClass("select2-hidden-accessible")) { sel.select2("destroy"); }
+                    sel.html("<option value=\"\">-- Sin orden / directa --</option>");
+                    $.each(d.paciente, function(i,o){ var est = o.estado ? " (" + o.estado + ")" : ""; sel.append("<option value=\"" + o.idOrden + "\" data-tipo=\"" + o.tipoId + "\">" + o.fecha + " - " + o.tipo + " - " + o.indicacion + est + "</option>"); });
+                    sel.select2({ width: "100%", placeholder: "Busca orden..." });
+                    if (keepOrden) { sel.val(keepOrden).trigger("change"); }
+                }
+                var tb = "";
+                $.each(d.todas, function(i,o){ tb += "<tr><td><small>" + o.fecha + "</small></td><td>" + o.paciente + "</td><td><span class=\"badge bg-info\">" + o.tipo + "</span></td><td><small>" + o.indicacion + "</small></td><td class=\"text-end text-nowrap\"><a href=\"/Estudios?pacienteId=" + o.idPaciente + "&idOrden=" + o.idOrden + "\" class=\"btn btn-sm btn-outline-primary\">Atender</a> <button type=\"button\" class=\"btn btn-sm btn-outline-secondary btn-marcar-externa\" data-id=\"" + o.idOrden + "\" title=\"Es examen externo: sale de la cola y pasa a Externas para imprimir\"><i class=\"fa-solid fa-print\"></i> Ext</button></td></tr>"; });
+                if ($("#tbodyTodas").length) $("#tbodyTodas").html(tb || "<tr class=\"empty-row\"><td colspan=\"5\" class=\"text-muted small\">Sin ordenes pendientes en clínica.</td></tr>");
+                var eb = "";
+                $.each(d.externas || [], function(i,o){ var badge = o.estado === "Impresa" ? "<span class=\"badge bg-primary\">Impresa</span>" : "<span class=\"badge bg-warning text-dark\">Pendiente</span>"; eb += "<tr><td><small>" + o.fecha + "</small></td><td>" + o.paciente + "</td><td><span class=\"badge bg-info\">" + o.tipo + "</span> <span class=\"badge bg-dark\">Ext</span></td><td><small>" + o.indicacion + "</small></td><td>" + badge + "</td><td class=\"text-end text-nowrap\"><a href=\"/Estudios/ImprimirOrden?idOrden=" + o.idOrden + "\" target=\"_blank\" class=\"btn btn-sm btn-outline-secondary\"><i class=\"fa-solid fa-print\"></i> Imprimir</a> <button type=\"button\" class=\"btn btn-sm btn-outline-success btn-completar-externa\" data-id=\"" + o.idOrden + "\" title=\"Resultado ya recibido: quita de la lista sin subir archivo\"><i class=\"fa-solid fa-check\"></i></button> <button type=\"button\" class=\"btn btn-sm btn-outline-warning btn-revertir-interna\" data-id=\"" + o.idOrden + "\" title=\"Se generó como externa por error: regresa a la cola de clínica\"><i class=\"fa-solid fa-rotate-left\"></i></button> <button type=\"button\" class=\"btn btn-sm btn-outline-danger btn-del-externa\" data-id=\"" + o.idOrden + "\" title=\"Cancelar / eliminar orden\"><i class=\"fa-solid fa-trash\"></i></button></td></tr>"; });
+                if ($("#tbodyExternas").length) $("#tbodyExternas").html(eb || "<tr class=\"empty-row\"><td colspan=\"6\" class=\"text-muted small\">Sin órdenes externas.</td></tr>");
+                if ($("#badgeExternas").length) $("#badgeExternas").text((d.externas || []).length);
+                var pb = "";
+                $.each(d.paciente, function(i,o){ var badge = o.estadoId === 2 || o.estado === "Completada" ? "<span class=\"badge bg-success\">Completada</span>" : (o.estadoId === 4 || o.estado === "Impresa" ? "<span class=\"badge bg-primary\">Impresa</span>" : "<span class=\"badge bg-warning text-dark\">Pendiente</span>"); var ext = o.esExterna ? " <span class=\"badge bg-dark\">Ext</span>" : ""; pb += "<tr><td><small>" + o.fecha + "</small></td><td><span class=\"badge bg-info\">" + o.tipo + "</span>" + ext + "</td><td><small>" + o.indicacion + "</small></td><td>" + badge + "</td><td class=\"text-end text-nowrap\"><a href=\"/Estudios/ImprimirOrden?idOrden=" + o.idOrden + "\" target=\"_blank\" class=\"btn btn-sm btn-outline-secondary\" title=\"Imprimir\"><i class=\"fa-solid fa-print\"></i></a> <button type=\"button\" class=\"btn btn-sm btn-outline-primary btn-sel-orden-carga\" data-id=\"" + o.idOrden + "\" data-tipo=\"" + o.tipoId + "\"><i class=\"fa-solid fa-check\"></i> Seleccionar</button></td></tr>"; });
+                if ($("#tbodyPaciente").length) $("#tbodyPaciente").html(pb || "<tr class=\"empty-row\"><td colspan=\"5\" class=\"text-muted small\">Sin ordenes pendientes para este paciente.</td></tr>");
+                $("#cardTodasPendientes .card-header .badge").text(d.todas.length);
+            });
+        }
+        $(document).on('click', '.btn-marcar-externa', function(){
+            var idOrden = $(this).data('id');
+            Swal.fire({title:'¿Marcar como externa?', text:'Sale de la cola de clínica y pasa a Externas para imprimir.', icon:'question', showCancelButton:true, confirmButtonText:'Sí, es externa', cancelButtonText:'Cancelar'}).then(function(r){
+                if(!r.isConfirmed) return;
+                $.post('/Estudios/MarcarOrdenExterna', { idOrden: idOrden, esExterna: true })
+                    .done(function(){
+                        var pid = $("input[name=\"idPaciente\"]").val();
+                        refrescarListas(pid);
+                        Swal.fire({icon:'success', title:'Movida a externas', timer:1200, showConfirmButton:false});
+                    })
+                    .fail(function(xhr){ Swal.fire({icon:'error', title:'No se pudo mover', text: xhr.responseText}); });
+            });
+        });
+        $(document).on('click', '.btn-revertir-interna', function(){
+            var idOrden = $(this).data('id');
+            Swal.fire({title:'¿Regresar a clínica?', text:'Vuelve a la cola de pendientes internas.', icon:'question', showCancelButton:true, confirmButtonText:'Sí', cancelButtonText:'Cancelar'}).then(function(r){
+                if(!r.isConfirmed) return;
+                $.post('/Estudios/MarcarOrdenExterna', { idOrden: idOrden, esExterna: false })
+                    .done(function(){
+                        var pid = $("input[name=\"idPaciente\"]").val();
+                        refrescarListas(pid);
+                        Swal.fire({icon:'success', title:'Regresó a clínica', timer:1200, showConfirmButton:false});
+                    })
+                    .fail(function(xhr){ Swal.fire({icon:'error', title:'No se pudo mover', text: xhr.responseText}); });
+            });
+        });
+        $(document).on('click', '.btn-completar-externa', function(){
+            var idOrden = $(this).data('id');
+            Swal.fire({title:'¿Resultado recibido?', text:'Se quita de Externas y queda como Completada.', icon:'question', showCancelButton:true, confirmButtonText:'Sí, completar', cancelButtonText:'Cancelar'}).then(function(r){
+                if(!r.isConfirmed) return;
+                $.post('/Estudios/CompletarOrden', { idOrden: idOrden })
+                    .done(function(){
+                        var pid = $("input[name=\"idPaciente\"]").val();
+                        refrescarListas(pid);
+                        Swal.fire({icon:'success', title:'Completada', timer:1200, showConfirmButton:false});
+                    })
+                    .fail(function(xhr){ Swal.fire({icon:'error', title:'No se pudo completar', text: xhr.responseText}); });
+            });
+        });
+        $(document).on('click', '.btn-del-externa', function(){
+            var idOrden = $(this).data('id');
+            Swal.fire({title:'¿Cancelar orden externa?', text:'Se elimina de la lista (baja lógica).', icon:'warning', showCancelButton:true, confirmButtonText:'Sí, eliminar', cancelButtonText:'Cancelar'}).then(function(r){
+                if(!r.isConfirmed) return;
+                $.post('/Estudios/DeleteOrden', { idOrden: idOrden })
+                    .done(function(){
+                        var pid = $("input[name=\"idPaciente\"]").val();
+                        refrescarListas(pid);
+                        Swal.fire({icon:'success', title:'Eliminada', timer:1200, showConfirmButton:false});
+                    })
+                    .fail(function(xhr){ Swal.fire({icon:'error', title:'No se pudo eliminar', text: xhr.responseText}); });
+            });
+        });
         $('#formUploadEstudioCarga').on('submit', function(e){
             e.preventDefault();
             const filesCarga = $('#filesCarga')[0].files;
@@ -219,22 +338,7 @@
                     $("#contEstudiosCarga").html(html);
                     $("#filesCarga").val("");
                     var pid = $("input[name=\"idPaciente\"]").val();
-                    $.get("/Estudios/GetPendientesRefresh", { idPaciente: pid }, function(d){
-                        var sel = $("#selOrdenCarga");
-                        var keepOrden = sel.val(); // mantener la orden para poder agregar faltantes
-                        if (sel.hasClass("select2-hidden-accessible")) { sel.select2("destroy"); }
-                        sel.html("<option value=\"\">-- Sin orden / directa --</option>");
-                        $.each(d.paciente, function(i,o){ var est = o.estado ? " (" + o.estado + ")" : ""; sel.append("<option value=\"" + o.idOrden + "\" data-tipo=\"" + o.tipoId + "\">" + o.fecha + " - " + o.tipo + " - " + o.indicacion + est + "</option>"); });
-                        sel.select2({ width: "100%", placeholder: "Busca orden..." });
-                        if (keepOrden) { sel.val(keepOrden).trigger("change"); }
-                        var tb = "";
-                        $.each(d.todas, function(i,o){ tb += "<tr><td><small>" + o.fecha + "</small></td><td>" + o.paciente + "</td><td><span class=\"badge bg-info\">" + o.tipo + "</span></td><td><small>" + o.indicacion + "</small></td><td><a href=\"/Estudios?pacienteId=" + o.idPaciente + "&idOrden=" + o.idOrden + "\" class=\"btn btn-sm btn-outline-primary\">Atender</a></td></tr>"; });
-                        if ($("#tbodyTodas").length) $("#tbodyTodas").html(tb || "<tr class=\"empty-row\"><td colspan=\"5\" class=\"text-muted small\">Sin ordenes pendientes.</td></tr>");
-                        var pb = "";
-                        $.each(d.paciente, function(i,o){ var badge = o.estadoId === 2 || o.estado === "Completada" ? "<span class=\"badge bg-success\">Completada</span>" : "<span class=\"badge bg-warning text-dark\">Pendiente</span>"; pb += "<tr><td><small>" + o.fecha + "</small></td><td><span class=\"badge bg-info\">" + o.tipo + "</span></td><td><small>" + o.indicacion + "</small></td><td>" + badge + "</td><td><button type=\"button\" class=\"btn btn-sm btn-outline-primary btn-sel-orden-carga\" data-id=\"" + o.idOrden + "\" data-tipo=\"" + o.tipoId + "\"><i class=\"fa-solid fa-check\"></i> Seleccionar</button></td></tr>"; });
-                        if ($("#tbodyPaciente").length) $("#tbodyPaciente").html(pb || "<tr class=\"empty-row\"><td colspan=\"5\" class=\"text-muted small\">Sin ordenes pendientes para este paciente.</td></tr>");
-                        $("#cardTodasPendientes .card-header .badge").text(d.todas.length);
-                    });
+                    refrescarListas(pid);
                     Swal.fire({icon:"success", title:"Cargado", timer:1200, showConfirmButton:false});
                 },
                 error: function(xhr){ Swal.fire({icon:'error', title:'Error', text: xhr.responseText}); },

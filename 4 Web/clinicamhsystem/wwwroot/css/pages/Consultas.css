@@ -50,3 +50,15 @@ textarea:focus {
     caret-color: black !important; /* Línea de escritura negra */
     cursor: text !important;
 }
+
+/* Botón Órdenes externas: outline palo rosa (misma métrica que btn-sm Bootstrap) */
+.btn-ordenes {
+    border: 1px solid #edbccb;
+    color: #bd6b8b;
+    background-color: transparent;
+}
+.btn-ordenes:hover, .btn-ordenes:focus {
+    background-color: #fdf5f7;
+    border-color: #e3a0b6;
+    color: #a85675;
+}

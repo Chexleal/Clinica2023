@@ -10,6 +10,11 @@ public partial class OrdenEstudio : Base
     public string Indicacion { get; set; } = string.Empty; // motivo de la orden
     public EstadoOrden Estado { get; set; }
     public DateTime FechaOrden { get; set; }
+    /// <summary>
+    /// True = examen externo (se imprime para el paciente, no se atiende en clínica).
+    /// False = examen interno (aparece en la cola de pendientes de Estudios).
+    /// </summary>
+    public bool EsExterna { get; set; }
 
     public virtual Paciente Paciente { get; set; } = null!;
     public virtual Consulta? Consulta { get; set; }

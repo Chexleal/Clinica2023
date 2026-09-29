@@ -97,7 +97,9 @@ namespace ClinicaServices
 
         public List<Consulta> GetAllNotPaid()
         {
-            return dbContext.Consulta.Include(x => x.PacienteInformacion).Where(x => x.Terminada && !x.Pagada && x.Eliminada == false).ToList();
+            var lista = dbContext.Consulta.Include(x => x.PacienteInformacion).Where(x => x.Terminada && !x.Pagada && x.Eliminada == false).ToList();
+            AuditoriaNombres.Completar(dbContext, lista);
+            return lista;
         }
 
         public int CountOpen()
@@ -143,16 +145,18 @@ namespace ClinicaServices
             var totalFiltered = query.Count();
 
             var asc = string.Equals(sortDir, "asc", StringComparison.OrdinalIgnoreCase);
+            // Índices de columna en Consultas/Index: 0=ⓘ info, 1=Continuar, 2=Fecha, 3=Nombre, 4=Apellido, 5=Motivo
             query = sortColumn switch
             {
-                1 => asc ? query.OrderBy(x => x.Fecha) : query.OrderByDescending(x => x.Fecha),
-                2 => asc ? query.OrderBy(x => x.PacienteInformacion.Nombre) : query.OrderByDescending(x => x.PacienteInformacion.Nombre),
-                3 => asc ? query.OrderBy(x => x.PacienteInformacion.Apellido) : query.OrderByDescending(x => x.PacienteInformacion.Apellido),
-                4 => asc ? query.OrderBy(x => x.MotivoConsulta) : query.OrderByDescending(x => x.MotivoConsulta),
+                2 => asc ? query.OrderBy(x => x.Fecha) : query.OrderByDescending(x => x.Fecha),
+                3 => asc ? query.OrderBy(x => x.PacienteInformacion.Nombre) : query.OrderByDescending(x => x.PacienteInformacion.Nombre),
+                4 => asc ? query.OrderBy(x => x.PacienteInformacion.Apellido) : query.OrderByDescending(x => x.PacienteInformacion.Apellido),
+                5 => asc ? query.OrderBy(x => x.MotivoConsulta) : query.OrderByDescending(x => x.MotivoConsulta),
                 _ => query.OrderBy(x => x.Fecha)
             };
 
             var data = length > 0 ? query.Skip(start).Take(length).ToList() : query.ToList();
+            AuditoriaNombres.Completar(dbContext, data);
 
             return new PagedResult<Consulta> { Total = total, TotalFiltered = totalFiltered, Data = data };
         }

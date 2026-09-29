@@ -18,7 +18,7 @@ using System.Text;
 namespace clinicaWeb.Controllers;
 
 [SecurityFilter("ContinuarConsulta")]
-public class ContinuarConsulta(IConsultaServices consultaServices, IPacienteServices pacienteServices, IRecetaServices recetaServices, ICitaServices citaServices, IEstudioImagenService estudioService, IOrdenEstudioService ordenService, IStorageService storage, ICatalogoIndicacionService catalogoService/*, IConverter converter*/) : Controller
+public class ContinuarConsulta(IConsultaServices consultaServices, IPacienteServices pacienteServices, IRecetaServices recetaServices, ICitaServices citaServices, IEstudioImagenService estudioService, IOrdenEstudioService ordenService, IStorageService storage, ICatalogoIndicacionService catalogoService, INotaMedicaService notaMedicaService/*, IConverter converter*/) : Controller
 {
 
     //private readonly IConverter _converter;
@@ -30,6 +30,13 @@ public class ContinuarConsulta(IConsultaServices consultaServices, IPacienteServ
         consulta.PacienteInformacion ??= pacienteServices.GetPacienteById(consulta.IdPaciente);
         consulta.PacienteInformacion.Consulta = consultaServices.GetAllByPacienteId(consulta.IdPaciente);
         var receta = recetaServices.GetByConsulta(consultaId) ?? new();
+        var notaMedica = notaMedicaService.GetByConsulta(consultaId) ?? new NotaMedica
+        {
+            IdConsulta = consultaId,
+            IdPaciente = consulta.IdPaciente,
+            Motivo = consulta.MotivoConsulta ?? "",
+            IncluirMotivo = false
+        };
         var medicamentos = recetaServices.GetAllMedicamentos() ?? new();
         // Estudios y órdenes para el área de carga
         var estudios = estudioService.GetByPaciente(consulta.IdPaciente);
@@ -41,7 +48,7 @@ public class ContinuarConsulta(IConsultaServices consultaServices, IPacienteServ
         ViewBag.CatalogoJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.Catalogo);
         ViewBag.TiposEstudio = Enum.GetValues(typeof(TipoEstudio)).Cast<TipoEstudio>().Select(t => new { Id = (int)t, Nombre = t.ToString() }).ToList();
         //var paciente = pacienteServices.GetPacienteById(consulta.IdPaciente);
-        return View(new ConsultaContinuarViewModel { Consulta = consulta, Receta = receta,Medicamentos= medicamentos/*, Paciente = paciente */});
+        return View(new ConsultaContinuarViewModel { Consulta = consulta, Receta = receta, NotaMedica = notaMedica, Medicamentos= medicamentos/*, Paciente = paciente */});
     }
 
 
@@ -94,6 +101,34 @@ public class ContinuarConsulta(IConsultaServices consultaServices, IPacienteServ
         }
 
         return RedirectToAction("Index", new { consultaId = receta.IdConsulta });
+    }
+
+    // ===== NOTA MÉDICA (BD, acto médico: permiso ContinuarConsulta) =====
+    [HttpPost]
+    public ActionResult GuardarNotaMedica(NotaMedica nota, bool imprimir = false)
+    {
+        var consulta = consultaServices.GetConsulta(nota.IdConsulta);
+        if (consulta != null) nota.IdPaciente = consulta.IdPaciente;
+        notaMedicaService.Guardar(nota);
+        if (imprimir) return RedirectToAction("ImprimirNotaMedica", new { idConsulta = nota.IdConsulta });
+        return RedirectToAction("Index", new { consultaId = nota.IdConsulta });
+    }
+
+    [HttpGet]
+    public ActionResult ImprimirNotaMedica(Guid idConsulta)
+    {
+        var nota = notaMedicaService.GetByConsulta(idConsulta);
+        if (nota == null) return NotFound();
+        var consulta = consultaServices.GetConsulta(idConsulta);
+        var paciente = pacienteServices.GetPacienteById(nota.IdPaciente);
+        if (paciente == null) return NotFound();
+        return View("~/Views/Shared/NotaMedicaPdf.cshtml", new clinicaWeb.Models.GenerarNotaMedicaModel
+        {
+            Nota = nota,
+            Paciente = paciente,
+            Consulta = consulta,
+            Medico = User?.Identity?.Name ?? ""
+        });
     }
 
 

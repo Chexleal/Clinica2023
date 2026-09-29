@@ -1,0 +1,20 @@
+@using ClinicaDomain
+@model ClinicaDomain.Base
+@{
+    // Componente global ⓘ: popover hoverable (Id + Autor) para reutilizar en cualquier tabla.
+    // El contenido HTML lo construye audit-info.js (initAuditPopovers) desde data-audit-id/data-audit-autor:
+    // un solo lugar para cambios de diseño.
+    string idCompleto = Model switch
+    {
+        Consulta c => c.IdConsulta.ToString(),
+        OrdenEstudio o => o.IdOrden.ToString(),
+        NotaMedica n => n.IdNotaMedica.ToString(),
+        Medicamento m => m.IdMedicamento.ToString(),
+        MotivoCobro s => s.IdMotivoCobro.ToString(),
+        CatalogoIndicacion c => c.IdCatalogo.ToString(),
+        _ => ""
+    };
+    string autor = !string.IsNullOrWhiteSpace(Model.CreadoPorNombre) ? Model.CreadoPorNombre
+        : Model.CreadoPor.HasValue ? Model.CreadoPor.Value.ToString().Substring(0, 8) : "—";
+}
+<span class="audit-info" tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="manual-hover" data-bs-placement="top" data-bs-html="true" data-audit-id="@idCompleto" data-audit-autor="@autor"><i class="fa-solid fa-circle-info"></i></span>

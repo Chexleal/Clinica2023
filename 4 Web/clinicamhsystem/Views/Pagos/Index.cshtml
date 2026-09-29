@@ -17,6 +17,7 @@
             <table id="table" class="table table-striped ">
                 <thead class="table-dark">
                     <tr>
+                        <th></th>
                         <th>Acciones</th>
                         <th>Fecha de creación</th>
                         <th>Nombre</th>
@@ -27,10 +28,12 @@
                 <tbody>
                     @{
                         var extPorConsulta = ViewBag.ExternasPorConsulta as Dictionary<Guid, List<ClinicaDomain.OrdenEstudio>> ?? new();
+                        var notasPorConsulta = ViewBag.NotasPorConsulta as HashSet<Guid> ?? new();
                     }
                     @foreach (var item in Model.Consultas)
                     {
                         <tr>
+                            <td><partial name="_AuditPopover" model="item" /></td>
                             <td>
                                 <div class="d-flex align-items-center gap-2 flex-wrap">
                                     <button class="btn-detalles btn btn-primary btn-sm" data-id="@item.IdConsulta" title="Cobrar consulta">Pagar</button>
@@ -39,6 +42,10 @@
                                     @if (extPorConsulta.TryGetValue(item.IdConsulta, out var ordenesExt) && ordenesExt.Count > 0)
                                     {
                                         <button class="btn btn-sm btn-ordenes btn-ver-ordenes" data-id="@item.IdConsulta" title="Ver órdenes externas de esta consulta"><i class="fa-solid fa-print"></i> Órdenes (@ordenesExt.Count)</button>
+                                    }
+                                    @if (notasPorConsulta.Contains(item.IdConsulta))
+                                    {
+                                        <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("ImprimirNotaMedica", "Pagos", new { idconsulta = item.IdConsulta })" target="_blank" title="Imprimir nota médica"><i class="fa-solid fa-file-medical"></i> Nota</a>
                                     }
                                 </div>
                             </td>
@@ -90,6 +97,7 @@
 
 @section Scripts{
     <partial name="_DataTablesButtonsScripts" />
+    <script src="~/js/pages/audit-info.js" asp-append-version="true"></script>
     <script src="~/js/pages/pagos.js" asp-append-version="true"></script>
     <script>
         // Modal "Órdenes": lista las externas de la consulta para imprimir una por una

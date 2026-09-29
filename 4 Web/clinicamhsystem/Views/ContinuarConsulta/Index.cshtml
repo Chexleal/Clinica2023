@@ -12,6 +12,7 @@
 
 <partial name="Partials/_historialTabla.cshtml" />
 <partial name="Partials/_modalReceta.cshtml" />
+<partial name="Partials/_modalNotaMedica.cshtml" />
 
 <form id="formCST" method="post" action="@Url.Action("Guardar")">
     <input hidden name="IdConsulta" value="@Model.Consulta.IdConsulta" />
@@ -105,6 +106,10 @@
             <button type="button" id="btnOrdenes" onclick="ShowOrdenes()" class="btn btn-mini" title="Ordenes de estudio">
                 <i class="fa-solid fa-file-circle-plus fa-bounce fa-xl" style="color: #2d8f77;"></i>
                 <p style="color: #2d8f77; font-weight: bold;">Ordenes</p>
+            </button>
+            <button type="button" id="btnNotaMedica" onclick="ShowNotaMedica()" class="btn btn-mini" title="Nota médica / referencia">
+                <i class="fa-solid fa-file-medical fa-bounce fa-xl" style="color: #2d8f77;"></i>
+                <p style="color: #2d8f77; font-weight: bold;">Nota</p>
             </button>
         </div>
         <div class="card-body">
@@ -427,9 +432,13 @@
             $('#modalEstudios').modal('show');
         }
 
+        // Nota médica en modal (icono propio)
+        function ShowNotaMedica(){
+            $('#modalNotaMedica').modal('show');
+        }
+
         // Ordenes en modal (icono propio)
-        function ShowOrdenes(){
-            var pid = '@Model.Consulta.IdPaciente';
+        function ShowOrdenes(){            var pid = '@Model.Consulta.IdPaciente';
             $.get('/ContinuarConsulta/GetOrdenes', { idPaciente: pid }, function(html){
                 $('#contOrdenes').html(html);
             }).fail(function(){

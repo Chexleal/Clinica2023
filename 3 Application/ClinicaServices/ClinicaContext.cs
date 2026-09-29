@@ -46,6 +46,7 @@ public partial class ClinicaContext : DbContext
     public virtual DbSet<EstudioImagen> EstudiosImagen { get; set; }
     public virtual DbSet<ArchivoEstudio> ArchivosEstudio { get; set; }
     public virtual DbSet<OrdenEstudio> OrdenesEstudio { get; set; }
+    public virtual DbSet<NotaMedica> NotasMedicas { get; set; }
     public virtual DbSet<CatalogoIndicacion> CatalogoIndicaciones { get; set; }
     public virtual DbSet<CategoriaProducto> CategoriasProducto { get; set; }
     public virtual DbSet<Producto> Productos { get; set; }
@@ -524,6 +525,23 @@ public partial class ClinicaContext : DbContext
             entity.Property(e => e.EsExterna).HasColumnName("es_externa").HasDefaultValue(false);
             entity.HasOne(d => d.Paciente).WithMany().HasForeignKey(d => d.IdPaciente).HasConstraintName("FK_Orden_Paciente");
             entity.HasOne(d => d.Consulta).WithMany().HasForeignKey(d => d.IdConsulta).IsRequired(false).HasConstraintName("FK_Orden_Consulta");
+        });
+
+        modelBuilder.Entity<NotaMedica>(entity =>
+        {
+            entity.HasKey(e => e.IdNotaMedica).HasName("PK_NotaMedica");
+            entity.ToTable("Nota_medica");
+            entity.Property(e => e.IdNotaMedica).ValueGeneratedNever().HasColumnName("id_nota_medica");
+            entity.Property(e => e.IdPaciente).HasColumnName("id_paciente");
+            entity.Property(e => e.IdConsulta).HasColumnName("id_consulta");
+            entity.Property(e => e.Motivo).HasMaxLength(500).IsUnicode(false).HasColumnName("motivo");
+            entity.Property(e => e.IncluirMotivo).HasColumnName("incluir_motivo").HasDefaultValue(true);
+            entity.Property(e => e.IncluirDiagnostico).HasColumnName("incluir_diagnostico").HasDefaultValue(true);
+            entity.Property(e => e.Contenido).HasMaxLength(4000).IsUnicode(false).HasColumnName("contenido");
+            entity.Property(e => e.FechaNota).HasColumnName("fecha_nota");
+            entity.HasOne(d => d.Paciente).WithMany().HasForeignKey(d => d.IdPaciente).HasConstraintName("FK_Nota_Paciente");
+            entity.HasOne(d => d.Consulta).WithMany().HasForeignKey(d => d.IdConsulta).IsRequired(false).HasConstraintName("FK_Nota_Consulta");
+            entity.HasIndex(e => e.IdConsulta).HasDatabaseName("IX_Nota_Consulta");
         });
 
         modelBuilder.Entity<EstudioImagen>(entity =>

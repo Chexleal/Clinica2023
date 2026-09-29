@@ -30,10 +30,12 @@ public class ConsultasController(IConsultaServices consultaServices, IPacienteSe
         var data = result.Data.Select(c => new
         {
             c.IdConsulta,
-                    Fecha = DateManager.GetDisplayDate(c.FechaCreacion, c.Fecha).ToString("dd/MM/yyyy HH:mm"),
+            Fecha = DateManager.GetDisplayDate(c.FechaCreacion, c.Fecha).ToString("dd/MM/yyyy HH:mm"),
             PacienteNombre = c.PacienteInformacion?.Nombre,
             PacienteApellido = c.PacienteInformacion?.Apellido,
-            c.MotivoConsulta
+            c.MotivoConsulta,
+            CreadoPor = !string.IsNullOrWhiteSpace(c.CreadoPorNombre) ? c.CreadoPorNombre
+                : c.CreadoPor.HasValue ? c.CreadoPor.Value.ToString().Substring(0, 8) : "—"
         });
 
         return Json(new DataTableResponse<object>

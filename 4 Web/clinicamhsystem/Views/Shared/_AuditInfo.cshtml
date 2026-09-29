@@ -4,6 +4,7 @@
     // Resuelve el Id según el tipo concreto (todas heredan de Base, con auditoría automática en ClinicaContext.AplicarAuditoria)
     string idCompleto = Model switch
     {
+        Consulta c => c.IdConsulta.ToString(),
         Medicamento m => m.IdMedicamento.ToString(),
         MotivoCobro s => s.IdMotivoCobro.ToString(),
         CatalogoIndicacion c => c.IdCatalogo.ToString(),

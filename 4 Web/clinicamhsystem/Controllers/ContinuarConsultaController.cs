@@ -34,8 +34,7 @@ public class ContinuarConsulta(IConsultaServices consultaServices, IPacienteServ
         {
             IdConsulta = consultaId,
             IdPaciente = consulta.IdPaciente,
-            Motivo = consulta.MotivoConsulta ?? "",
-            IncluirMotivo = false
+            Motivo = consulta.MotivoConsulta ?? ""
         };
         var medicamentos = recetaServices.GetAllMedicamentos() ?? new();
         // Estudios y órdenes para el área de carga

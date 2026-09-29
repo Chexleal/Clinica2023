@@ -34,11 +34,16 @@ function CreateTable() {
         "lengthChange": true,
         dom: 'Bfrtip',
         "pageLength": 20,
+        "order": [[2, "asc"]], // Fecha ascendente: la más antigua primero (0=ⓘ, 1=Acciones, 2=Fecha)
         "language": DataTablesCommon.withLanguage({ searchPlaceholder: 'Buscar consulta' }),
-        buttons: DataTablesCommon.exportButtons('Consultas', [1, 2, 3, 4], false),
+        buttons: DataTablesCommon.exportButtons('Consultas', [2, 3, 4, 5], false),
+        "drawCallback": function () {
+            if (typeof initAuditTooltips === 'function') initAuditTooltips();
+            if (typeof initAuditPopovers === 'function') initAuditPopovers();
+        },
         columnDefs: [
             {
-                targets: [4], // Motivo de consulta: truncar texto largo (0=Acciones, 1=Fecha, 2=Nombre, 3=Apellido, 4=Motivo)
+                targets: [5], // Motivo de consulta: truncar texto largo (0=ⓘ, 1=Acciones, 2=Fecha, 3=Nombre, 4=Apellido, 5=Motivo)
                 render: function (data, type, row) {
                     if (type === 'display' && data.length > 30) {
                         return '<span title="' + data + '">' + data.substr(0, 30) + '...</span>';

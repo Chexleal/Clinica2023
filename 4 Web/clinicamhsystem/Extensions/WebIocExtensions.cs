@@ -30,6 +30,7 @@ public static class WebIocExtensions
         services.AddScoped<IErrorLogService, ErrorLogService>();
         services.AddScoped<IEstudioImagenService, EstudioImagenService>();
         services.AddScoped<IOrdenEstudioService, OrdenEstudioService>();
+        services.AddScoped<INotaMedicaService, NotaMedicaService>();
         services.AddScoped<ICatalogoIndicacionService, CatalogoIndicacionService>();
         services.AddScoped<ICategoriaProductoService, CategoriaProductoService>();
         services.AddScoped<IProductoService, ProductoService>();

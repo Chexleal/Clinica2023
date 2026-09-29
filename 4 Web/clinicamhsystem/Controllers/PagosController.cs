@@ -12,7 +12,7 @@ namespace clinicaWeb.Controllers;
 public class PagosController(IConsultaServices consultaServices, IDetallesServices detallesServices,
     IServiciosServices serviciosServices, IVentaService ventaService, IProductoService productoService,
     IPacienteServices pacienteServices, IMetodoPagoService metodos, IOrdenEstudioService ordenService,
-    IRecetaServices recetaServices) : ErrorHandlingController
+    IRecetaServices recetaServices, INotaMedicaService notaMedicaService) : ErrorHandlingController
 {
 
     // GET: PagosController
@@ -29,6 +29,15 @@ public class PagosController(IConsultaServices consultaServices, IDetallesServic
                 .ToDictionary(g => g.Key, g => g.OrderByDescending(o => o.FechaOrden).ToList());
         }
         catch { ViewBag.ExternasPorConsulta = new Dictionary<Guid, List<OrdenEstudio>>(); }
+        // Consultas con nota médica (para botón de reimpresión por fila)
+        try
+        {
+            ViewBag.NotasPorConsulta = consultas
+                .Where(c => notaMedicaService.ExistePorConsulta(c.IdConsulta))
+                .Select(c => c.IdConsulta)
+                .ToHashSet();
+        }
+        catch { ViewBag.NotasPorConsulta = new HashSet<Guid>(); }
         return View(new PagarConsultaViewModel { Consultas = consultas, Servicios = servicios });
     }
 
@@ -49,6 +58,9 @@ public class PagosController(IConsultaServices consultaServices, IDetallesServic
         // Órdenes externas nacidas en esta consulta: avisar en caja para imprimir/entregar
         try { ViewBag.OrdenesExternas = consulta is null ? new List<OrdenEstudio>() : ordenService.GetExternasByConsulta(idconsulta); }
         catch { ViewBag.OrdenesExternas = new List<OrdenEstudio>(); }
+        // Nota médica de esta consulta: solo reimpresión en caja (la crea el médico)
+        try { ViewBag.TieneNotaMedica = notaMedicaService.GetByConsulta(idconsulta) is not null; }
+        catch { ViewBag.TieneNotaMedica = false; }
         // Se mantiene Detalles (legado) vacío para compatibilidad con reportes antiguos.
         return new DetallesPagarViewModel
         {
@@ -95,6 +107,24 @@ public class PagosController(IConsultaServices consultaServices, IDetallesServic
     {
         // Parcial para la modal: externas nacidas en esta consulta, impresión individual
         return PartialView("_OrdenesExternas", ordenService.GetExternasByConsulta(idconsulta));
+    }
+
+    [HttpGet]
+    public IActionResult ImprimirNotaMedica(Guid idconsulta)
+    {
+        // Solo reimpresión para caja: la nota la crea el médico en ContinuarConsulta
+        var nota = notaMedicaService.GetByConsulta(idconsulta);
+        if (nota is null) return NotFound();
+        var consulta = consultaServices.GetConsulta(idconsulta);
+        var paciente = pacienteServices.GetPacienteById(nota.IdPaciente);
+        if (paciente is null) return NotFound();
+        return View("~/Views/Shared/NotaMedicaPdf.cshtml", new clinicaWeb.Models.GenerarNotaMedicaModel
+        {
+            Nota = nota,
+            Paciente = paciente,
+            Consulta = consulta,
+            Medico = ""
+        });
     }
 
     [HttpGet]

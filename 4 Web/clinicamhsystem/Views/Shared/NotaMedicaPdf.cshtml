@@ -1,10 +1,11 @@
 @using ClinicaInfrastructure
 @using ClinicaDomain
-@model clinicaWeb.Models.GenerarOrdenModel
+@model clinicaWeb.Models.GenerarNotaMedicaModel
 @{
     Layout = null;
-    var orden = Model.Orden;
+    var nota = Model.Nota;
     var paciente = Model.Paciente;
+    var consulta = Model.Consulta;
     var edad = "";
     try { edad = DateManager.GetAge(paciente.FechaNacimiento); } catch { edad = ""; }
 }
@@ -14,7 +15,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="~/css/pages/RecetaStyle.css" asp-append-version="true" />
-    <title>Orden de estudio - @paciente.Nombre @paciente.Apellido</title>
+    <title>Nota médica - @paciente.Nombre @paciente.Apellido</title>
+    <style>
+        /* La nota médica se imprime en CARTA (recetas y órdenes usan A5 del CSS compartido) */
+        @@page { size: letter; }
+        /* Reserva espacio del pie fijo (.piePag) para que la firma nunca quede atrás del footer */
+        body { padding-bottom: 120px; }
+        .firma-bloque { page-break-inside: avoid; margin-top: 24px; }
+    </style>
 </head>
 <body>
     <img src="@Url.Content("~/img/NewLogoOp-wm-baked.png")" alt="" class="watermark" width="900" height="463" decoding="async" aria-hidden="true" onerror="this.style.display='none'" />
@@ -22,6 +30,9 @@
 <div class="fila">
   <div class="logo-container">
     <img src="@Url.Content("~/img/NewLogoOp-print.png")" alt="Logo" onerror="this.onerror=null;this.src='@Url.Content("~/img/NewLogoOp.png")'">
+  </div>
+  <div style="text-align:center; align-self:flex-start; padding-top:20px;">
+    <b style="font-size: 20px; font-weight: bold; color: #0d659b; letter-spacing: 2px;">NOTA MÉDICA</b>
   </div>
   <div class="horario">
     <div><strong>Horario:</strong></div>
@@ -41,7 +52,7 @@
             </th>
             <th style="text-align: right; padding-right: 1%;">
                 <b style="font-size: 13px; font-weight: bold;">Fecha:</b><br>
-                <b style="font-size: 12px; font-weight: lighter;">@orden.FechaOrden.ToString("dd/MM/yyyy")</b>
+                <b style="font-size: 12px; font-weight: lighter;">@nota.FechaNota.ToString("dd/MM/yyyy")</b>
             </th>
         </tr>
     </table>
@@ -49,20 +60,21 @@
 
 <div class="middle">
     <hr style="border: 0.5px solid #0d659b ; ">
-    <b style="font-size: 14px;font-weight:bold;margin-left:10px;padding-left: 2%;">ORDEN DE ESTUDIO @(orden.EsExterna ? "(EXTERNA)" : "")</b>
+    <span style="font-size: 13px;font-weight:lighter;margin-left:10px;padding-left: 2%;"><b>Paciente:</b> @($"{paciente.Nombre} {paciente.Apellido}") &nbsp;&nbsp; <b>Edad:</b> @edad &nbsp;&nbsp; <b>DPI:</b> @paciente.Dpi &nbsp;&nbsp; <b>Tel:</b> @paciente.Telefono</span>
     <hr style="border: 0.5px solid #0d659b ;">
-    <div style="margin-left:10px;padding-left:2%;font-size:12px;">
-        <p><b>Paciente:</b> @($"{paciente.Nombre} {paciente.Apellido}") &nbsp;&nbsp; <b>Edad:</b> @edad &nbsp;&nbsp; <b>Género:</b> @paciente.Genero</p>
-        <p><b>DPI:</b> @paciente.Dpi &nbsp;&nbsp; <b>Tel:</b> @paciente.Telefono</p>
-        <hr class="line">
-        <p style="font-size:14px;"><b>Estudio solicitado:</b> @orden.Tipo</p>
-        <p style="font-size:13px;"><b>Indicación:</b></p>
-        <p style="font-size:13px;white-space:pre-wrap;">@orden.Indicacion</p>
-        @if (orden.EsExterna)
+    <div style="margin-left:10px;margin-right:14px;padding-left:2%;padding-right:2%;font-size:12px;">
+        @if (nota.IncluirMotivo && !string.IsNullOrWhiteSpace(nota.Motivo))
         {
-            <br>
-            <p style="font-size:11px;font-style:italic;">Presentar esta orden en el laboratorio / centro de diagnóstico externo. Traer resultados a su próxima cita.</p>
+            <p style="font-size:13px;"><b>Motivo:</b></p>
+            <p style="font-size:13px;white-space:pre-wrap;">@nota.Motivo</p>
         }
+        @if (nota.IncluirDiagnostico && consulta != null && !string.IsNullOrWhiteSpace(consulta.Diagnostico))
+        {
+            <p style="font-size:13px;"><b>Diagnóstico:</b></p>
+            <p style="font-size:13px;white-space:pre-wrap;">@consulta.Diagnostico</p>
+        }
+        <p style="font-size:13px;"><b>Nota:</b></p>
+        <p style="font-size:13px;white-space:pre-wrap;">@nota.Contenido</p>
     </div>
 </div>
 
@@ -87,14 +99,6 @@
             requestAnimationFrame(function(){
                 requestAnimationFrame(function(){ window.print(); });
             });
-            // Marcar como impresa (solo externas) sin bloquear el preview
-            try {
-                fetch('@Url.Action("MarcarOrdenImpresa", "ContinuarConsulta")', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: 'idOrden=@orden.IdOrden'
-                });
-            } catch(e) {}
         }
         if(document.fonts && document.fonts.ready){
             document.fonts.ready.then(function(){ setTimeout(doPrint, 80); });

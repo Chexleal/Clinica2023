@@ -158,6 +158,8 @@ function ShowCalendario(id) {
 function SetReadOnly() {
     $('textarea').attr('readonly', true);
     $('input').attr('readonly', true);
+    // La nota médica sí se puede editar en modo ver
+    $('#formNotaMedica textarea, #formNotaMedica input[type="text"], #formNotaMedica input:not([type])').attr('readonly', false);
 }
 
 function truncateWithPopover(text, maxLength = 20) {

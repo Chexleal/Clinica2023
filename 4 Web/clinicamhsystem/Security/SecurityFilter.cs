@@ -24,6 +24,7 @@ namespace clinicaWeb.Security
             }
 
             var usuario = currentUser.Usuario;
+            var esAdministrador = filterContext.HttpContext.User.IsInRole("Administrador");
 
             // Área God: solo SuperAdmin (no la abre ni el Administrador de clínica).
             if (RequiredClaim == "SuperAdmin" && !usuario.EsSuperAdmin)
@@ -34,6 +35,7 @@ namespace clinicaWeb.Security
 
             if (RequiredClaim != "Inicio"
                 && !filterContext.HttpContext.User.IsInRole(RequiredClaim)
+                && !esAdministrador
                 && !filterContext.HttpContext.User.IsInRole("SuperAdmin"))
             {
                 filterContext.Result = new RedirectToActionResult("NoAutorizado", "Home", null);

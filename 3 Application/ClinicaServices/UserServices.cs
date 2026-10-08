@@ -29,6 +29,12 @@ public interface IUserServices
     void ChangePassword(Guid id, string Password);
 
     List<RolDetalle> GetPermissions(Guid idUser);
+
+    List<UsuarioClinica> GetClinicasDeUsuario(Guid idUsuario);
+    List<Guid> GetClinicaIdsDeUsuario(Guid idUsuario);
+    void AsignarClinicas(Guid idUsuario, List<Guid> clinicaIds, Guid? defaultClinicaId);
+    void RemoverAccesos(Guid idUsuario);
+    HashSet<Guid> GetUsuarioIdsEnClinica(Guid idClinica);
 }
 public class UserServices(ClinicaContext dbContext, IErrorLogService errorLogService) : IUserServices
 {
@@ -279,6 +285,57 @@ public class UserServices(ClinicaContext dbContext, IErrorLogService errorLogSer
     {
         var permissions = dbContext.RolDetalles.Where(x => x.UsuarioId == idUser).ToList();
         return permissions;
+    }
+
+    public List<UsuarioClinica> GetClinicasDeUsuario(Guid idUsuario)
+    {
+        return dbContext.UsuarioClinicas.Where(x => x.UsuarioId == idUsuario && x.Activo).ToList();
+    }
+
+    public List<Guid> GetClinicaIdsDeUsuario(Guid idUsuario)
+    {
+        return dbContext.UsuarioClinicas
+            .Where(x => x.UsuarioId == idUsuario && x.Activo)
+            .Select(x => x.IdClinica)
+            .Distinct()
+            .ToList();
+    }
+
+    public void AsignarClinicas(Guid idUsuario, List<Guid> clinicaIds, Guid? defaultClinicaId)
+    {
+        var actuales = dbContext.UsuarioClinicas.Where(x => x.UsuarioId == idUsuario).ToList();
+        dbContext.UsuarioClinicas.RemoveRange(actuales);
+
+        foreach (var idClinica in (clinicaIds ?? new List<Guid>()).Distinct())
+        {
+            dbContext.UsuarioClinicas.Add(new UsuarioClinica
+            {
+                IdUsuarioClinica = Guid.NewGuid(),
+                UsuarioId = idUsuario,
+                IdClinica = idClinica,
+                EsDefault = defaultClinicaId.HasValue && defaultClinicaId.Value == idClinica,
+                Activo = true
+            });
+        }
+
+        dbContext.SaveChanges();
+    }
+
+    public void RemoverAccesos(Guid idUsuario)
+    {
+        var actuales = dbContext.UsuarioClinicas.Where(x => x.UsuarioId == idUsuario).ToList();
+        if (actuales.Count > 0)
+        {
+            dbContext.UsuarioClinicas.RemoveRange(actuales);
+            dbContext.SaveChanges();
+        }
+    }
+
+    public HashSet<Guid> GetUsuarioIdsEnClinica(Guid idClinica)
+    {
+        return System.Linq.Enumerable.ToHashSet(dbContext.UsuarioClinicas
+            .Where(x => x.IdClinica == idClinica && x.Activo)
+            .Select(x => x.UsuarioId));
     }
 
     public void ChangePassword(Guid id, string Password)

@@ -9,10 +9,11 @@ function initAuditTooltips() {
         new bootstrap.Tooltip(el);
     });
 }
-// Constructor ÚNICO del contenido del popover ⓘ (Id + Autor).
-// Lo usan tanto el partial Razor _AuditPopover.cshtml como las tablas DataTables (vía data-audit-id/data-audit-autor).
+// Constructor ÚNICO del contenido del popover ⓘ (Id + Fecha + Autor + Hospital origen).
+// Lo usan tanto el partial Razor _AuditPopover.cshtml como las tablas DataTables (vía data-audit-*).
+// fecha y hospital son opcionales: si no vienen, no se muestran (compatibilidad con usos existentes).
 // Recibe valores crudos y los escapa una sola vez (el contenido se asigna por opción JS, sin decodificación de atributo).
-function auditPopoverContent(id, autor) {
+function auditPopoverContent(id, autor, fecha, hospital) {
     var e = function (s) {
         return String(s == null ? '' : s)
             .replace(/&/g, '&amp;')
@@ -21,8 +22,12 @@ function auditPopoverContent(id, autor) {
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
     };
-    return '<div class=\'text-start\' style=\'font-size:11px;line-height:1.5;\'><span style=\'white-space:nowrap;\'><b>Id:</b> '
-        + e(id) + '</span><br><b>Autor:</b> ' + e(autor) + '</div>';
+    var html = '<div class=\'text-start\' style=\'font-size:11px;line-height:1.5;\'><span style=\'white-space:nowrap;\'><b>Id:</b> '
+        + e(id) + '</span>';
+    if (fecha) html += '<br><b>Fecha:</b> ' + e(fecha);
+    html += '<br><b>Autor:</b> ' + e(autor);
+    if (hospital) html += '<br><b>Hospital origen:</b> ' + e(hospital);
+    return html + '</div>';
 }
 function initAuditPopovers() {
     if (typeof bootstrap === 'undefined') return;
@@ -34,7 +39,11 @@ function initAuditPopovers() {
         var auditId = el.getAttribute('data-audit-id');
         var opts = { html: true };
         if (auditId !== null) {
-            opts.content = auditPopoverContent(auditId, el.getAttribute('data-audit-autor') || '—');
+            opts.content = auditPopoverContent(
+                auditId,
+                el.getAttribute('data-audit-autor') || '—',
+                el.getAttribute('data-audit-fecha') || '',
+                el.getAttribute('data-audit-hospital') || '');
         }
         if (el.getAttribute('data-bs-trigger') === 'manual-hover') {
             opts.trigger = 'manual';

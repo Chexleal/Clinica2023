@@ -159,6 +159,19 @@
                                     }
                                 </select>
                             </div>
+                            @if (ViewBag.Clinicas is List<ClinicaDomain.Clinica> clinicasCrear && clinicasCrear.Count > 1)
+                            {
+                                <div class="form-group">
+                                    <label class="control-label">Clínicas (si no eliges, queda en tu clínica actual)</label>
+                                    @foreach (var c in clinicasCrear)
+                                    {
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" name="clinicaIds" value="@c.IdClinica" />
+                                            <label class="form-check-label">@c.Nombre</label>
+                                        </div>
+                                    }
+                                </div>
+                            }
                         </div>
                     </div>
                 </form>

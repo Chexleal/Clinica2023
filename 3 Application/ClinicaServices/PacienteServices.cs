@@ -18,7 +18,7 @@ public interface IPacienteServices
     PagedResult<Paciente> GetPaginated(int start, int length, string search, int sortColumn, string sortDir);
     (List<Paciente> Datos, bool HayMas) BuscarSelect(string? texto, int page, int pageSize);
 }
-public class PacienteServices(ClinicaContext dbContext, IErrorLogService errorLogService) : IPacienteServices
+public class PacienteServices(ClinicaContext dbContext, IErrorLogService errorLogService, ICurrentUser currentUser) : IPacienteServices
 {
  	private const int MaxAntecedentesLength = 1000;
 
@@ -37,6 +37,8 @@ public class PacienteServices(ClinicaContext dbContext, IErrorLogService errorLo
             paciente.Apellido = paciente.Apellido.NombrePropio();
             paciente.IdPaciente = $"{paciente.Nombre.Trim().ToLower()}|{paciente.Apellido.Trim().ToLower()}".ToGuid();
             paciente.EstadoEliminado = false;
+            // Solo informativo: hospital donde se crea el registro.
+            paciente.IdHospitalCreacion ??= currentUser.Usuario?.HospitalId;
             paciente.BeforeSaveChanges();
             dbContext.Pacientes.Add(paciente);
             dbContext.SaveChanges();
@@ -51,7 +53,15 @@ public class PacienteServices(ClinicaContext dbContext, IErrorLogService errorLo
 
     public Paciente? GetPacienteById(Guid id)
     {
-        return dbContext.Pacientes.FirstOrDefault(p => p.IdPaciente == id);
+        var paciente = dbContext.Pacientes.FirstOrDefault(p => p.IdPaciente == id);
+        if (paciente?.IdHospitalCreacion.HasValue == true)
+        {
+            paciente.HospitalCreacionNombre = dbContext.Hospitales
+                .Where(h => h.IdHospital == paciente.IdHospitalCreacion!.Value)
+                .Select(h => h.Nombre)
+                .FirstOrDefault();
+        }
+        return paciente;
     }
 
     public List<Paciente> GetAll()
@@ -126,6 +136,7 @@ public class PacienteServices(ClinicaContext dbContext, IErrorLogService errorLo
         };
 
         var data = length > 0 ? query.Skip(start).Take(length).ToList() : query.ToList();
+        AuditoriaNombres.Completar(dbContext, data);
 
         return new PagedResult<Paciente> { Total = total, TotalFiltered = totalFiltered, Data = data };
     }

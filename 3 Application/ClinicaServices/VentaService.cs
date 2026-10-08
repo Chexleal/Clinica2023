@@ -59,9 +59,21 @@ public class VentaService(ClinicaContext db, ICurrentUser? currentUser = null) :
         return $"V-{DateTime.Now:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..4].ToUpper()}";
     }
 
+    /// <summary>Suma líneas vigentes: BD + agregadas pendientes − eliminadas pendientes (el SUM en SQL no ve lo aún no guardado).</summary>
     private void RecalcularTotal(Venta venta)
     {
-        venta.Total = db.VentaDetalles.Where(d => d.IdVenta == venta.IdVenta).Sum(d => (decimal?)d.Subtotal) ?? 0;
+        var id = venta.IdVenta;
+        var enBd = db.VentaDetalles.AsNoTracking()
+            .Where(d => d.IdVenta == id)
+            .ToDictionary(d => d.IdVentaDetalle, d => d.Subtotal);
+        decimal total = 0;
+        foreach (var e in db.ChangeTracker.Entries<VentaDetalle>().Where(e => e.Entity.IdVenta == id))
+        {
+            if (e.State == EntityState.Added) total += e.Entity.Subtotal;
+            else if (e.State == EntityState.Deleted) enBd.Remove(e.Entity.IdVentaDetalle);
+            else enBd[e.Entity.IdVentaDetalle] = e.Entity.Subtotal; // Modified/Unchanged: valor vigente
+        }
+        venta.Total = total + enBd.Values.Sum();
     }
 
     private void SincronizarConsulta(Venta venta)

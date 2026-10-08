@@ -3,9 +3,11 @@ using System.Collections.Generic;
 
 namespace ClinicaDomain;
 
-public partial class Cita : Base
+public partial class Cita : Base, IClinicaTenant
 {
     public Guid IdCita { get; set; }
+
+    public Guid IdClinica { get; set; }
 
     public Guid IdPaciente { get; set; }
 

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace clinicaWeb.Controllers;
 
 [SecurityFilter("Pacientes")]
-public class PacientesController(IPacienteServices pacienteServices, IConsultaServices consultaServices, IVentaService ventas) : ErrorHandlingController
+public class PacientesController(IPacienteServices pacienteServices, IConsultaServices consultaServices, IVentaService ventas, IClinicaAdminService clinicaAdminService) : ErrorHandlingController
 {
 
 
@@ -22,6 +22,7 @@ public class PacientesController(IPacienteServices pacienteServices, IConsultaSe
     public IActionResult GetPacientesTable(DataTableRequest request)
     {
         var result = pacienteServices.GetPaginated(request.Start, request.Length, request.SearchValue, request.SortColumn, request.SortDir);
+        var hospitales = clinicaAdminService.GetHospitales().ToDictionary(h => h.IdHospital, h => h.Nombre);
 
         var data = result.Data.Select(p => new
         {
@@ -32,7 +33,11 @@ public class PacientesController(IPacienteServices pacienteServices, IConsultaSe
             p.Dpi,
             p.FechaNacimiento,
             p.Telefono,
-            p.Correo
+            p.Correo,
+            hospitalCreacion = p.IdHospitalCreacion.HasValue && hospitales.TryGetValue(p.IdHospitalCreacion.Value, out var nombre) ? nombre : "",
+            fechaCreacion = p.FechaCreacion.HasValue ? p.FechaCreacion.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm") : "—",
+            creadoPor = !string.IsNullOrWhiteSpace(p.CreadoPorNombre) ? p.CreadoPorNombre
+                : p.CreadoPor.HasValue ? p.CreadoPor.Value.ToString().Substring(0, 8) : "—"
         });
 
         return Json(new DataTableResponse<object>

@@ -1,14 +1,16 @@
 namespace ClinicaDomain;
 
-public partial class CategoriaGasto : Base, IHospitalTenant
+public partial class Clinica : Base
 {
-    public Guid IdCategoriaGasto { get; set; }
+    public Guid IdClinica { get; set; }
 
     public Guid IdHospital { get; set; }
 
     public string Nombre { get; set; } = string.Empty;
 
-    public bool Activo { get; set; } = true;
+    public bool Activa { get; set; } = true;
+
+    public virtual Hospital? Hospital { get; set; }
 
     public void BeforeSaveChanges()
     {

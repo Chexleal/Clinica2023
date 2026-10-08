@@ -97,6 +97,11 @@
                         <input asp-for="TipoSange" class="form-control" />
                         <span asp-validation-for="TipoSange" class="text-danger"></span>
                     </div>
+                    <div class="form-group">
+                        <label class="control-label">Hospital de creación</label>
+                        <input class="form-control" value="@(Model.HospitalCreacionNombre ?? "—")" readonly disabled />
+                        <small class="form-text text-muted">Solo informativo.</small>
+                    </div>
                 </div>
             </div>
             <br>

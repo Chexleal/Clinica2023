@@ -23,14 +23,34 @@ namespace clinicaWeb.Security
                 return;
             }
 
+            var usuario = currentUser.Usuario;
+
+            // Área God: solo SuperAdmin (no la abre ni el Administrador de clínica).
+            if (RequiredClaim == "SuperAdmin" && !usuario.EsSuperAdmin)
+            {
+                filterContext.Result = new RedirectToActionResult("NoAutorizado", "Home", null);
+                return;
+            }
+
             if (RequiredClaim != "Inicio"
                 && !filterContext.HttpContext.User.IsInRole(RequiredClaim)
                 && !filterContext.HttpContext.User.IsInRole("SuperAdmin"))
             {
                 filterContext.Result = new RedirectToActionResult("NoAutorizado", "Home", null);
+                return;
+            }
+
+            // Usuario de clínica: exige operar dentro de una clínica asignada.
+            if (!usuario.EsSuperAdmin)
+            {
+                if (usuario.ClinicaId is null
+                    || !usuario.ClinicasPermitidas.Contains(usuario.ClinicaId.Value))
+                {
+                    filterContext.Result = new RedirectToActionResult("NoAutorizado", "Home", null);
+                }
             }
         }
-        
+
         public override void OnActionExecuted(ActionExecutedContext filterContext)
         {}
 

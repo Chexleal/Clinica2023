@@ -30,7 +30,7 @@
             <table id="tablePaciente" class="table table-striped ">
                 <thead class="table-dark">
                     <tr>
-                        <th></th>
+                        <th style="width:9rem">Consulta</th>
                         <th>No Registro</th>
                         <th>Nombre</th>
                         <th>Apellido</th>
@@ -53,6 +53,7 @@
 
 @section Scripts {
     <partial name="_DataTablesButtonsScripts" />
+    <script src="~/js/pages/audit-info.js" asp-append-version="true"></script>
     <script src="~/js/pages/pacientes.js" asp-append-version="true"></script>
 
     <script>

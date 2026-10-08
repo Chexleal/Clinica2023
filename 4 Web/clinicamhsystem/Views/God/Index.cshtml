@@ -1,0 +1,316 @@
+@model List<ClinicaDomain.Clinica>
+@{
+    ViewData["Title"] = "God Mode";
+    var hospitales = (List<ClinicaDomain.Hospital>)(ViewBag.Hospitales ?? new List<ClinicaDomain.Hospital>());
+    var totalUsuarios = (int)(ViewBag.TotalUsuarios ?? 0);
+    var clinicasActivas = Model.Count(c => c.Activa);
+}
+@section Links {
+    <style>
+        .god-hero {
+            background: linear-gradient(135deg, #1a2233 0%, #2b3a55 60%, #3b4f74 100%);
+            border-radius: 1rem;
+            color: #fff;
+        }
+        .god-stat {
+            border: 0;
+            border-radius: 1rem;
+            box-shadow: 0 .25rem 1rem rgba(16,24,40,.08);
+        }
+        .god-stat .stat-icon {
+            width: 2.75rem; height: 2.75rem;
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: .75rem; font-size: 1.25rem;
+        }
+        .god-tabs .nav-link {
+            border-radius: .75rem;
+            font-weight: 600;
+            color: #495057;
+        }
+        .god-tabs .nav-link.active {
+            background: #1a2233;
+            color: #fff;
+            box-shadow: 0 .25rem .75rem rgba(26,34,51,.35);
+        }
+        .god-card {
+            border: 0;
+            border-radius: 1rem;
+            box-shadow: 0 .25rem 1rem rgba(16,24,40,.08);
+        }
+        .god-card .card-header {
+            background: transparent;
+            border-bottom: 1px solid #eef1f6;
+            font-weight: 700;
+        }
+        .badge-estado { font-size: .75rem; padding: .35em .7em; border-radius: 2rem; }
+    </style>
+}
+
+<div class="god-hero p-4 mb-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div>
+        <h2 class="mb-1"><i class="fa-solid fa-globe me-2"></i>God Mode</h2>
+        <p class="mb-0 text-white-50">Administración global de la red. Solo <strong>SuperAdmin</strong>. Lo operativo pertenece a una clínica; catálogos e inventario son por hospital.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="btn btn-light" asp-action="Usuarios"><i class="fa-solid fa-users-gear me-1"></i>Usuarios y accesos</a>
+        <a class="btn btn-outline-light" asp-action="Logs"><i class="fa-solid fa-list-check me-1"></i>Logs y auditoría</a>
+    </div>
+</div>
+
+@if (TempData["Success"] is string ok)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert"><i class="fa-solid fa-circle-check me-1"></i>@ok<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button></div>
+}
+@if (TempData["Error"] is string err)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert"><i class="fa-solid fa-triangle-exclamation me-1"></i>@err<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button></div>
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card god-stat"><div class="card-body d-flex align-items-center gap-3">
+            <span class="stat-icon bg-primary bg-opacity-10 text-primary"><i class="fa-solid fa-hospital"></i></span>
+            <div><div class="fs-3 fw-bold">@hospitales.Count</div><div class="text-muted">Hospitales</div></div>
+        </div></div>
+    </div>
+    <div class="col-md-4">
+        <div class="card god-stat"><div class="card-body d-flex align-items-center gap-3">
+            <span class="stat-icon bg-success bg-opacity-10 text-success"><i class="fa-solid fa-house-medical"></i></span>
+            <div><div class="fs-3 fw-bold">@clinicasActivas <small class="text-muted fs-6">/ @Model.Count</small></div><div class="text-muted">Clínicas activas</div></div>
+        </div></div>
+    </div>
+    <div class="col-md-4">
+        <div class="card god-stat"><div class="card-body d-flex align-items-center gap-3">
+            <span class="stat-icon bg-warning bg-opacity-10 text-warning"><i class="fa-solid fa-users"></i></span>
+            <div><div class="fs-3 fw-bold">@totalUsuarios</div><div class="text-muted">Usuarios</div></div>
+        </div></div>
+    </div>
+</div>
+
+<ul class="nav nav-pills god-tabs gap-2 mb-3" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-hospitales" type="button" role="tab"><i class="fa-solid fa-hospital me-1"></i>Hospitales</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-clinicas" type="button" role="tab"><i class="fa-solid fa-house-medical me-1"></i>Clínicas</button>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="tab-hospitales" role="tabpanel">
+        <div class="row g-3">
+            <div class="col-lg-7">
+                <div class="card god-card">
+                    <div class="card-header py-3">Hospitales registrados</div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light"><tr><th>Nombre</th><th>Clínicas</th><th>Estado</th><th class="text-end">Acciones</th></tr></thead>
+                                <tbody>
+                                @foreach (var h in hospitales)
+                                {
+                                    var n = Model.Count(c => c.IdHospital == h.IdHospital);
+                                    <tr>
+                                        <td class="fw-semibold"><i class="fa-solid fa-hospital text-primary me-2"></i>@h.Nombre</td>
+                                        <td><span class="badge bg-secondary">@n</span></td>
+                                        <td>
+                                            @if (h.Activo) { <span class="badge badge-estado bg-success bg-opacity-10 text-success border border-success">Activo</span> }
+                                            else { <span class="badge badge-estado bg-secondary bg-opacity-10 text-secondary border border-secondary">Inactivo</span> }
+                                        </td>
+                                        <td class="text-end">
+                                            <button class="btn btn-sm btn-outline-dark" data-bs-toggle="modal" data-bs-target="#editHospitalModal"
+                                                data-id="@h.IdHospital" data-nombre="@h.Nombre" data-activo="@(h.Activo ? "true" : "false")">
+                                                <i class="fa-solid fa-pen me-1"></i>Editar
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                                @if (!hospitales.Any())
+                                {
+                                    <tr><td colspan="4" class="text-center text-muted py-4">Sin hospitales registrados.</td></tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="card god-card">
+                    <div class="card-header py-3"><i class="fa-solid fa-plus me-1"></i>Nuevo hospital</div>
+                    <div class="card-body">
+                        <form asp-action="GuardarHospital" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="IdHospital" value="@Guid.Empty" />
+                            <input type="hidden" name="Activo" value="true" />
+                            <div class="mb-3">
+                                <label class="form-label">Nombre</label>
+                                <input name="Nombre" class="form-control" required maxlength="200" placeholder="Ej. Hospital de Antigua" />
+                            </div>
+                            <button class="btn btn-dark w-100" type="submit"><i class="fa-solid fa-floppy-disk me-1"></i>Guardar hospital</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tab-clinicas" role="tabpanel">
+        <div class="row g-3">
+            <div class="col-lg-7">
+                <div class="card god-card">
+                    <div class="card-header py-3">Clínicas de la red</div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light"><tr><th>Clínica</th><th>Hospital</th><th>Estado</th><th class="text-end">Acciones</th></tr></thead>
+                                <tbody>
+                                @foreach (var c in Model)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold"><i class="fa-solid fa-house-medical text-success me-2"></i>@c.Nombre</td>
+                                        <td class="text-muted">@c.Hospital?.Nombre</td>
+                                        <td>
+                                            @if (c.Activa) { <span class="badge badge-estado bg-success bg-opacity-10 text-success border border-success">Activa</span> }
+                                            else { <span class="badge badge-estado bg-secondary bg-opacity-10 text-secondary border border-secondary">Inactiva</span> }
+                                        </td>
+                                        <td class="text-end">
+                                            <button class="btn btn-sm btn-outline-dark" data-bs-toggle="modal" data-bs-target="#editClinicaModal"
+                                                data-id="@c.IdClinica" data-nombre="@c.Nombre" data-hospital="@c.IdHospital" data-activa="@(c.Activa ? "true" : "false")">
+                                                <i class="fa-solid fa-pen me-1"></i>Editar
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                                @if (!Model.Any())
+                                {
+                                    <tr><td colspan="4" class="text-center text-muted py-4">Sin clínicas registradas.</td></tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="card god-card">
+                    <div class="card-header py-3"><i class="fa-solid fa-plus me-1"></i>Nueva clínica</div>
+                    <div class="card-body">
+                        <form asp-action="GuardarClinica" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="IdClinica" value="@Guid.Empty" />
+                            <input type="hidden" name="Activa" value="true" />
+                            <div class="mb-3">
+                                <label class="form-label">Hospital</label>
+                                <select name="IdHospital" class="form-select" required>
+                                    @foreach (var h in hospitales)
+                                    {
+                                        <option value="@h.IdHospital">@h.Nombre</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Nombre</label>
+                                <input name="Nombre" class="form-control" required maxlength="200" placeholder="Ej. Traumatología" />
+                            </div>
+                            <button class="btn btn-dark w-100" type="submit"><i class="fa-solid fa-floppy-disk me-1"></i>Guardar clínica</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal editar hospital -->
+<div class="modal fade" id="editHospitalModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fa-solid fa-hospital me-1"></i>Editar hospital</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <form asp-action="GuardarHospital" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <input type="hidden" name="IdHospital" id="editHospId" />
+                    <div class="mb-3">
+                        <label class="form-label">Nombre</label>
+                        <input name="Nombre" id="editHospNombre" class="form-control" required maxlength="200" />
+                    </div>
+                    <div class="form-check form-switch">
+                        <input type="checkbox" class="form-check-input" id="editHospActivo" onchange="document.getElementById('editHospActivoHidden').value = this.checked" />
+                        <label class="form-check-label" for="editHospActivo">Activo</label>
+                        <input type="hidden" name="Activo" id="editHospActivoHidden" value="true" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-dark">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal editar clínica -->
+<div class="modal fade" id="editClinicaModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fa-solid fa-house-medical me-1"></i>Editar clínica</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <form asp-action="GuardarClinica" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <input type="hidden" name="IdClinica" id="editClinId" />
+                    <div class="mb-3">
+                        <label class="form-label">Hospital</label>
+                        <select name="IdHospital" id="editClinHospital" class="form-select" required>
+                            @foreach (var h in hospitales)
+                            {
+                                <option value="@h.IdHospital">@h.Nombre</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nombre</label>
+                        <input name="Nombre" id="editClinNombre" class="form-control" required maxlength="200" />
+                    </div>
+                    <div class="form-check form-switch">
+                        <input type="checkbox" class="form-check-input" id="editClinActiva" onchange="document.getElementById('editClinActivaHidden').value = this.checked" />
+                        <label class="form-check-label" for="editClinActiva">Activa</label>
+                        <input type="hidden" name="Activa" id="editClinActivaHidden" value="true" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-dark">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('editHospitalModal').addEventListener('show.bs.modal', function (e) {
+            var b = e.relatedTarget;
+            document.getElementById('editHospId').value = b.getAttribute('data-id');
+            document.getElementById('editHospNombre').value = b.getAttribute('data-nombre');
+            var activo = b.getAttribute('data-activo') === 'true';
+            document.getElementById('editHospActivo').checked = activo;
+            document.getElementById('editHospActivoHidden').value = activo;
+        });
+        document.getElementById('editClinicaModal').addEventListener('show.bs.modal', function (e) {
+            var b = e.relatedTarget;
+            document.getElementById('editClinId').value = b.getAttribute('data-id');
+            document.getElementById('editClinNombre').value = b.getAttribute('data-nombre');
+            document.getElementById('editClinHospital').value = b.getAttribute('data-hospital');
+            var activa = b.getAttribute('data-activa') === 'true';
+            document.getElementById('editClinActiva').checked = activa;
+            document.getElementById('editClinActivaHidden').value = activa;
+        });
+    </script>
+}

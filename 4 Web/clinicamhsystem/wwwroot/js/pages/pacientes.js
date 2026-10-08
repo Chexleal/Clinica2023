@@ -60,9 +60,18 @@ function CreateTable() {
         ],
         "columnDefs": [
             {
+                // Acción frecuente + componente global ⓘ (contenido lo construye audit-info.js)
                 "targets": 0,
                 "render": function (data, type, row) {
-                    return '<button class="option btn btn-outline-info" onclick="ShowConsultaModal(\'' + row.idPaciente + '\')">Generar consulta</button>';
+                    var info = '<span class="audit-info ms-2" tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="manual-hover" data-bs-placement="top" data-bs-html="true"'
+                        + ' data-audit-id="' + escAttr(row.idPaciente) + '"'
+                        + ' data-audit-fecha="' + escAttr(row.fechaCreacion) + '"'
+                        + ' data-audit-autor="' + escAttr(row.creadoPor) + '"'
+                        + ' data-audit-hospital="' + escAttr(row.hospitalCreacion) + '">'
+                        + '<i class="fa-solid fa-circle-info"></i></span>';
+                    return '<div class="d-flex align-items-center text-nowrap">'
+                        + '<button class="btn btn-sm btn-primary" title="Generar consulta" onclick="ShowConsultaModal(\'' + row.idPaciente + '\')"><i class="fa-solid fa-stethoscope me-1"></i>Consulta</button>'
+                        + info + '</div>';
                 }
             },
             {
@@ -74,19 +83,32 @@ function CreateTable() {
             {
                 "targets": 8,
                 "render": function (data, type, row) {
-                    return '<div class="options d-flex ">' +
-                        '<button class="option btn" onclick="ShowHistorialModal(\'' + row.idPaciente + '\')">Historial</button>' +
-                        '<button class="option btn" onclick="ShowEditModal(\'' + row.idPaciente + '\')">Ver Datos</button>' +
-                        '<button class="option btn" type="button" onclick="alertElminarPrevent(\'' + row.idPaciente + '\')">Eliminar</button>' +
-                        '</div>';
+                    var id = "'" + row.idPaciente + "'";
+                    return '<div class="btn-group btn-group-sm" role="group">'
+                        + '<button class="btn btn-outline-secondary" title="Historial" onclick="ShowHistorialModal(' + id + ')"><i class="fa-solid fa-clock-rotate-left me-1"></i>Historial</button>'
+                        + '<button class="btn btn-outline-info" title="Ver datos" onclick="ShowEditModal(' + id + ')"><i class="fa-solid fa-eye me-1"></i>Datos</button>'
+                        + '<button class="btn btn-outline-danger" title="Eliminar" onclick="alertElminarPrevent(' + id + ')"><i class="fa-solid fa-trash"></i></button>'
+                        + '</div>';
                 }
             }
         ],
+        "drawCallback": function () {
+            if (typeof initAuditPopovers === 'function') initAuditPopovers();
+        },
         "language": DataTablesCommon.withLanguage({ searchPlaceholder: 'Buscar paciente' }),
         buttons: DataTablesCommon.exportButtons('Pacientes', [1, 2, 3, 4, 5, 6, 7], true),
     });
 }
 
+
+function escAttr(s) {
+    return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
 
 function getAge(dateString) {
     var fecha = new Date(dateString);

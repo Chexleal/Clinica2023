@@ -1,8 +1,10 @@
 namespace ClinicaDomain;
 
-public partial class MetodoPago : Base
+public partial class MetodoPago : Base, IHospitalTenant
 {
     public Guid IdMetodoPago { get; set; }
+
+    public Guid IdHospital { get; set; }
 
     public string Nombre { get; set; } = string.Empty;
 

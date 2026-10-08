@@ -1,8 +1,10 @@
 namespace ClinicaDomain;
 
-public partial class LoteProducto : Base
+public partial class LoteProducto : Base, IHospitalTenant
 {
     public Guid IdLote { get; set; }
+
+    public Guid IdHospital { get; set; }
 
     public Guid IdProducto { get; set; }
 

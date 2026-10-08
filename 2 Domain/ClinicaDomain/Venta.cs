@@ -1,8 +1,12 @@
 namespace ClinicaDomain;
 
-public partial class Venta : Base
+public partial class Venta : Base, IClinicaTenant, IHospitalTenant
 {
     public Guid IdVenta { get; set; }
+
+    public Guid IdClinica { get; set; }
+
+    public Guid IdHospital { get; set; }
 
     public string Folio { get; set; } = string.Empty;
 

@@ -1,0 +1,49 @@
+@model ClinicaDomain.Cotizacion
+@{
+    Layout = null;
+    var cot = Model;
+    var detalles = (List<ClinicaDomain.CotizacionDetalle>)(ViewBag.Detalles ?? new List<ClinicaDomain.CotizacionDetalle>());
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>Cotización @cot.Folio</title>
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body { font-size: 13px; }
+        @@media print { .no-print { display: none; } }
+    </style>
+</head>
+<body class="p-4">
+    <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+            <h3 class="mb-0">COTIZACIÓN @cot.Folio</h3>
+            <div class="text-muted">Emitida: @cot.Fecha.ToString("dd/MM/yyyy HH:mm") · Vigente hasta: @(cot.FechaVence.HasValue ? cot.FechaVence.Value.ToString("dd/MM/yyyy") : "—")</div>
+            <div>Cliente: <b>@ViewBag.PacienteNombre</b></div>
+            @if (!string.IsNullOrWhiteSpace(cot.Observaciones)) { <div>Nota: @cot.Observaciones</div> }
+        </div>
+        <button class="btn btn-dark no-print" onclick="window.print()">Imprimir</button>
+    </div>
+    <table class="table table-bordered">
+        <thead class="table-light"><tr><th>#</th><th>Descripción</th><th>Cant.</th><th>Precio</th><th>Descuento</th><th>Subtotal</th></tr></thead>
+        <tbody>
+            @{ int n = 1; }
+            @foreach (var d in detalles)
+            {
+                <tr>
+                    <td>@(n++)</td>
+                    <td>@d.Descripcion</td>
+                    <td>@d.Cantidad.ToString("0.##")</td>
+                    <td>Q@(d.PrecioUnitario.ToString("0.00"))</td>
+                    <td>@(d.DescuentoMonto > 0 ? $"Q{d.DescuentoMonto:0.00}" : "—")</td>
+                    <td>Q@(d.Subtotal.ToString("0.00"))</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot><tr><th colspan="5" class="text-end">TOTAL</th><th>Q@(cot.Total.ToString("0.00"))</th></tr></tfoot>
+    </table>
+    <p class="text-muted small">Documento informativo de precios. No es factura ni reserva inventario. Precios sujetos a stock y vigencia.</p>
+    <script>window.onload = function () { window.print(); };</script>
+</body>
+</html>

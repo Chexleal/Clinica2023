@@ -1,8 +1,10 @@
 namespace ClinicaDomain;
 
-public partial class MovimientoInventario : Base
+public partial class MovimientoInventario : Base, IHospitalTenant
 {
     public Guid IdMovimiento { get; set; }
+
+    public Guid IdHospital { get; set; }
 
     public DateTime Fecha { get; set; }
 

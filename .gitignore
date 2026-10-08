@@ -369,3 +369,6 @@ FodyWeavers.xsd
 # Secretos locales (DB + Storage)
 appsettings.Local.json
 
+# Migraciones SQL locales (no subir al repo)
+/Migracion_*.sql
+

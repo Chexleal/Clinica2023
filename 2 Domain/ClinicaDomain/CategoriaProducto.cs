@@ -1,8 +1,10 @@
 namespace ClinicaDomain;
 
-public partial class CategoriaProducto : Base
+public partial class CategoriaProducto : Base, IHospitalTenant
 {
     public Guid IdCategoriaProducto { get; set; }
+
+    public Guid IdHospital { get; set; }
 
     public string Nombre { get; set; } = string.Empty;
 

@@ -1,0 +1,45 @@
+@model clinicamhsystem.Models.CotizacionEditorViewModel
+@{
+    ViewData["Title"] = "Cotización " + Model.Cotizacion?.Folio;
+    var cot = Model.Cotizacion;
+    string BadgeEstado(string e) => e switch
+    {
+        "Vigente" => "bg-success",
+        "Borrador" => "bg-secondary",
+        "Vencida" => "bg-warning text-dark",
+        "Aceptada" => "bg-primary",
+        "Rechazada" => "bg-dark",
+        _ => "bg-danger"
+    };
+}
+<div class="card shadow-lg mt-4">
+    <div class="card-header bg-white d-flex flex-wrap align-items-center gap-2">
+        <h4 class="mb-0">Cotización <span class="badge bg-secondary ms-2">@cot?.Folio</span></h4>
+        <span class="badge @BadgeEstado(cot?.Estado ?? "")">@cot?.Estado</span>
+        @if (cot?.FechaVence.HasValue == true) { <span class="small text-muted">Vence: @cot.FechaVence.Value.ToString("dd/MM/yyyy")</span> }
+        <span class="small text-muted">· @Model.PacienteNombre</span>
+        <span class="ms-auto fw-bold fs-5">Q@((cot?.Total ?? 0).ToString("0.00"))</span>
+        <a href="@Url.Action("Index", "Cotizaciones")" class="btn btn-outline-secondary btn-sm">Volver</a>
+        <a href="@Url.Action("Imprimir", "Cotizaciones", new { id = cot?.IdCotizacion })" target="_blank" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-print me-1"></i>Imprimir</a>
+        @if (Model.Editable && (Model.Detalles == null || !Model.Detalles.Any()))
+        {
+            <form method="POST" action="@Url.Action("Descartar", "Cotizaciones", new { id = cot?.IdCotizacion })" class="d-inline" onsubmit="return confirm('¿Descartar esta cotización vacía?');">
+                <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-trash me-1"></i>Descartar</button>
+            </form>
+        }
+    </div>
+    <div class="card-body">
+        @if (TempData["ErrorCot"] is string msgErr && !string.IsNullOrWhiteSpace(msgErr))
+        {
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">@msgErr<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
+        }
+        @if (TempData["OkCot"] is string msgOk && !string.IsNullOrWhiteSpace(msgOk))
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">@msgOk<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
+        }
+        <partial name="_CotizacionDetalle" model="Model" />
+    </div>
+</div>
+@section Scripts{
+    <script src="~/js/pages/cotizaciones.js" asp-append-version="true"></script>
+}

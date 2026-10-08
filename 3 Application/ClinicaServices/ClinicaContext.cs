@@ -23,6 +23,16 @@ public partial class ClinicaContext : DbContext
         _currentUser = currentUser;
     }
 
+    public virtual DbSet<Hospital> Hospitales { get; set; }
+
+    public virtual DbSet<Clinica> Clinicas { get; set; }
+
+    public virtual DbSet<UsuarioClinica> UsuarioClinicas { get; set; }
+
+    public virtual DbSet<Cotizacion> Cotizaciones { get; set; }
+
+    public virtual DbSet<CotizacionDetalle> CotizacionDetalles { get; set; }
+
     public virtual DbSet<Cita> Cita { get; set; }
 
     public virtual DbSet<Consulta> Consulta { get; set; }
@@ -87,6 +97,7 @@ public partial class ClinicaContext : DbContext
     {
         var ahora = DateTime.UtcNow;
         var usuarioId = _currentUser?.Usuario?.IdUsuario;
+        AplicarTenant();
 
         foreach (var entry in ChangeTracker.Entries<Base>())
         {
@@ -108,6 +119,57 @@ public partial class ClinicaContext : DbContext
                     entry.Entity.FechaEliminacion = ahora;
                     entry.Entity.EliminadoPor = usuarioId;
                 }
+            }
+        }
+    }
+
+    /// <summary>Ids de seed inicial (Hospital de Antigua / Clínica Traumatología).</summary>
+    public static readonly Guid HospitalAntiguaId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+    public static readonly Guid ClinicaTraumatologiaId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+
+    private Guid TenantClinicaId => _currentUser?.Usuario?.ClinicaId ?? Guid.Empty;
+
+    private Guid TenantHospitalId => _currentUser?.Usuario?.HospitalId ?? Guid.Empty;
+
+    private bool BypassTenant =>
+        _currentUser?.Usuario is null || _currentUser.Usuario.BypassTenant;
+
+    private bool BypassHospitalTenant =>
+        _currentUser?.Usuario is null
+        || (_currentUser.Usuario.EsSuperAdmin && _currentUser.Usuario.HospitalId is null);
+
+    /// <summary>Asigna IdClinica/IdHospital automáticamente al crear filas.</summary>
+    private void AplicarTenant()
+    {
+        var clinicaId = _currentUser?.Usuario?.ClinicaId;
+        var hospitalId = _currentUser?.Usuario?.HospitalId;
+
+        // Si el usuario opera en una clínica pero el claim de hospital viene vacío,
+        // se resuelve vía la clínica (necesario para catálogos/inventario por hospital).
+        Guid? hospitalResuelto = hospitalId;
+        if (clinicaId.HasValue && !hospitalResuelto.HasValue)
+        {
+            hospitalResuelto = Clinicas
+                .Where(c => c.IdClinica == clinicaId.Value)
+                .Select(c => (Guid?)c.IdHospital)
+                .FirstOrDefault();
+        }
+
+        foreach (var entry in ChangeTracker.Entries())
+        {
+            if (entry.State != EntityState.Added)
+                continue;
+
+            if (entry.Entity is ClinicaDomain.IClinicaTenant conClinica
+                && conClinica.IdClinica == Guid.Empty && clinicaId.HasValue)
+            {
+                conClinica.IdClinica = clinicaId.Value;
+            }
+
+            if (entry.Entity is ClinicaDomain.IHospitalTenant conHospital
+                && conHospital.IdHospital == Guid.Empty && hospitalResuelto.HasValue)
+            {
+                conHospital.IdHospital = hospitalResuelto.Value;
             }
         }
     }
@@ -757,7 +819,137 @@ public partial class ClinicaContext : DbContext
             entity.Property(nameof(Base.EliminadoPor)).HasColumnName("eliminado_por");
         }
 
+        ConfigurarTenant(modelBuilder);
+
         OnModelCreatingPartial(modelBuilder);
+    }
+
+    /// <summary>Tablas del modelo Hospital -&gt; Clínica + filtros de tenant por sesión.</summary>
+    private void ConfigurarTenant(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Hospital>(entity =>
+        {
+            entity.HasKey(e => e.IdHospital).HasName("PK_Hospital");
+            entity.ToTable("Hospital");
+            entity.Property(e => e.IdHospital).ValueGeneratedNever().HasColumnName("id_hospital");
+            entity.Property(e => e.Nombre).HasMaxLength(200).IsUnicode(false).HasColumnName("nombre");
+            entity.Property(e => e.Activo).HasColumnName("activo");
+        });
+
+        modelBuilder.Entity<Clinica>(entity =>
+        {
+            entity.HasKey(e => e.IdClinica).HasName("PK_Clinica");
+            entity.ToTable("Clinica");
+            entity.Property(e => e.IdClinica).ValueGeneratedNever().HasColumnName("id_clinica");
+            entity.Property(e => e.IdHospital).HasColumnName("id_hospital");
+            entity.Property(e => e.Nombre).HasMaxLength(200).IsUnicode(false).HasColumnName("nombre");
+            entity.Property(e => e.Activa).HasColumnName("activa");
+            entity.HasOne(d => d.Hospital).WithMany(p => p.Clinicas)
+                .HasForeignKey(d => d.IdHospital).HasConstraintName("FK_Clinica_Hospital");
+            entity.HasIndex(e => new { e.IdHospital, e.Nombre }).HasDatabaseName("IX_Clinica_Hospital_Nombre");
+        });
+
+        modelBuilder.Entity<UsuarioClinica>(entity =>
+        {
+            entity.HasKey(e => e.IdUsuarioClinica).HasName("PK_UsuarioClinica");
+            entity.ToTable("Usuario_clinica");
+            entity.Property(e => e.IdUsuarioClinica).ValueGeneratedNever().HasColumnName("id_usuario_clinica");
+            entity.Property(e => e.UsuarioId).HasColumnName("id_usuario");
+            entity.Property(e => e.IdClinica).HasColumnName("id_clinica");
+            entity.Property(e => e.EsDefault).HasColumnName("es_default");
+            entity.Property(e => e.Activo).HasColumnName("activo");
+            entity.HasOne(d => d.Usuario).WithMany().HasForeignKey(d => d.UsuarioId).HasConstraintName("FK_UsuarioClinica_Usuario");
+            entity.HasOne(d => d.Clinica).WithMany().HasForeignKey(d => d.IdClinica).HasConstraintName("FK_UsuarioClinica_Clinica");
+            entity.HasIndex(e => new { e.UsuarioId, e.IdClinica }).IsUnique().HasDatabaseName("UQ_Usuario_Clinica");
+        });
+
+        // Paciente global: solo informativo, sin filtro de tenant.
+        modelBuilder.Entity<Paciente>().Property(e => e.IdHospitalCreacion).HasColumnName("id_hospital_creacion");
+        modelBuilder.Entity<Paciente>()
+            .HasOne(e => e.HospitalCreacion).WithMany()
+            .HasForeignKey(e => e.IdHospitalCreacion).IsRequired(false)
+            .HasConstraintName("FK_Paciente_HospitalCreacion");
+
+        // Columnas de tenant en tablas existentes (migración SQL las crea físicamente).
+        modelBuilder.Entity<Cita>().Property(e => e.IdClinica).HasColumnName("id_clinica");
+        modelBuilder.Entity<Consulta>().Property(e => e.IdClinica).HasColumnName("id_clinica");
+        modelBuilder.Entity<OrdenEstudio>().Property(e => e.IdClinica).HasColumnName("id_clinica");
+        modelBuilder.Entity<NotaMedica>().Property(e => e.IdClinica).HasColumnName("id_clinica");
+        modelBuilder.Entity<EstudioImagen>().Property(e => e.IdClinica).HasColumnName("id_clinica");
+        modelBuilder.Entity<Venta>().Property(e => e.IdClinica).HasColumnName("id_clinica");
+        modelBuilder.Entity<Venta>().Property(e => e.IdHospital).HasColumnName("id_hospital");
+        modelBuilder.Entity<Gasto>().Property(e => e.IdClinica).HasColumnName("id_clinica");
+        modelBuilder.Entity<Gasto>().Property(e => e.IdHospital).HasColumnName("id_hospital");
+        modelBuilder.Entity<Producto>().Property(e => e.IdHospital).HasColumnName("id_hospital");
+        modelBuilder.Entity<LoteProducto>().Property(e => e.IdHospital).HasColumnName("id_hospital");
+        modelBuilder.Entity<MovimientoInventario>().Property(e => e.IdHospital).HasColumnName("id_hospital");
+        modelBuilder.Entity<MotivoCobro>().Property(e => e.IdHospital).HasColumnName("id_hospital");
+        modelBuilder.Entity<CategoriaProducto>().Property(e => e.IdHospital).HasColumnName("id_hospital");
+        modelBuilder.Entity<CategoriaGasto>().Property(e => e.IdHospital).HasColumnName("id_hospital");
+        modelBuilder.Entity<MetodoPago>().Property(e => e.IdHospital).HasColumnName("id_hospital");
+        modelBuilder.Entity<CatalogoIndicacion>().Property(e => e.IdHospital).HasColumnName("id_hospital");
+        modelBuilder.Entity<Medicamento>().Property(e => e.IdHospital).HasColumnName("id_hospital");
+
+        modelBuilder.Entity<Cotizacion>(entity =>
+        {
+            entity.HasKey(e => e.IdCotizacion).HasName("PK_Cotizacion");
+            entity.ToTable("Cotizacion");
+            entity.Property(e => e.IdCotizacion).ValueGeneratedNever().HasColumnName("id_cotizacion");
+            entity.Property(e => e.IdClinica).HasColumnName("id_clinica");
+            entity.Property(e => e.IdHospital).HasColumnName("id_hospital");
+            entity.Property(e => e.Folio).HasMaxLength(30).IsUnicode(false).HasColumnName("folio");
+            entity.Property(e => e.Fecha).HasColumnName("fecha");
+            entity.Property(e => e.VigenciaDias).HasColumnName("vigencia_dias");
+            entity.Property(e => e.FechaVence).HasColumnName("fecha_vence");
+            entity.Property(e => e.IdPaciente).HasColumnName("id_paciente");
+            entity.Property(e => e.ClienteNombre).HasMaxLength(200).IsUnicode(false).HasColumnName("cliente_nombre");
+            entity.Property(e => e.Total).HasColumnType("decimal(15, 2)").HasColumnName("total");
+            entity.Property(e => e.Estado).HasMaxLength(20).IsUnicode(false).HasColumnName("estado");
+            entity.Property(e => e.Observaciones).HasMaxLength(300).IsUnicode(false).HasColumnName("observaciones");
+            entity.Property(e => e.IdVentaConvertida).HasColumnName("id_venta_convertida");
+            entity.HasIndex(e => e.Folio).IsUnique().HasDatabaseName("UQ_Cotizacion_Folio");
+            entity.HasIndex(e => new { e.IdClinica, e.Estado }).HasDatabaseName("IX_Cotizacion_Clinica_Estado");
+        });
+
+        modelBuilder.Entity<CotizacionDetalle>(entity =>
+        {
+            entity.HasKey(e => e.IdCotizacionDetalle).HasName("PK_CotizacionDetalle");
+            entity.ToTable("Cotizacion_detalle");
+            entity.Property(e => e.IdCotizacionDetalle).ValueGeneratedNever().HasColumnName("id_cotizacion_detalle");
+            entity.Property(e => e.IdCotizacion).HasColumnName("id_cotizacion");
+            entity.Property(e => e.TipoLinea).HasMaxLength(20).IsUnicode(false).HasColumnName("tipo_linea");
+            entity.Property(e => e.IdMotivoCobro).HasColumnName("id_motivo_cobro");
+            entity.Property(e => e.IdProducto).HasColumnName("id_producto");
+            entity.Property(e => e.IdLote).HasColumnName("id_lote");
+            entity.Property(e => e.Descripcion).HasMaxLength(250).IsUnicode(false).HasColumnName("descripcion");
+            entity.Property(e => e.Cantidad).HasColumnType("decimal(18, 2)").HasColumnName("cantidad");
+            entity.Property(e => e.PrecioUnitario).HasColumnType("decimal(15, 2)").HasColumnName("precio_unitario");
+            entity.Property(e => e.Subtotal).HasColumnType("decimal(15, 2)").HasColumnName("subtotal");
+            entity.Property(e => e.DescuentoMonto).HasColumnType("decimal(15, 2)").HasColumnName("descuento_monto");
+            entity.Property(e => e.DescuentoMotivo).HasMaxLength(200).IsUnicode(false).HasColumnName("descuento_motivo");
+            entity.Property(e => e.DescuentoOtorgadoPor).HasColumnName("descuento_otorgado_por");
+            entity.Property(e => e.EsSobrePedido).HasColumnName("es_sobre_pedido");
+            entity.HasIndex(e => e.IdCotizacion).HasDatabaseName("IX_CotizacionDetalle_Cotizacion");
+        });
+
+        // Filtros: God sin clínica ve todo; filas legado con Guid.Empty quedan visibles hasta migrar.
+        modelBuilder.Entity<Cita>().HasQueryFilter(e => BypassTenant || e.IdClinica == TenantClinicaId || e.IdClinica == Guid.Empty);
+        modelBuilder.Entity<Consulta>().HasQueryFilter(e => BypassTenant || e.IdClinica == TenantClinicaId || e.IdClinica == Guid.Empty);
+        modelBuilder.Entity<OrdenEstudio>().HasQueryFilter(e => BypassTenant || e.IdClinica == TenantClinicaId || e.IdClinica == Guid.Empty);
+        modelBuilder.Entity<NotaMedica>().HasQueryFilter(e => BypassTenant || e.IdClinica == TenantClinicaId || e.IdClinica == Guid.Empty);
+        modelBuilder.Entity<EstudioImagen>().HasQueryFilter(e => BypassTenant || e.IdClinica == TenantClinicaId || e.IdClinica == Guid.Empty);
+        modelBuilder.Entity<Venta>().HasQueryFilter(e => BypassTenant || e.IdClinica == TenantClinicaId || e.IdClinica == Guid.Empty);
+        modelBuilder.Entity<Gasto>().HasQueryFilter(e => BypassTenant || e.IdClinica == TenantClinicaId || e.IdClinica == Guid.Empty);
+        modelBuilder.Entity<Cotizacion>().HasQueryFilter(e => BypassTenant || e.IdClinica == TenantClinicaId || e.IdClinica == Guid.Empty);
+        modelBuilder.Entity<Producto>().HasQueryFilter(e => BypassHospitalTenant || e.IdHospital == TenantHospitalId || e.IdHospital == Guid.Empty);
+        modelBuilder.Entity<LoteProducto>().HasQueryFilter(e => BypassHospitalTenant || e.IdHospital == TenantHospitalId || e.IdHospital == Guid.Empty);
+        modelBuilder.Entity<MovimientoInventario>().HasQueryFilter(e => BypassHospitalTenant || e.IdHospital == TenantHospitalId || e.IdHospital == Guid.Empty);
+        modelBuilder.Entity<MotivoCobro>().HasQueryFilter(e => BypassHospitalTenant || e.IdHospital == TenantHospitalId || e.IdHospital == Guid.Empty);
+        modelBuilder.Entity<CategoriaProducto>().HasQueryFilter(e => BypassHospitalTenant || e.IdHospital == TenantHospitalId || e.IdHospital == Guid.Empty);
+        modelBuilder.Entity<CategoriaGasto>().HasQueryFilter(e => BypassHospitalTenant || e.IdHospital == TenantHospitalId || e.IdHospital == Guid.Empty);
+        modelBuilder.Entity<MetodoPago>().HasQueryFilter(e => BypassHospitalTenant || e.IdHospital == TenantHospitalId || e.IdHospital == Guid.Empty);
+        modelBuilder.Entity<CatalogoIndicacion>().HasQueryFilter(e => BypassHospitalTenant || e.IdHospital == TenantHospitalId || e.IdHospital == Guid.Empty);
+        modelBuilder.Entity<Medicamento>().HasQueryFilter(e => BypassHospitalTenant || e.IdHospital == TenantHospitalId || e.IdHospital == Guid.Empty);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

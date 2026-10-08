@@ -1,0 +1,200 @@
+@using ClinicaServices
+@{
+    ViewData["Title"] = "God Mode · Logs y auditoría";
+    var auditoria = (List<EventoAuditoria>)(ViewBag.Auditoria ?? new List<EventoAuditoria>());
+}
+@section Links {
+    <style>
+        .god-card { border: 0; border-radius: 1rem; box-shadow: 0 .25rem 1rem rgba(16,24,40,.08); }
+        .god-card .card-header { background: transparent; border-bottom: 1px solid #eef1f6; font-weight: 700; }
+        .god-tabs .nav-link { border-radius: .75rem; font-weight: 600; color: #495057; }
+        .god-tabs .nav-link.active { background: #1a2233; color: #fff; box-shadow: 0 .25rem .75rem rgba(26,34,51,.35); }
+        .log-msg { max-width: 28rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        pre.log-detail { max-height: 22rem; font-size: .75rem; white-space: pre-wrap; }
+    </style>
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">God Mode</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Logs y auditoría</li>
+    </ol>
+</nav>
+
+<h2><i class="fa-solid fa-list-check me-2"></i>Logs y auditoría</h2>
+<p class="text-muted">Errores registrados por el sistema y últimos movimientos de auditoría (quién creó, modificó o eliminó cada registro).</p>
+
+<ul class="nav nav-pills god-tabs gap-2 mb-3" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-errores" type="button" role="tab"><i class="fa-solid fa-bug me-1"></i>Errores</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-auditoria" type="button" role="tab"><i class="fa-solid fa-clock-rotate-left me-1"></i>Auditoría (@auditoria.Count)</button>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="tab-errores" role="tabpanel">
+        <div class="card god-card">
+            <div class="card-header py-3 d-flex flex-wrap gap-2 align-items-center">
+                <span><i class="fa-solid fa-bug me-1"></i>Error_log</span>
+                <span class="ms-auto d-flex gap-2">
+                    <select id="filtroNivel" class="form-select form-select-sm" style="width:auto">
+                        <option value="">Todos los niveles</option>
+                        <option value="Error">Error</option>
+                    </select>
+                    <select id="filtroResuelto" class="form-select form-select-sm" style="width:auto">
+                        <option value="">Todos</option>
+                        <option value="false">Pendientes</option>
+                        <option value="true">Resueltos</option>
+                    </select>
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="tableErrores" class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr><th>Fecha</th><th>Nivel</th><th>Tipo</th><th>Mensaje</th><th>Ruta</th><th>Estado</th><th class="text-end">Acciones</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="tab-auditoria" role="tabpanel">
+        <div class="card god-card">
+            <div class="card-header py-3"><i class="fa-solid fa-clock-rotate-left me-1"></i>Últimos movimientos (200)</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light"><tr><th>Fecha</th><th>Entidad</th><th>Registro</th><th>Acción</th><th>Usuario</th><th>Ámbito</th></tr></thead>
+                        <tbody>
+                        @foreach (var ev in auditoria)
+                        {
+                            <tr>
+                                <td class="text-nowrap">@ev.Fecha?.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td><span class="badge bg-secondary">@ev.Entidad</span></td>
+                                <td>@ev.Registro</td>
+                                <td>
+                                    @if (ev.Accion == "Creado") { <span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success">Creado</span> }
+                                    else if (ev.Accion == "Eliminado") { <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger">Eliminado</span> }
+                                    else { <span class="badge rounded-pill bg-warning bg-opacity-10 text-warning border border-warning">Modificado</span> }
+                                </td>
+                                <td>@ev.Usuario</td>
+                                <td class="text-muted small">@ev.Ambito</td>
+                            </tr>
+                        }
+                        @if (!auditoria.Any())
+                        {
+                            <tr><td colspan="6" class="text-center text-muted py-4">Sin movimientos.</td></tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal detalle de error -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fa-solid fa-bug me-1"></i>Detalle del error</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body" id="errorModalBody"><p class="text-muted">Cargando…</p></div>
+            <div class="modal-footer">
+                <form asp-action="ResolverError" method="post" class="d-flex gap-2 align-items-center flex-wrap">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="resolverId" />
+                    <input name="observaciones" id="resolverObs" class="form-control form-control-sm" style="min-width:16rem" placeholder="Observaciones…" />
+                    <button type="submit" name="resuelto" value="true" class="btn btn-sm btn-success">Marcar resuelto</button>
+                    <button type="submit" name="resuelto" value="false" class="btn btn-sm btn-outline-secondary">Reabrir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_DataTablesButtonsScripts" />
+    <script>
+        function escHtml(s) {
+            return String(s == null ? '' : s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+        $(document).ready(function () {
+            var tabla = $('#tableErrores').DataTable({
+                responsive: true, ordering: true, lengthChange: true,
+                processing: true, serverSide: true, dom: 'Bfrtip', pageLength: 20,
+                order: [[0, 'desc']],
+                ajax: {
+                    url: '@Url.Action("GetErroresTable", "God")',
+                    type: 'POST',
+                    data: function (d) {
+                        d.nivel = $('#filtroNivel').val();
+                        d.resuelto = $('#filtroResuelto').val();
+                    }
+                },
+                columns: [
+                    { data: 'fecha' }, { data: 'nivel' }, { data: 'tipoError' },
+                    { data: 'mensaje' }, { data: 'ruta' }, { data: 'resuelto' },
+                    { data: null, orderable: false, defaultContent: '' }
+                ],
+                columnDefs: [
+                    {
+                        targets: 1,
+                        render: function (d) {
+                            return '<span class="badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger">' + escHtml(d) + '</span>';
+                        }
+                    },
+                    {
+                        targets: 3,
+                        render: function (d) { return '<div class="log-msg" title="' + escHtml(d) + '">' + escHtml(d) + '</div>'; }
+                    },
+                    {
+                        targets: 5,
+                        render: function (d) {
+                            return d
+                                ? '<span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success">Resuelto</span>'
+                                : '<span class="badge rounded-pill bg-warning bg-opacity-10 text-warning border border-warning">Pendiente</span>';
+                        }
+                    },
+                    {
+                        targets: 6,
+                        render: function (data, type, row) {
+                            return '<button class="btn btn-sm btn-outline-dark" onclick="verError(\'' + row.idErrorLog + '\')"><i class="fa-solid fa-eye me-1"></i>Ver</button>';
+                        }
+                    }
+                ],
+                language: DataTablesCommon.withLanguage({ searchPlaceholder: 'Buscar en logs' }),
+                buttons: DataTablesCommon.exportButtons('Errores', [0, 1, 2, 3, 4, 5], false)
+            });
+            $('#filtroNivel, #filtroResuelto').on('change', function () { tabla.ajax.reload(); });
+        });
+        function verError(id) {
+            $('#errorModalBody').html('<p class="text-muted">Cargando…</p>');
+            $('#errorModal').modal('show');
+            $.get('@Url.Action("GetError", "God")', { id: id })
+                .done(function (e) {
+                    $('#resolverId').val(e.idErrorLog);
+                    $('#resolverObs').val(e.observaciones || '');
+                    $('#errorModalBody').html(
+                        '<dl class="row mb-0">'
+                        + '<dt class="col-sm-2">Fecha</dt><dd class="col-sm-10">' + escHtml(e.fecha) + '</dd>'
+                        + '<dt class="col-sm-2">Tipo</dt><dd class="col-sm-10">' + escHtml(e.tipoError) + ' <span class="text-muted">[' + escHtml(e.nivel) + ']</span></dd>'
+                        + '<dt class="col-sm-2">Mensaje</dt><dd class="col-sm-10">' + escHtml(e.mensaje) + '</dd>'
+                        + '<dt class="col-sm-2">Ruta</dt><dd class="col-sm-10">' + escHtml((e.metodoHttp || '') + ' ' + (e.ruta || '')) + '</dd>'
+                        + '<dt class="col-sm-2">Trace</dt><dd class="col-sm-10"><code>' + escHtml(e.traceIdentifier) + '</code></dd>'
+                        + '</dl>'
+                        + '<h6 class="mt-2">Detalle</h6><pre class="log-detail bg-light p-2 rounded">' + escHtml(e.detalle) + '</pre>'
+                        + '<h6>StackTrace</h6><pre class="log-detail bg-light p-2 rounded">' + escHtml(e.stackTrace) + '</pre>');
+                })
+                .fail(function () { $('#errorModalBody').html('<p class="text-danger">No se pudo cargar el error.</p>'); });
+        }
+    </script>
+}

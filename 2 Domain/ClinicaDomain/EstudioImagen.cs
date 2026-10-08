@@ -1,8 +1,9 @@
 namespace ClinicaDomain;
 
-public partial class EstudioImagen : Base
+public partial class EstudioImagen : Base, IClinicaTenant
 {
     public Guid IdEstudio { get; set; }
+    public Guid IdClinica { get; set; }
     public Guid IdPaciente { get; set; }
     public Guid? IdConsulta { get; set; }
     public Guid? IdOrden { get; set; }

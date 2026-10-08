@@ -1,8 +1,9 @@
 namespace ClinicaDomain;
 
-public partial class NotaMedica : Base
+public partial class NotaMedica : Base, IClinicaTenant
 {
     public Guid IdNotaMedica { get; set; }
+    public Guid IdClinica { get; set; }
     public Guid IdPaciente { get; set; }
     public Guid IdConsulta { get; set; }
 

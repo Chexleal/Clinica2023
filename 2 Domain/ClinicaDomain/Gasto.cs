@@ -1,8 +1,12 @@
 namespace ClinicaDomain;
 
-public partial class Gasto : Base
+public partial class Gasto : Base, IClinicaTenant, IHospitalTenant
 {
     public Guid IdGasto { get; set; }
+
+    public Guid IdClinica { get; set; }
+
+    public Guid IdHospital { get; set; }
 
     /// <summary>Fecha del gasto (criterio de caja y reportes). Distinta de FechaCreacion (auditoría).</summary>
     public DateTime Fecha { get; set; }

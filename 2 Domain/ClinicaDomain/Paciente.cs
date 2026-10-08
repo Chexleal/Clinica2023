@@ -43,6 +43,14 @@ public partial class Paciente : Base
 
     public int NoRegistro { get; set; }
 
+    /// <summary>Solo informativo: hospital donde se creó el registro. No filtra ni restringe.</summary>
+    public Guid? IdHospitalCreacion { get; set; }
+
+    public virtual Hospital? HospitalCreacion { get; set; }
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public string? HospitalCreacionNombre { get; set; }
+
     //  public ICollection<Cita> Cita { get; set; } = new List<Cita>();
 
     public ICollection<Consulta> Consulta { get; set; } = new List<Consulta>();

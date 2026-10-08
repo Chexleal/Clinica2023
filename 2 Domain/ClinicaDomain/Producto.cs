@@ -1,8 +1,10 @@
 namespace ClinicaDomain;
 
-public partial class Producto : Base
+public partial class Producto : Base, IHospitalTenant
 {
     public Guid IdProducto { get; set; }
+
+    public Guid IdHospital { get; set; }
 
     public string? Sku { get; set; }
 

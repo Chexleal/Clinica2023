@@ -46,6 +46,7 @@
                 <div class="botones btn-group-vertical">
                     <a class="menu_bt @((ctrl == "Pagos") ? "active" : "")" href="/Pagos" @((ctrl == "Pagos") ? "aria-current=\"page\"" : "")><span class="menu_icon"><i class="fa-solid fa-money-bill"></i></span><span>Pagar Consultas</span></a>
                     <a class="menu_bt @((ctrl == "Ventas") ? "active" : "")" href="/Ventas" @((ctrl == "Ventas") ? "aria-current=\"page\"" : "")><span class="menu_icon"><i class="fa-solid fa-cash-register"></i></span><span>Ventas Mostrador</span></a>
+                    <a class="menu_bt @((ctrl == "Cotizaciones") ? "active" : "")" href="/Cotizaciones" @((ctrl == "Cotizaciones") ? "aria-current=\"page\"" : "")><span class="menu_icon"><i class="fa-solid fa-file-invoice"></i></span><span>Cotizaciones</span></a>
                     <a class="menu_bt @((ctrl == "Gastos") ? "active" : "")" href="/Gastos" @((ctrl == "Gastos") ? "aria-current=\"page\"" : "")><span class="menu_icon"><i class="fa-solid fa-money-bill-wave"></i></span><span>Gastos</span></a>
                 </div>
 
@@ -54,6 +55,10 @@
                     <a class="menu_bt @((ctrl == "Reportes") ? "active" : "")" href="/Reportes" @((ctrl == "Reportes") ? "aria-current=\"page\"" : "")><span class="menu_icon"><i class="fa-regular fa-file-lines"></i></span><span>Reportes</span></a>
                     <a class="menu_bt @((ctrl == "Usuarios") ? "active" : "")" href="/Usuarios" @((ctrl == "Usuarios") ? "aria-current=\"page\"" : "")><span class="menu_icon"><i class="fa-solid fa-users"></i></span><span>Usuarios</span></a>
                     <a class="menu_bt @(isConfig ? "active" : "")" href="/Configuraciones" @(isConfig ? "aria-current=\"page\"" : "")><span class="menu_icon"><i class="fa-solid fa-gear"></i></span><span>Configuraciones</span></a>
+                    @if (User.IsInRole("SuperAdmin"))
+                    {
+                        <a class="menu_bt @((ctrl == "God") ? "active" : "")" href="/God" @((ctrl == "God") ? "aria-current=\"page\"" : "")><span class="menu_icon"><i class="fa-solid fa-globe"></i></span><span>God Mode</span></a>
+                    }
                 </div>
             </div>
 
@@ -72,6 +77,13 @@
                     <span class="topbar-breadcrumb">Traumha</span>
                     <h1 class="topbar-page">@pageTitle</h1>
                 </div>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <form id="clinicaSwitcher" asp-controller="Home" asp-action="CambiarClinica" method="post" class="d-flex align-items-center gap-2 me-2">
+                        @Html.AntiForgeryToken()
+                        <select id="clinicaSelect" name="idClinica" class="form-select form-select-sm" title="Clínica activa" style="min-width:200px"></select>
+                    </form>
+                }
                 <div class="topbar-user dropdown">
                     <button class="user-chip" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" title="Cuenta">
                         <span class="user-avatar" id="avatarInicial" aria-hidden="true">U</span>
@@ -107,6 +119,35 @@
                 var avatar = document.getElementById("avatarInicial");
                 if (avatar) avatar.textContent = (nombre.trim().charAt(0) || "U").toUpperCase();
             } catch (e) { /* sin nombre de usuario disponible */ }
+        })();
+        (function () {
+            var sel = document.getElementById("clinicaSelect");
+            if (!sel) return;
+            fetch("/Home/MisClinicas", { headers: { "Accept": "application/json" } })
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (data) {
+                    if (!data || !data.clinicas) { sel.style.display = "none"; return; }
+                    sel.innerHTML = "";
+                    if (data.esSuper) {
+                        var todas = document.createElement("option");
+                        todas.value = "00000000-0000-0000-0000-000000000000";
+                        todas.textContent = "Todas (vista global)";
+                        if (!data.actual) todas.selected = true;
+                        sel.appendChild(todas);
+                    }
+                    data.clinicas.forEach(function (c) {
+                        var o = document.createElement("option");
+                        o.value = c.id;
+                        o.textContent = (c.hospital ? c.hospital + " · " : "") + c.nombre;
+                        if (data.actual && data.actual.toLowerCase() === c.id.toLowerCase()) o.selected = true;
+                        sel.appendChild(o);
+                    });
+                    if (data.clinicas.length <= 1 && !data.esSuper) sel.disabled = true;
+                })
+                .catch(function () { sel.style.display = "none"; });
+            sel.addEventListener("change", function () {
+                document.getElementById("clinicaSwitcher").submit();
+            });
         })();
     </script>
 

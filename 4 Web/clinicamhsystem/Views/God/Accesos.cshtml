@@ -54,7 +54,7 @@
                             <td class="fw-semibold">@c.Nombre</td>
                             <td class="text-muted">@c.Hospital?.Nombre</td>
                             <td><input type="radio" class="form-check-input" name="defaultClinicaId" value="@c.IdClinica" @(def == c.IdClinica ? "checked" : "") /></td>
-                            <td class="text-end"><partial name="_AuditInfo" model="c" /></td>
+                            <td class="text-end"><partial name="_AuditPopover" model="c" /></td>
                         </tr>
                     }
                     @if (!clinicas.Any())

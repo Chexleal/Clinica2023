@@ -118,7 +118,7 @@
                                             else { <span class="badge badge-estado bg-secondary bg-opacity-10 text-secondary border border-secondary">Inactivo</span> }
                                         </td>
                                         <td class="text-end text-nowrap">
-                                            <partial name="_AuditInfo" model="h" />
+                                            <partial name="_AuditPopover" model="h" />
                                             <button class="btn btn-sm btn-outline-dark" data-bs-toggle="modal" data-bs-target="#editHospitalModal"
                                                 data-id="@h.IdHospital" data-nombre="@h.Nombre" data-activo="@(h.Activo ? "true" : "false")">
                                                 <i class="fa-solid fa-pen me-1"></i>Editar
@@ -176,7 +176,7 @@
                                             else { <span class="badge badge-estado bg-secondary bg-opacity-10 text-secondary border border-secondary">Inactiva</span> }
                                         </td>
                                         <td class="text-end text-nowrap">
-                                            <partial name="_AuditInfo" model="c" />
+                                            <partial name="_AuditPopover" model="c" />
                                             <button class="btn btn-sm btn-outline-dark" data-bs-toggle="modal" data-bs-target="#editClinicaModal"
                                                 data-id="@c.IdClinica" data-nombre="@c.Nombre" data-hospital="@c.IdHospital" data-activa="@(c.Activa ? "true" : "false")">
                                                 <i class="fa-solid fa-pen me-1"></i>Editar

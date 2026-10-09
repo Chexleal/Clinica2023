@@ -43,7 +43,8 @@
                         <td>@item.Correo</td>
                         <td>@item.Dpi</td>
                         <td>
-                            <div class="options d-flex ">
+                            <div class="options d-flex align-items-center gap-1">
+                                <partial name="_AuditInfo" model="item" />
                                 <button class="option btn btn-outline-info" onclick="ShowEditModal('@item.IdUsuario')">Ver Datos</button>
                                 @*<a class="option" href="@Url.Action("Editar","Usuarios",new{id=item.IdUsuario}) ">Editar</a>*@
                                 <form id="eliminarUserForm" asp-action="Eliminar" asp-route-id="@item.IdUsuario">
@@ -187,6 +188,7 @@
 
 @section Scripts{
     <partial name="_DataTablesButtonsScripts" />
+    <script src="~/js/pages/audit-info.js" asp-append-version="true"></script>
     <script src="~/js/pages/usuarios.js" asp-append-version="true"></script>
 
     <script>

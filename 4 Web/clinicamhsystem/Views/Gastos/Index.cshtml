@@ -105,6 +105,7 @@
                             <td class="small">@MetNombre(g.IdMetodoPago)@(string.IsNullOrWhiteSpace(g.Referencia) ? "" : $" ({g.Referencia})")</td>
                             <td class="text-end fw-bold">Q@(g.Monto.ToString("0.00"))</td>
                             <td class="text-nowrap">
+                                <partial name="_AuditInfo" model="g" />
                                 <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editar-@g.IdGasto" title="Editar"><i class="fa-solid fa-pen"></i></button>
                                 <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#anular-@g.IdGasto" title="Anular">Anular</button>
                                 <div class="modal fade" id="editar-@g.IdGasto" tabindex="-1" aria-hidden="true">
@@ -196,3 +197,8 @@
         </div>
     </div>
 </div>
+@section Scripts {
+    <partial name="_DataTablesButtonsScripts" />
+    <script src="~/js/pages/audit-info.js" asp-append-version="true"></script>
+    <script src="~/js/pages/tablas-config.js" asp-append-version="true"></script>
+}

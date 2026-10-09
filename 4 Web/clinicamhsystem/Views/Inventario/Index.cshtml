@@ -65,6 +65,7 @@
                                     </td>
                                     <td class="small">@((p.RequiereLote ? "lote" : "—") + (p.RequiereVencimiento ? " +vence" : ""))</td>
                                     <td class="text-nowrap">
+                                        <partial name="_AuditInfo" model="p" />
                                         <a class="btn btn-sm btn-outline-info" href="@Url.Action("Kardex","Inventario",new{id=p.IdProducto})">Kardex</a>
                                         <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#entrada-@p.IdProducto">Entrada</button>
                                         <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editar-@p.IdProducto" title="Editar"><i class="fa-solid fa-pen"></i></button>
@@ -142,5 +143,6 @@
 </div>
 @section Scripts{
     <partial name="_DataTablesButtonsScripts" />
+    <script src="~/js/pages/audit-info.js" asp-append-version="true"></script>
     <script src="~/js/pages/tablas-config.js" asp-append-version="true"></script>
 }

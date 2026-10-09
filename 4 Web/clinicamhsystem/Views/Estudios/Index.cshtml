@@ -34,6 +34,7 @@
                         <td><span class="badge bg-info">@o.Tipo</span></td>
                         <td><small>@o.Indicacion</small></td>
                         <td class="text-end text-nowrap">
+                            <partial name="_AuditInfo" model="o" />
                             <a href="@Url.Action("Index","Estudios", new{ pacienteId=o.IdPaciente, idOrden=o.IdOrden })" class="btn btn-sm btn-outline-primary">Atender</a>
                             <button type="button" class="btn btn-sm btn-outline-secondary btn-marcar-externa" data-id="@o.IdOrden" title="Es examen externo: sale de la cola y pasa a Externas para imprimir"><i class="fa-solid fa-print"></i> Ext</button>
                         </td>
@@ -67,6 +68,7 @@
                         <td><small>@o.Indicacion</small></td>
                         <td>@if(o.Estado==EstadoOrden.Impresa){<span class="badge bg-primary">Impresa</span>}else{<span class="badge bg-warning text-dark">Pendiente</span>}</td>
                         <td class="text-end text-nowrap">
+                            <partial name="_AuditInfo" model="o" />
                             <a href="@Url.Action("ImprimirOrden","Estudios", new{ idOrden=o.IdOrden })" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-print"></i> Imprimir</a>
                             <button type="button" class="btn btn-sm btn-outline-success btn-completar-externa" data-id="@o.IdOrden" title="Resultado ya recibido: quita de la lista sin subir archivo"><i class="fa-solid fa-check"></i></button>
                             <button type="button" class="btn btn-sm btn-outline-warning btn-revertir-interna" data-id="@o.IdOrden" title="Se generó como externa por error: regresa a la cola de clínica"><i class="fa-solid fa-rotate-left"></i></button>
@@ -173,6 +175,7 @@
                             else{<span class="badge bg-secondary">@o.Estado</span>}
                         </td>
                         <td class="text-end text-nowrap">
+                            <partial name="_AuditInfo" model="o" />
                             <a href="@Url.Action("ImprimirOrden","Estudios", new{ idOrden=o.IdOrden })" target="_blank" class="btn btn-sm btn-outline-secondary" title="Imprimir"><i class="fa-solid fa-print"></i></a>
                             <button type="button" class="btn btn-sm btn-outline-primary btn-sel-orden-carga" data-id="@o.IdOrden" data-tipo="@((int)o.Tipo)"><i class="fa-solid fa-check"></i> Seleccionar</button>
                         </td>
@@ -186,6 +189,7 @@
 }
 
 @section Scripts{
+    <script src="~/js/pages/audit-info.js" asp-append-version="true"></script>
     <script src="~/js/pages/estudios-ordenes.js" asp-append-version="true"></script>
     <script>
         // Estudios/Index específico

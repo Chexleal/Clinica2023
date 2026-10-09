@@ -83,7 +83,7 @@
                                     <td>@NomPaciente(c)</td>
                                     <td>Q@(c.Total.ToString("0.00"))</td>
                                     <td><span class="badge @BadgeEstado(c.Estado)">@c.Estado</span></td>
-                                    <td><a class="btn btn-outline-info btn-sm" href="@Url.Action("Editar", "Cotizaciones", new { id = c.IdCotizacion })">Abrir</a></td>
+                                    <td class="text-nowrap"><partial name="_AuditInfo" model="c" /><a class="btn btn-outline-info btn-sm" href="@Url.Action("Editar", "Cotizaciones", new { id = c.IdCotizacion })">Abrir</a></td>
                                 </tr>
                             }
                         </tbody>
@@ -111,7 +111,7 @@
                                     <td>@NomPaciente(c)</td>
                                     <td>Q@(c.Total.ToString("0.00"))</td>
                                     <td><span class="badge @BadgeEstado(c.Estado)">@c.Estado</span></td>
-                                    <td><a class="btn btn-outline-info btn-sm" href="@Url.Action("Editar", "Cotizaciones", new { id = c.IdCotizacion })">Ver</a></td>
+                                    <td class="text-nowrap"><partial name="_AuditInfo" model="c" /><a class="btn btn-outline-info btn-sm" href="@Url.Action("Editar", "Cotizaciones", new { id = c.IdCotizacion })">Ver</a></td>
                                 </tr>
                             }
                         </tbody>
@@ -123,6 +123,7 @@
 </div>
 @section Scripts {
     <partial name="_DataTablesButtonsScripts" />
+    <script src="~/js/pages/audit-info.js" asp-append-version="true"></script>
     <script>
         $(function () {
             $('#nuevoPaciente').select2({

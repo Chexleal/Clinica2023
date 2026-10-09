@@ -12,7 +12,7 @@ $(document).ready(function () {
             "pageLength": 20,
             "language": DataTablesCommon.withLanguage({ searchPlaceholder: $t.data('search-placeholder') || 'Buscar...' }),
             buttons: DataTablesCommon.exportButtons($t.data('export-name') || 'Catalogo', ':not(:last-child)', false),
-            "drawCallback": function () { if (typeof initAuditTooltips === 'function') initAuditTooltips(); },
+            "drawCallback": function () { if (typeof initAuditTooltips === 'function') initAuditTooltips(); if (typeof initAuditPopovers === 'function') initAuditPopovers(); },
         });
     });
 });

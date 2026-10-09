@@ -4,6 +4,8 @@ namespace clinicamhsystem.Models
     {
         public string? RequestId { get; set; }
 
+        public Guid? ErrorLogId { get; set; }
+
         public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
     }
 }

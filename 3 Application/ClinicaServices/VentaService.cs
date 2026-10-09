@@ -6,6 +6,7 @@ namespace ClinicaServices;
 
 public interface IVentaService
 {
+    void GuardarCobertura(Guid idVenta, Guid? idAseguradora, string? polizaCertificado, string? autorizacion, string? servicioAtencion, TipoAtencion tipoAtencion, decimal copago, decimal coaseguroPorc);
     Venta GetOrCreatePorConsulta(Guid idConsulta);
     Venta CrearVentaLibre(Guid? idPaciente, string? observaciones = null);
     /// <summary>Elimina una venta libre Pendiente sin líneas ni pagos (clic accidental en Nueva venta). Devuelve true si la eliminó.</summary>
@@ -21,8 +22,8 @@ public interface IVentaService
     List<VentaDetalle> GetDetalles(Guid idVenta);
     /// <summary>Detalles de varias ventas en una sola consulta (para reportes por rango).</summary>
     List<VentaDetalle> GetDetallesPorVentas(IEnumerable<Guid> idsVenta);
-    VentaDetalle AddServicio(Guid idVenta, Guid motivoCobroId, decimal cantidad, decimal? precioUnitario = null, string? descripcion = null, decimal descuentoMonto = 0, string? motivoDescuento = null);
-    VentaDetalle AddProducto(Guid idVenta, Guid productoId, decimal cantidad, Guid? loteId = null, decimal? precioUnitario = null, string? descripcion = null, bool esSobrePedido = false, decimal descuentoMonto = 0, string? motivoDescuento = null);
+    VentaDetalle AddServicio(Guid idVenta, Guid motivoCobroId, decimal cantidad, decimal? precioUnitario = null, string? descripcion = null, decimal descuentoMonto = 0, string? motivoDescuento = null, TipoAtencion? tipoAtencion = null);
+    VentaDetalle AddProducto(Guid idVenta, Guid productoId, decimal cantidad, Guid? loteId = null, decimal? precioUnitario = null, string? descripcion = null, bool esSobrePedido = false, decimal descuentoMonto = 0, string? motivoDescuento = null, TipoAtencion? tipoAtencion = null);
     /// <summary>Aplica o edita el descuento de una línea pendiente (motivo obligatorio si monto &gt; 0). Registra quién lo otorgó.</summary>
     VentaDetalle AplicarDescuento(Guid idVentaDetalle, decimal descuentoMonto, string? motivoDescuento);
     void RemoveDetalle(Guid idVentaDetalle);
@@ -53,6 +54,24 @@ public interface IVentaService
 
 public class VentaService(ClinicaContext db, ICurrentUser? currentUser = null) : IVentaService
 {
+    public void GuardarCobertura(Guid idVenta, Guid? idAseguradora, string? polizaCertificado, string? autorizacion, string? servicioAtencion, TipoAtencion tipoAtencion, decimal copago, decimal coaseguroPorc)
+    {
+        var venta=GetVenta(idVenta) ?? throw new InvalidOperationException("Venta no encontrada.");
+        if(coaseguroPorc is < 0 or > 100) throw new ArgumentException("El coaseguro debe estar entre 0 y 100.");
+        if(copago < 0) throw new ArgumentException("El copago no puede ser negativo.");
+        if(!Enum.IsDefined(tipoAtencion)) throw new ArgumentException("Tipo de atención inválido.");
+        if (idAseguradora.HasValue && !db.Aseguradoras.Any(a => a.IdAseguradora == idAseguradora.Value && (a.Activa || venta.IdAseguradora == a.IdAseguradora)))
+            throw new ArgumentException("Aseguradora no válida. Solo puedes asignar una aseguradora activa; una ya asociada se conserva en ventas históricas.");
+        venta.IdAseguradora=idAseguradora;
+        venta.TipoAtencion=tipoAtencion;
+        venta.PolizaCertificado=idAseguradora.HasValue?Clean(polizaCertificado):null;
+        venta.Autorizacion=idAseguradora.HasValue?Clean(autorizacion):null;
+        venta.ServicioAtencion=idAseguradora.HasValue?Clean(servicioAtencion):null;
+        venta.Copago=idAseguradora.HasValue?copago:0;
+        venta.CoaseguroPorc=idAseguradora.HasValue?coaseguroPorc:0;
+        db.SaveChanges();
+    }
+    private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private string NuevoFolio()
     {
@@ -226,14 +245,25 @@ public class VentaService(ClinicaContext db, ICurrentUser? currentUser = null) :
         catch { }
     }
 
-    public VentaDetalle AddServicio(Guid idVenta, Guid motivoCobroId, decimal cantidad, decimal? precioUnitario = null, string? descripcion = null, decimal descuentoMonto = 0, string? motivoDescuento = null)
+    public VentaDetalle AddServicio(Guid idVenta, Guid motivoCobroId, decimal cantidad, decimal? precioUnitario = null, string? descripcion = null, decimal descuentoMonto = 0, string? motivoDescuento = null, TipoAtencion? tipoAtencion = null)
     {
         if (cantidad <= 0) throw new ArgumentException("Cantidad debe ser mayor a cero.");
         var venta = GetVenta(idVenta) ?? throw new InvalidOperationException("Venta no encontrada.");
         if (venta.Estado != "Pendiente") throw new InvalidOperationException("Solo se puede modificar una venta pendiente.");
+        if (tipoAtencion.HasValue) { if (!Enum.IsDefined(tipoAtencion.Value)) throw new ArgumentException("Tipo de atención inválido."); venta.TipoAtencion = tipoAtencion.Value; }
         var servicio = db.MotivoCobros.FirstOrDefault(m => m.IdMotivoCobro == motivoCobroId)
             ?? throw new InvalidOperationException("Servicio no encontrado.");
-        var precio = precioUnitario ?? servicio.PrecioSugerido;
+        var tarifaServicio = venta.IdAseguradora.HasValue
+            ? db.AseguradoraTarifas.FirstOrDefault(t => t.IdAseguradora == venta.IdAseguradora && t.IdMotivoCobro == motivoCobroId && t.Activa)
+            : null;
+        var precioTarifaServicio = tarifaServicio is null ? (decimal?)null
+            : venta.TipoAtencion == TipoAtencion.Emergencia
+                ? tarifaServicio.PrecioEmergencia ?? tarifaServicio.PrecioConvenido
+                : tarifaServicio.PrecioConvenido;
+        var precioGeneralServicio = venta.TipoAtencion == TipoAtencion.Emergencia
+            ? servicio.PrecioEmergenciaGeneral ?? servicio.PrecioSugerido
+            : servicio.PrecioSugerido;
+        var precio = precioUnitario ?? precioTarifaServicio ?? precioGeneralServicio;
         var bruto = cantidad * precio;
         var (desc, motivo) = ValidarDescuento(bruto, descuentoMonto, motivoDescuento);
         var detalle = new VentaDetalle
@@ -257,15 +287,26 @@ public class VentaService(ClinicaContext db, ICurrentUser? currentUser = null) :
         return detalle;
     }
 
-    public VentaDetalle AddProducto(Guid idVenta, Guid productoId, decimal cantidad, Guid? loteId = null, decimal? precioUnitario = null, string? descripcion = null, bool esSobrePedido = false, decimal descuentoMonto = 0, string? motivoDescuento = null)
+    public VentaDetalle AddProducto(Guid idVenta, Guid productoId, decimal cantidad, Guid? loteId = null, decimal? precioUnitario = null, string? descripcion = null, bool esSobrePedido = false, decimal descuentoMonto = 0, string? motivoDescuento = null, TipoAtencion? tipoAtencion = null)
     {
         if (cantidad <= 0) throw new ArgumentException("Cantidad debe ser mayor a cero.");
         if (precioUnitario.HasValue && precioUnitario.Value < 0) throw new ArgumentException("Precio no válido.");
         var venta = GetVenta(idVenta) ?? throw new InvalidOperationException("Venta no encontrada.");
         if (venta.Estado != "Pendiente") throw new InvalidOperationException("Solo se puede modificar una venta pendiente.");
+        if (tipoAtencion.HasValue) { if (!Enum.IsDefined(tipoAtencion.Value)) throw new ArgumentException("Tipo de atención inválido."); venta.TipoAtencion = tipoAtencion.Value; }
         var producto = db.Productos.FirstOrDefault(p => p.IdProducto == productoId && p.Activo)
             ?? throw new InvalidOperationException("Producto no encontrado o inactivo.");
-        var precioFinal = precioUnitario ?? producto.PrecioVenta;
+        var tarifaProducto = venta.IdAseguradora.HasValue
+            ? db.AseguradoraTarifas.FirstOrDefault(t => t.IdAseguradora == venta.IdAseguradora && t.IdProducto == productoId && t.Activa)
+            : null;
+        var precioTarifaProducto = tarifaProducto is null ? (decimal?)null
+            : venta.TipoAtencion == TipoAtencion.Emergencia
+                ? tarifaProducto.PrecioEmergencia ?? tarifaProducto.PrecioConvenido
+                : tarifaProducto.PrecioConvenido;
+        var precioGeneralProducto = venta.TipoAtencion == TipoAtencion.Emergencia
+            ? producto.PrecioEmergenciaGeneral ?? producto.PrecioVenta
+            : producto.PrecioVenta;
+        var precioFinal = precioUnitario ?? precioTarifaProducto ?? precioGeneralProducto;
         if (precioFinal <= 0)
             throw new ArgumentException($"Indica el valor de '{producto.Nombre}': el catálogo lo tiene en Q0.00.");
 

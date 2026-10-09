@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace clinicaWeb.Controllers;
 [SecurityFilter("Servicios")]
-public class ServiciosController(IServiciosServices serviciosServices) : ErrorHandlingController
+public class ServiciosController(IServiciosServices serviciosServices, ICategoriaProductoService categorias) : ErrorHandlingController
 {
 
 
@@ -17,6 +17,8 @@ public class ServiciosController(IServiciosServices serviciosServices) : ErrorHa
     public ActionResult Index()
     {
         var servicios = serviciosServices.GetAll();
+        categorias.EnsureSeed(); ViewBag.CategoriasServicio = categorias.GetAll(true).Where(c => c.Tipo == "Servicio").ToList();
+        ViewBag.CategoriaNombres = categorias.GetAll(false).ToDictionary(c => c.IdCategoriaProducto, c => c.Nombre);
         return View(new ServiciosViewModel { Servicios = servicios});
     }
 
@@ -95,11 +97,11 @@ public class ServiciosController(IServiciosServices serviciosServices) : ErrorHa
     }
 
     [HttpPost]
-    public ActionResult Actualizar(Guid id, string descripcion, decimal? precioSugerido)
+    public ActionResult Actualizar(Guid id, string descripcion, decimal? precioSugerido, Guid? idCategoriaProducto, decimal? precioEmergenciaGeneral)
     {
         try
         {
-            serviciosServices.UpdateServicio(id, descripcion, precioSugerido ?? 0);
+            serviciosServices.UpdateServicio(id, descripcion, precioSugerido ?? 0, idCategoriaProducto, precioEmergenciaGeneral);
         }
         catch (Exception ex)
         {

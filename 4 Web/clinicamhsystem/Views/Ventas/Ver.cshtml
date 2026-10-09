@@ -16,6 +16,7 @@
         <span class="badge @(venta.Estado == "Pagada" ? "bg-success" : venta.Estado == "Anulada" ? "bg-secondary" : "bg-warning text-dark") ms-2">@venta.Estado</span>
         <span class="small text-muted ms-2">@(venta.IdConsulta.HasValue ? "Atada a consulta" : "Mostrador") · @venta.Fecha.ToString("g") · Paciente: @(ViewBag.PacienteNombre ?? "—")</span>
         <a href="@Url.Action("Index","Ventas")" class="btn btn-outline-secondary btn-sm ms-auto">Volver al listado</a>
+        <a href="@Url.Action("Ver","EstadosCuenta",new{id=venta.IdVenta})" target="_blank" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-print me-1"></i>Imprimir</a>
     </div>
     <div class="card-body">
         @if (TempData["ErrorCobro"] is string msgErr && !string.IsNullOrWhiteSpace(msgErr))

@@ -24,7 +24,25 @@ function submitCobro(formId, url) {
     var f = document.getElementById(formId);
     f.setAttribute('action', url);
     f.setAttribute('method', 'POST');
+    if (['agregarDetalleForm', 'agregarProductoForm', 'productoExpressForm', 'servicioExpressForm'].includes(formId)) {
+        copiarCoberturaVentaAlFormulario(f);
+    }
     f.submit();
+}
+
+function copiarCoberturaVentaAlFormulario(form) {
+    if (!form) return;
+    form.querySelectorAll('[data-cobertura-copiada="true"]').forEach(input => input.remove());
+    const usaAseguradora = document.getElementById('usaAseguradora');
+    const fields = [...document.querySelectorAll('[data-coverage-name]')];
+    const flag = document.createElement('input');
+    flag.type = 'hidden'; flag.name = 'guardarCobertura'; flag.value = 'true'; flag.dataset.coberturaCopiada = 'true'; form.appendChild(flag);
+    fields.forEach(field => {
+        const hidden = document.createElement('input');
+        hidden.type = 'hidden'; hidden.name = field.dataset.coverageName;
+        hidden.value = !usaAseguradora?.checked && hidden.name === 'idAseguradora' ? '' : field.value;
+        hidden.dataset.coberturaCopiada = 'true'; form.appendChild(hidden);
+    });
 }
 
 function CreateTable() {
@@ -76,6 +94,7 @@ $('.btn-detalles').click(function () {
 });
 
 function addDetalle() {
+    if (window.cargandoTarifasAseguradora) { Swal.fire('Actualizando tarifa', 'Espera un momento antes de agregar la línea.', 'info'); return; }
     if (cobroEsPagina()) { submitCobro('agregarDetalleForm', conOrigen('/Ventas/AddServicio')); return; }
     var detalle = $("#agregarDetalleForm").serialize();
     //console.log("serializado: " + detalle);
@@ -98,6 +117,7 @@ function addDetalle() {
 
 function initSelects() {
     if (cobroEsPagina()) { initSelectsPagina(); return; }
+    sincronizarCoberturaConsulta();
     ['#idMotivoCobro', '#idProducto'].forEach(function (s) {
         var el = $(s);
         if (el.length && !el.hasClass('select2-hidden-accessible')) {
@@ -148,6 +168,7 @@ function presetPrecioProducto(force) {
 $(document).on('change', '#idProducto', function () { presetPrecioProducto(true); });
 
 function addProducto() {
+    if (window.cargandoTarifasAseguradora) { Swal.fire('Actualizando tarifa', 'Espera un momento antes de agregar la línea.', 'info'); return; }
     if (cobroEsPagina()) { submitCobro('agregarProductoForm', conOrigen('/Ventas/AddProducto')); return; }
     var detalle = $("#agregarProductoForm").serialize();
     $.ajax({
@@ -302,10 +323,109 @@ function deleteVentaDetalle(id) {
 }
 
 function guardarTemporal() {
-    // Las líneas, descuentos y pagos ya se guardan en BD con cada acción
-    // (la venta queda "Pendiente"); este botón solo cierra y confirma.
-    // El toast lo muestra el evento hidden de la modal.
+    // La cuenta se guarda por acción; al salir guardamos también tipo de atención/cobertura.
+    var form = $('#coberturaFormConsulta');
+    if (!form.length) return;
+    $.post('/Pagos/GuardarCobertura', form.serialize())
+        .done(function () { bootstrap.Modal.getOrCreateInstance(document.getElementById('pagarConsultaModal')).hide(); })
+        .fail(function (error) { Swal.fire('No se pudo guardar', error.responseText || 'No fue posible guardar la atención y la cobertura.', 'warning'); });
 }
+
+function sincronizarCoberturaConsulta() {
+    var checkbox = document.getElementById('usaAseguradoraConsulta');
+    var fields = document.getElementById('coberturaConsulta');
+    if (!checkbox || !fields) return;
+    fields.hidden = !checkbox.checked;
+    if (!checkbox.checked) {
+        var insurer = document.getElementById('aseguradoraConsulta');
+        if (insurer && insurer.value) insurer.value = '';
+    }
+}
+
+function actualizarPrecioMostrado(tipoAtencion) {
+    $('#idMotivoCobro option[data-precio-base], #idProducto option[data-precio-base]').each(function () {
+        this.dataset.precio = tipoAtencion === 'Emergencia' ? this.dataset.precioEmergencia : this.dataset.precioBase;
+    });
+    $('#idMotivoCobro, #idProducto').trigger('change');
+}
+
+var solicitudTarifasAseguradora = null;
+function cargarTarifasAseguradora() {
+    var insurer = $('#idAseguradora, #aseguradoraConsulta').first().val() || '';
+    var tipo = $('#tipoAtencion, #tipoAtencionConsulta').first().val() || 'Normal';
+    var endpoint = '/Ventas/PreciosAseguradora';
+    if (solicitudTarifasAseguradora) solicitudTarifasAseguradora.abort();
+    window.cargandoTarifasAseguradora = true;
+    solicitudTarifasAseguradora = $.getJSON(endpoint, { idAseguradora: insurer || null, tipoAtencion: tipo }).done(function (data) {
+        $('#idMotivoCobro option[data-precio-general]').each(function () {
+            var p = data.servicios[this.value];
+            this.dataset.precioBase = p === undefined ? this.dataset.precioGeneral : p.convenido;
+            this.dataset.precioEmergencia = p === undefined ? (this.dataset.emergenciaGeneral || this.dataset.precioGeneral) : (p.emergencia != null ? p.emergencia : p.convenido);
+        });
+        $('#idProducto option[data-precio-general]').each(function () {
+            var p = data.productos[this.value];
+            this.dataset.precioBase = p === undefined ? this.dataset.precioGeneral : p.convenido;
+            this.dataset.precioEmergencia = p === undefined ? (this.dataset.emergenciaGeneral || this.dataset.precioGeneral) : (p.emergencia != null ? p.emergencia : p.convenido);
+        });
+        actualizarPrecioMostrado(tipo);
+    }).always(function () { window.cargandoTarifasAseguradora = false; });
+}
+
+function agregarCoberturaAlFormulario(form) {
+    var cobertura = $('#coberturaFormConsulta');
+    if (!cobertura.length) return;
+    $(form).find('[data-cobertura-copiada="true"]').remove();
+    $('<input>', { type: 'hidden', name: 'guardarCobertura', value: 'true', 'data-cobertura-copiada': 'true' }).appendTo(form);
+    cobertura.serializeArray().forEach(function (x) {
+        if (x.name === 'idVenta' || x.name === 'idConsulta') return;
+        $('<input>', { type: 'hidden', name: x.name, value: x.value, 'data-cobertura-copiada': 'true' }).appendTo(form);
+    });
+}
+
+function camposCoberturaConsulta() {
+    var form = $('#coberturaFormConsulta');
+    if (!form.length) return [];
+    var fields = form.serializeArray().filter(function (x) { return x.name !== 'idVenta' && x.name !== 'idConsulta'; });
+    if (!$('#usaAseguradoraConsulta').is(':checked')) {
+        var aseguradora = fields.find(function (x) { return x.name === 'idAseguradora'; });
+        if (aseguradora) aseguradora.value = '';
+        else fields.push({ name: 'idAseguradora', value: '' });
+    }
+    fields.push({ name: 'guardarCobertura', value: 'true' });
+    return fields;
+}
+
+// Las acciones AJAX que reconstruyen la modal también guardan la cobertura actual,
+// para que agregar una línea o un pago no descarte datos aún no guardados.
+$.ajaxPrefilter(function (options) {
+    var method = (options.type || options.method || 'GET').toUpperCase();
+    var url = options.url || '';
+    if (method !== 'POST' || !/\/Pagos\/(AddDetalle|AddProducto|AddProductoExpress|AddServicioExpress|AgregarPago|EliminarPago|AplicarDescuento|EliminarVentaDetalle)$/i.test(url)) return;
+    var coverage = camposCoberturaConsulta();
+    if (!coverage.length) return;
+    var existing = typeof options.data === 'string' ? options.data : $.param(options.data || {});
+    options.data = [existing, $.param(coverage)].filter(Boolean).join('&');
+});
+
+$(document).on('submit', 'form[action*="/Pagos/Finalizar"]', function () { agregarCoberturaAlFormulario(this); });
+
+$(document).on('change', '#tipoAtencion, #tipoAtencionConsulta', function () {
+    $('.js-tipo-atencion').val(this.value);
+    cargarTarifasAseguradora();
+});
+$(document).on('change', '#idAseguradora, #aseguradoraConsulta', cargarTarifasAseguradora);
+$(document).on('change', '#usaAseguradoraConsulta', function () {
+    var fields = $('#coberturaConsulta'), insurer = $('#aseguradoraConsulta');
+    fields.prop('hidden', !this.checked);
+    if (!this.checked) insurer.val('').trigger('change');
+});
+$(document).on('change', '#aseguradoraConsulta', function () {
+    var option = this.selectedOptions[0];
+    if (option && option.dataset.copago !== undefined) {
+        $('#copagoConsulta').val(option.dataset.copago);
+        $('#coaseguroConsulta').val(option.dataset.coaseguro);
+    }
+});
 
 $(document).on('hidden.bs.modal', '#pagarConsultaModal', function () {
     // Cerrar la modal = guardado temporal: todo lo agregado queda en BD
@@ -335,10 +455,15 @@ function marcarPendientePago() {
         Swal.fire('Pendiente de pago', 'Indica quién queda debiendo (responsable).', 'warning');
         return;
     }
+    var datos = $('#pendientePagoFormModal').serializeArray();
+    datos.push({ name: 'guardarCobertura', value: 'true' });
+    $('#coberturaFormConsulta').serializeArray().forEach(function (x) {
+        if (x.name !== 'idVenta' && x.name !== 'idConsulta') datos.push(x);
+    });
     $.ajax({
         url: '/Pagos/PendientePago',
         type: 'POST',
-        data: $("#pendientePagoFormModal").serialize(),
+        data: $.param(datos),
         success: refreshModal,
         error: function (error) {
             Swal.fire('Pendiente de pago', error.responseText || 'No se pudo dejar pendiente de pago.', 'warning');

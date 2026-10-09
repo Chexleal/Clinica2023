@@ -2,6 +2,8 @@
 @{
     Layout = null;
     ViewData["Title"] = "Algo salió mal";
+    var errorLogId = Model?.ErrorLogId?.ToString() ?? Context.Items["ErrorLogId"] as string;
+    var requestId = Model?.RequestId ?? Context.Items["ErrorRequestId"] as string;
 }
 
 <!DOCTYPE html>
@@ -91,6 +93,21 @@
                     Sistema Clínico de Traumatología<br />
                     Cuidando cada detalle (incluso los digitales)
                 </div>
+
+                @if (!string.IsNullOrWhiteSpace(errorLogId))
+                {
+                    <div class="alert alert-light border mt-4 mb-0" role="status">
+                        <div>Envíale este ID a soporte para que podamos rastrearlo:</div>
+                        <code class="d-block mt-2 user-select-all">@errorLogId</code>
+                    </div>
+                }
+                else if (!string.IsNullOrWhiteSpace(requestId))
+                {
+                    <div class="alert alert-light border mt-4 mb-0" role="status">
+                        <div>No se pudo guardar el error en el registro. Envíale este ID de solicitud a soporte para que podamos rastrearlo:</div>
+                        <code class="d-block mt-2 user-select-all">@requestId</code>
+                    </div>
+                }
 
             </div>
         </div>

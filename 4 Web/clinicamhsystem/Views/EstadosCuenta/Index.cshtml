@@ -1,0 +1,10 @@
+@model List<ClinicaDomain.Venta>
+@{ ViewData["Title"]="Estados de cuenta hospitalarios"; }
+<div class="card mt-4"><div class="card-header"><h4>Estados de cuenta hospitalarios</h4></div><div class="card-body">
+<form method="get" class="row g-2 mb-3">
+<div class="col-md-2"><label class="form-label">Desde</label><input type="date" name="desde" value="@ViewBag.Desde" class="form-control" /></div><div class="col-md-2"><label class="form-label">Hasta</label><input type="date" name="hasta" value="@ViewBag.Hasta" class="form-control" /></div>
+<div class="col-md-3"><label class="form-label">Paciente</label><select name="idPaciente" class="form-select"><option value="">Todos</option>@foreach(var p in (IEnumerable<ClinicaDomain.Paciente>)ViewBag.Pacientes){<option value="@p.IdPaciente" selected="@(ViewBag.IdPaciente==p.IdPaciente)">@p.Nombre @p.Apellido</option>}</select></div>
+<div class="col-md-3"><label class="form-label">Aseguradora</label><select name="idAseguradora" class="form-select"><option value="">Todas</option>@foreach(var a in (IEnumerable<ClinicaDomain.Aseguradora>)ViewBag.Aseguradoras){<option value="@a.IdAseguradora" selected="@(ViewBag.IdAseguradora==a.IdAseguradora)">@a.Nombre</option>}</select></div>
+<div class="col-md-2"><label class="form-label">Autorización</label><input name="autorizacion" value="@ViewBag.Autorizacion" class="form-control" /></div><div><button class="btn btn-primary">Filtrar</button></div></form>
+<div class="table-responsive"><table class="table table-striped"><thead><tr><th>Fecha</th><th>Folio</th><th>Paciente</th><th>Autorización</th><th>Total</th><th></th></tr></thead><tbody>@foreach(var v in Model){var nombres=(Dictionary<Guid,string>)ViewBag.PacienteNombres;<tr><td>@v.Fecha.ToString("dd/MM/yyyy")</td><td>@v.Folio</td><td>@(v.IdPaciente.HasValue&&nombres.TryGetValue(v.IdPaciente.Value,out var nombre)?nombre:"—")</td><td>@v.Autorizacion</td><td>Q @v.Total.ToString("N2")</td><td><a class="btn btn-sm btn-outline-primary" target="_blank" href="@Url.Action("Ver",new{id=v.IdVenta})">Ver / Imprimir</a></td></tr>}</tbody></table></div>
+</div></div>

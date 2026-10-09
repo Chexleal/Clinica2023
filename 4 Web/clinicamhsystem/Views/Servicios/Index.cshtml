@@ -12,14 +12,19 @@
 
     <div class="card-body">
         <form method="POST" action="@Url.Action("Create","Servicios")" class="row g-2 align-items-end mb-3">
-            <div class="col-12 col-md-8">
+            <div class="col-12 col-md-3">
                 <label class="fw-bold small">Servicio</label>
                 <input required name="Descripcion" id="Descripcion" class="form-control form-control-sm" style="text-transform:uppercase;" placeholder="Ej: Consulta general" maxlength="300" />
+            </div>
+            <div class="col-12 col-md-3">
+                <label class="fw-bold small">Categoría</label>
+                <select required name="IdCategoriaProducto" class="form-select form-select-sm"><option value="">Seleccione categoría</option>@foreach(var c in (IEnumerable<ClinicaDomain.CategoriaProducto>)ViewBag.CategoriasServicio){<option value="@c.IdCategoriaProducto">@c.Nombre</option>}</select>
             </div>
             <div class="col-12 col-md-2">
                 <label class="fw-bold small">Precio sugerido</label>
                 <input name="PrecioSugerido" id="PrecioSugerido" type="number" step="0.01" min="0" class="form-control form-control-sm" placeholder="0.00" />
             </div>
+            <div class="col-12 col-md-2"><label class="fw-bold small">Precio general de emergencia</label><input name="PrecioEmergenciaGeneral" type="number" step="0.01" min="0" class="form-control form-control-sm" placeholder="Opcional" /></div>
             <div class="col-12 col-md-2">
                 <button type="submit" class="btn btn-dark btn-sm w-100"><i class="fa-solid fa-plus"></i> Agregar</button>
             </div>
@@ -29,7 +34,8 @@
             <table id="table" class="table table-sm table-hover">
                 <thead class="table-dark">
                     <tr>
-                        <th>Servicio</th>
+                        <th>Área / Servicio</th>
+                        <th>Categoría</th>
                         <th>Precio sugerido</th>
                         <th class="text-end"></th>
                     </tr>
@@ -38,7 +44,8 @@
                     @foreach (var item in Model.Servicios)
                     {
                         <tr>
-                            <td>@item.Descripcion</td>
+                            <td>@(string.IsNullOrWhiteSpace(item.Area) ? "" : $"{item.Area} — ")@item.Descripcion</td>
+                            <td>@(((Dictionary<Guid, string>)ViewBag.CategoriaNombres).GetValueOrDefault(item.IdCategoriaProducto ?? Guid.Empty, "—"))</td>
                             <td>Q@(item.PrecioSugerido.ToString("0.00"))</td>
                             <td class="text-end text-nowrap">
                                 <partial name="_AuditInfo" model="item" />
@@ -61,6 +68,8 @@
                                 <input type="hidden" name="id" value="@item.IdMotivoCobro" />
                                 <div class="col-12"><label class="small fw-bold">Servicio</label><input required name="descripcion" value="@item.Descripcion" class="form-control form-control-sm" style="text-transform:uppercase;" maxlength="300" /></div>
                                 <div class="col-12 col-md-6"><label class="small fw-bold">Precio sugerido</label><input name="precioSugerido" value="@item.PrecioSugerido.ToString("0.00")" type="number" step="0.01" min="0" class="form-control form-control-sm" /></div>
+                                <div class="col-12 col-md-6"><label class="small fw-bold">Precio general de emergencia (opcional)</label><input name="precioEmergenciaGeneral" value="@(item.PrecioEmergenciaGeneral?.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture))" type="number" step="0.01" min="0" class="form-control form-control-sm" /></div>
+                                <div class="col-12"><label class="small fw-bold">Categoría</label><select name="idCategoriaProducto" class="form-select form-select-sm"><option value="">Sin asignar</option>@foreach(var c in (IEnumerable<ClinicaDomain.CategoriaProducto>)ViewBag.CategoriasServicio){<option value="@c.IdCategoriaProducto" selected="@(item.IdCategoriaProducto==c.IdCategoriaProducto)">@c.Nombre</option>}</select></div>
                             </div>
                             <div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary btn-sm">Guardar</button></div>
                         </div>

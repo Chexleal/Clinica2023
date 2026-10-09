@@ -238,8 +238,8 @@ namespace clinicamhsystem.Controllers;
         }
         catch (Exception ex)
         {
-            await errorLogService.RegistrarAsync(ex, "Controlado", Request.Path, Request.Method, HttpContext.TraceIdentifier);
-            return View("Error");
+            var errorLogId = await errorLogService.RegistrarAsync(ex, "Controlado", Request.Path, Request.Method, HttpContext.TraceIdentifier);
+            return View("Error", new ErrorViewModel { ErrorLogId = errorLogId, RequestId = HttpContext.TraceIdentifier });
         }
     }
 
@@ -253,8 +253,8 @@ namespace clinicamhsystem.Controllers;
         }
         catch (Exception ex)
         {
-            await errorLogService.RegistrarAsync(ex, "Controlado", Request.Path, Request.Method, HttpContext.TraceIdentifier);
-            return View("Error");
+            var errorLogId = await errorLogService.RegistrarAsync(ex, "Controlado", Request.Path, Request.Method, HttpContext.TraceIdentifier);
+            return View("Error", new ErrorViewModel { ErrorLogId = errorLogId, RequestId = HttpContext.TraceIdentifier });
         }
     }
 
@@ -341,12 +341,14 @@ namespace clinicamhsystem.Controllers;
         var exceptionFeature = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
         if (exceptionFeature?.Error is { } exception)
         {
-            await errorLogService.RegistrarAsync(
+            var errorLogId = await errorLogService.RegistrarAsync(
                 exception,
                 "No controlado",
                 exceptionFeature.Path,
                 Request.Method,
                 HttpContext.TraceIdentifier);
+
+            return View(new ErrorViewModel { ErrorLogId = errorLogId, RequestId = HttpContext.TraceIdentifier });
         }
 
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });

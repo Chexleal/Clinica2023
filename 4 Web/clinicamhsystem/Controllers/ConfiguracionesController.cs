@@ -11,7 +11,9 @@ public class ConfiguracionesController(
     IRecetaServices recetaService,
     ICategoriaProductoService categoriaService,
     IProductoService productoService,
-    ICategoriaGastoService categoriaGastoService) : Controller
+    ICategoriaGastoService categoriaGastoService,
+    IAseguradoraService aseguradoraService,
+    IAseguradoraTarifaService aseguradoraTarifaService) : Controller
 {
 
     // Hub con accesos a todos los mantenimientos de catálogos
@@ -26,6 +28,55 @@ public class ConfiguracionesController(
         ViewBag.TotalCategoriasGasto = categoriaGastoService.GetAll(false).Count;
         return View();
     }
+    [HttpGet]
+    public IActionResult Aseguradoras() => View(aseguradoraService.GetAll());
+    [HttpGet]
+    public IActionResult TarifasAseguradora(Guid? idAseguradora)
+    {
+        var aseguradoras=aseguradoraService.GetAll();
+        var selected=idAseguradora ?? aseguradoras.FirstOrDefault()?.IdAseguradora;
+        ViewBag.Aseguradoras=aseguradoras; ViewBag.IdAseguradora=selected;
+        ViewBag.ConceptosDisponibles = selected.HasValue ? aseguradoraTarifaService.GetConceptosDisponibles(selected.Value) : new List<AseguradoraTarifaConceptoItem>();
+        return View(selected.HasValue?aseguradoraTarifaService.GetCatalogo(selected.Value):new List<AseguradoraTarifaCatalogoItem>());
+    }
+
+    [HttpPost]
+    public IActionResult CrearTarifaAseguradora(Guid idAseguradora, string concepto, decimal precioConvenido, decimal? precioEmergencia)
+    {
+        try
+        {
+            var separador = concepto?.IndexOf(':') ?? -1;
+            if (separador <= 0 || !Guid.TryParse(concepto[(separador + 1)..], out var idConcepto))
+                throw new ArgumentException("Selecciona un producto o servicio válido.");
+            var tipo = concepto[..separador];
+            aseguradoraTarifaService.Crear(idAseguradora, tipo == "P" ? idConcepto : null, tipo == "S" ? idConcepto : null, precioConvenido, precioEmergencia);
+        }
+        catch (Exception ex) { TempData["Error"] = ex.Message; }
+        return RedirectToAction("TarifasAseguradora", new { idAseguradora });
+    }
+    [HttpPost]
+    public IActionResult ActualizarTarifaAseguradora(Guid idAseguradora, Guid idTarifa, decimal precioConvenido, decimal? precioEmergencia)
+    {
+        try { aseguradoraTarifaService.Actualizar(idTarifa,idAseguradora,precioConvenido,precioEmergencia); }
+        catch(Exception ex) { TempData["Error"]=ex.Message; }
+        return RedirectToAction("TarifasAseguradora",new { idAseguradora });
+    }
+    [HttpPost]
+    public IActionResult ToggleTarifaAseguradora(Guid idAseguradora, Guid idTarifa, bool activa)
+    {
+        try { aseguradoraTarifaService.CambiarActiva(idTarifa, idAseguradora, activa); }
+        catch (Exception ex) { TempData["Error"] = ex.Message; }
+        return RedirectToAction("TarifasAseguradora", new { idAseguradora });
+    }
+    [HttpPost]
+    public IActionResult GuardarAseguradora(Guid? id, string nombre, string? identificadorFiscal, string? contacto, decimal copagoDefault, decimal coaseguroPorcDefault, bool activa = true)
+    {
+        try { aseguradoraService.Guardar(new ClinicaDomain.Aseguradora { IdAseguradora=id ?? Guid.Empty,Nombre=nombre,IdentificadorFiscal=identificadorFiscal,Contacto=contacto,CopagoDefault=copagoDefault,CoaseguroPorcDefault=coaseguroPorcDefault,Activa=activa }); }
+        catch(Exception ex) { TempData["Error"]=ex.Message; }
+        return RedirectToAction("Aseguradoras");
+    }
+    [HttpPost]
+    public IActionResult ToggleAseguradora(Guid id, bool activa) { aseguradoraService.CambiarActiva(id,activa); return RedirectToAction("Aseguradoras"); }
 
     // ===== Medicamentos (no tenía UI, se auto-creaba desde receta) =====
     public IActionResult Medicamentos()
@@ -49,7 +100,7 @@ public class ConfiguracionesController(
         return RedirectToAction("Medicamentos");
     }
 
-    // ===== Categorías de inventario (antes se administraban en Inventario/Index) =====
+    // ===== Categorías de productos y servicios =====
     public IActionResult Categorias()
     {
         categoriaService.EnsureSeed();
@@ -58,9 +109,9 @@ public class ConfiguracionesController(
     }
 
     [HttpPost]
-    public IActionResult CrearCategoria(string nombre, string tipo, bool exigeLote, bool exigeVencimiento)
+    public IActionResult CrearCategoria(string nombre, string tipo, bool exigeLote, bool exigeVencimiento, int orden = 99)
     {
-        try { categoriaService.Crear(nombre, tipo, exigeLote, exigeVencimiento); }
+        try { categoriaService.Crear(nombre, tipo, exigeLote, exigeVencimiento, orden); }
         catch (Exception ex) { TempData["Error"] = ex.Message; }
         return RedirectToAction("Categorias");
     }
@@ -74,7 +125,7 @@ public class ConfiguracionesController(
     }
 
     [HttpPost]
-    public IActionResult ActualizarCategoria(Guid id, string nombre, string tipo, bool exigeLote, bool exigeVencimiento)
+    public IActionResult ActualizarCategoria(Guid id, string nombre, string tipo, bool exigeLote, bool exigeVencimiento, int orden = 99)
     {
         try
         {
@@ -84,8 +135,9 @@ public class ConfiguracionesController(
             if (tipo != "Bien" && tipo != "Servicio") tipo = "Bien";
             actual.Nombre = nombre.Trim();
             actual.Tipo = tipo;
-            actual.ExigeLoteDefault = exigeLote;
-            actual.ExigeVencimientoDefault = exigeVencimiento;
+            actual.Orden = orden;
+            actual.ExigeLoteDefault = tipo == "Bien" && exigeLote;
+            actual.ExigeVencimientoDefault = tipo == "Bien" && exigeLote && exigeVencimiento;
             categoriaService.Actualizar(actual);
         }
         catch (Exception ex) { TempData["Error"] = ex.Message; }

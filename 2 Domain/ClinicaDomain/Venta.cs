@@ -30,4 +30,11 @@ public partial class Venta : Base, IClinicaTenant, IHospitalTenant
 
     /// <summary>Pendiente de pago: fecha promesa de pago (opcional).</summary>
     public DateTime? FechaPromesa { get; set; }
+    public Guid? IdAseguradora { get; set; }
+    public string? PolizaCertificado { get; set; }
+    public string? Autorizacion { get; set; }
+    public string? ServicioAtencion { get; set; }
+    public TipoAtencion TipoAtencion { get; set; } = TipoAtencion.Normal;
+    public decimal Copago { get; set; }
+    public decimal CoaseguroPorc { get; set; }
 }

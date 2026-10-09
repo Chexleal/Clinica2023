@@ -10,8 +10,8 @@ using System.Text.Json;
 namespace clinicaWeb.Controllers;
 [SecurityFilter("Pagos")]
 public class PagosController(IConsultaServices consultaServices, IDetallesServices detallesServices,
-    IServiciosServices serviciosServices, IVentaService ventaService, IProductoService productoService,
-    IPacienteServices pacienteServices, IMetodoPagoService metodos, IOrdenEstudioService ordenService,
+    IServiciosServices serviciosServices, IVentaService ventaService, IProductoService productoService, IAseguradoraService aseguradoras,
+    IPacienteServices pacienteServices, IMetodoPagoService metodos, IOrdenEstudioService ordenService, IAseguradoraTarifaService tarifas,
     IRecetaServices recetaServices, INotaMedicaService notaMedicaService) : ErrorHandlingController
 {
 
@@ -45,6 +45,11 @@ public class PagosController(IConsultaServices consultaServices, IDetallesServic
     {
         // Vía 1 (consulta): una sola venta pendiente por consulta.
         var venta = ventaService.GetOrCreatePorConsulta(idconsulta);
+        var opcionesAseguradora = aseguradoras.GetActivas();
+        if (venta.IdAseguradora.HasValue && opcionesAseguradora.All(a => a.IdAseguradora != venta.IdAseguradora.Value)
+            && aseguradoras.Get(venta.IdAseguradora.Value) is { } aseguradoraHistorica)
+            opcionesAseguradora.Add(aseguradoraHistorica);
+        ViewBag.Aseguradoras = opcionesAseguradora.OrderBy(a => a.Nombre).ToList();
         MigrarLegadoSiAplica(idconsulta, venta.IdVenta);
         var detallesVenta = ventaService.GetDetalles(venta.IdVenta);
         var servicios = serviciosServices.GetAll();
@@ -72,7 +77,22 @@ public class PagosController(IConsultaServices consultaServices, IDetallesServic
             Productos = productos,
             Metodos = metodos.GetAll(),
             Pagos = ventaService.GetPagos(venta.IdVenta)
+            ,TarifasAseguradora = tarifas.GetPrecios(venta.IdAseguradora)
         };
+    }
+
+    private void GuardarCoberturaSolicitada(Venta venta)
+    {
+        if (!bool.TryParse(Request.Form["guardarCobertura"].FirstOrDefault(), out var guardar) || !guardar) return;
+        Guid? idAseguradora = Guid.TryParse(Request.Form["idAseguradora"].FirstOrDefault(), out var id) ? id : null;
+        var tipo = Enum.TryParse<TipoAtencion>(Request.Form["tipoAtencion"].FirstOrDefault(), true, out var parsedTipo)
+            ? parsedTipo : TipoAtencion.Normal;
+        ventaService.GuardarCobertura(venta.IdVenta, idAseguradora,
+            Request.Form["polizaCertificado"].FirstOrDefault(),
+            Request.Form["autorizacion"].FirstOrDefault(),
+            Request.Form["servicioAtencion"].FirstOrDefault(), tipo,
+            ParsePrecioFlexible(Request.Form["copago"].FirstOrDefault()) ?? 0,
+            ParsePrecioFlexible(Request.Form["coaseguroPorc"].FirstOrDefault()) ?? 0);
     }
 
     /// <summary>Migración transparente: viejos DetalleCobro -> VentaDetalle (una sola vez).</summary>
@@ -146,7 +166,7 @@ public class PagosController(IConsultaServices consultaServices, IDetallesServic
 
 
     [HttpPost]
-    public IActionResult AddDetalle(Guid idConsulta, Guid idMotivoCobro, decimal cantidad, string? precio, string? descripcion, string? descuento = null, string? motivoDescuento = null)
+    public IActionResult AddDetalle(Guid idConsulta, Guid idMotivoCobro, decimal cantidad, string? precio, string? descripcion, string? descuento = null, string? motivoDescuento = null, TipoAtencion? tipoAtencion = null)
     {
         try
         {
@@ -164,8 +184,9 @@ public class PagosController(IConsultaServices consultaServices, IDetallesServic
                 }
             }
             var venta = ventaService.GetOrCreatePorConsulta(idConsulta);
+            GuardarCoberturaSolicitada(venta);
             ventaService.AddServicio(venta.IdVenta, idMotivoCobro,
-                cantidad <= 0 ? 1 : cantidad, precioParsed, descripcion, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento);
+                cantidad <= 0 ? 1 : cantidad, precioParsed, descripcion, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento, tipoAtencion);
         }
         catch (Exception ex)
         {
@@ -175,7 +196,7 @@ public class PagosController(IConsultaServices consultaServices, IDetallesServic
     }
 
     [HttpPost]
-    public IActionResult AddProducto(Guid idVenta, Guid idProducto, decimal cantidad, Guid? loteId, string? precio, string? descripcion, bool esSobrePedido = false, string? descuento = null, string? motivoDescuento = null)
+    public IActionResult AddProducto(Guid idVenta, Guid idProducto, decimal cantidad, Guid? loteId, string? precio, string? descripcion, bool esSobrePedido = false, string? descuento = null, string? motivoDescuento = null, TipoAtencion? tipoAtencion = null)
     {
         try
         {
@@ -189,8 +210,9 @@ public class PagosController(IConsultaServices consultaServices, IDetallesServic
                     return Content($"Valor no válido: '{precio}'. Usa solo números, ej. 120.50");
                 }
             }
-            ventaService.AddProducto(idVenta, idProducto, cantidad <= 0 ? 1 : cantidad, loteId, precioParsed, descripcion, esSobrePedido, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento);
-            var venta = ventaService.GetVenta(idVenta);
+            var venta = ventaService.GetVenta(idVenta) ?? throw new InvalidOperationException("Venta no encontrada.");
+            GuardarCoberturaSolicitada(venta);
+            ventaService.AddProducto(idVenta, idProducto, cantidad <= 0 ? 1 : cantidad, loteId, precioParsed, descripcion, esSobrePedido, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento, tipoAtencion);
             return PartialView("Detalles", ArmarModelo(venta!.IdConsulta!.Value));
         }
         catch (Exception ex)
@@ -206,8 +228,9 @@ public class PagosController(IConsultaServices consultaServices, IDetallesServic
     {
         try
         {
+            var venta = ventaService.GetVenta(idVenta) ?? throw new InvalidOperationException("Venta no encontrada.");
+            GuardarCoberturaSolicitada(venta);
             ventaService.AgregarProductoExpress(idVenta, nombre, precio, cantidad <= 0 ? 1 : cantidad, costo, null, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento);
-            var venta = ventaService.GetVenta(idVenta);
             return PartialView("Detalles", ArmarModelo(venta!.IdConsulta!.Value));
         }
         catch (Exception ex)
@@ -223,8 +246,9 @@ public class PagosController(IConsultaServices consultaServices, IDetallesServic
     {
         try
         {
+            var venta = ventaService.GetVenta(idVenta) ?? throw new InvalidOperationException("Venta no encontrada.");
+            GuardarCoberturaSolicitada(venta);
             ventaService.AgregarServicioExpress(idVenta, descripcion, precio, cantidad <= 0 ? 1 : cantidad, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento);
-            var venta = ventaService.GetVenta(idVenta);
             return PartialView("Detalles", ArmarModelo(venta!.IdConsulta!.Value));
         }
         catch (Exception ex)
@@ -240,6 +264,7 @@ public class PagosController(IConsultaServices consultaServices, IDetallesServic
     {
         try
         {
+            GuardarCoberturaSolicitada(ventaService.GetOrCreatePorConsulta(idConsulta));
             ventaService.AplicarDescuento(id, ParsePrecioFlexible(descuento) ?? 0, motivoDescuento);
         }
         catch (Exception ex)
@@ -270,6 +295,7 @@ public class PagosController(IConsultaServices consultaServices, IDetallesServic
     {
         try
         {
+            GuardarCoberturaSolicitada(ventaService.GetOrCreatePorConsulta(idConsulta));
             ventaService.RemoveDetalle(id);
         }
         catch (Exception ex)
@@ -285,6 +311,7 @@ public class PagosController(IConsultaServices consultaServices, IDetallesServic
         try
         {
             var venta = ventaService.GetOrCreatePorConsulta(idConsulta);
+            GuardarCoberturaSolicitada(venta);
             ventaService.AgregarPago(venta.IdVenta, metodoId, monto, referencia);
             return PartialView("Detalles", ArmarModelo(idConsulta));
         }
@@ -301,6 +328,7 @@ public class PagosController(IConsultaServices consultaServices, IDetallesServic
     {
         try
         {
+            GuardarCoberturaSolicitada(ventaService.GetOrCreatePorConsulta(idConsulta));
             ventaService.EliminarPago(idPago);
         }
         catch (Exception ex)
@@ -311,12 +339,25 @@ public class PagosController(IConsultaServices consultaServices, IDetallesServic
     }
 
     [HttpPost]
-    public ActionResult Finalizar(Guid id)
+    public ActionResult GuardarCobertura(Guid idConsulta, Guid? idAseguradora, string? polizaCertificado, string? autorizacion, string? servicioAtencion, TipoAtencion tipoAtencion, decimal copago, decimal coaseguroPorc)
+    {
+        try
+        {
+            var venta = ventaService.GetOrCreatePorConsulta(idConsulta);
+            ventaService.GuardarCobertura(venta.IdVenta, idAseguradora, polizaCertificado, autorizacion, servicioAtencion, tipoAtencion, copago, coaseguroPorc);
+            return Ok();
+        }
+        catch (Exception ex) { RegistrarError(ex); return BadRequest(ex.Message); }
+    }
+
+    [HttpPost]
+    public ActionResult Finalizar(Guid id, bool guardarCobertura = false, Guid? idAseguradora = null, string? polizaCertificado = null, string? autorizacion = null, string? servicioAtencion = null, TipoAtencion tipoAtencion = TipoAtencion.Normal, decimal copago = 0, decimal coaseguroPorc = 0)
     {
         try
         {
             // id = IdConsulta (compatibilidad con la vista actual).
             var venta = ventaService.GetOrCreatePorConsulta(id);
+            if (guardarCobertura) ventaService.GuardarCobertura(venta.IdVenta, idAseguradora, polizaCertificado, autorizacion, servicioAtencion, tipoAtencion, copago, coaseguroPorc);
             ventaService.FinalizarPago(venta.IdVenta);
             // Compatibilidad: el flag antiguo también queda marcado vía SincronizarConsulta.
             try { detallesServices.Pagar(id); } catch { }
@@ -329,11 +370,12 @@ public class PagosController(IConsultaServices consultaServices, IDetallesServic
     }
 
     [HttpPost]
-    public ActionResult PendientePago(Guid idConsulta, string responsable, DateTime? fechaPromesa)
+    public ActionResult PendientePago(Guid idConsulta, string responsable, DateTime? fechaPromesa, bool guardarCobertura = false, Guid? idAseguradora = null, string? polizaCertificado = null, string? autorizacion = null, string? servicioAtencion = null, TipoAtencion tipoAtencion = TipoAtencion.Normal, decimal copago = 0, decimal coaseguroPorc = 0)
     {
         try
         {
             var venta = ventaService.GetOrCreatePorConsulta(idConsulta);
+            if (guardarCobertura) ventaService.GuardarCobertura(venta.IdVenta, idAseguradora, polizaCertificado, autorizacion, servicioAtencion, tipoAtencion, copago, coaseguroPorc);
             ventaService.DejarPendientePago(venta.IdVenta, responsable, fechaPromesa);
         }
         catch (Exception ex)

@@ -5,14 +5,14 @@ namespace ClinicaServices;
 
 public interface IErrorLogService
 {
-    void Registrar(
+    Guid? Registrar(
         Exception exception,
         string tipoError,
         string? ruta = null,
         string? metodoHttp = null,
         string? traceIdentifier = null);
 
-    Task RegistrarAsync(
+    Task<Guid?> RegistrarAsync(
         Exception exception,
         string tipoError,
         string? ruta = null,
@@ -25,7 +25,7 @@ public sealed class ErrorLogService(
     ILogger<ErrorLogService> logger) : IErrorLogService
 {
 
-    public async Task RegistrarAsync(
+    public async Task<Guid?> RegistrarAsync(
         Exception exception,
         string tipoError,
         string? ruta = null,
@@ -34,17 +34,19 @@ public sealed class ErrorLogService(
     {
         try
         {
-            PrepararRegistro(exception, tipoError, ruta, metodoHttp, traceIdentifier);
+            var registro = PrepararRegistro(exception, tipoError, ruta, metodoHttp, traceIdentifier);
             await dbContext.SaveChangesAsync();
+            return registro.IdErrorLog;
         }
         catch (Exception registroException)
         {
             // El registro de errores nunca debe ocultar el error original.
             logger.LogError(registroException, "No fue posible guardar el error en ErrorLog.");
+            return null;
         }
     }
 
-    public void Registrar(
+    public Guid? Registrar(
         Exception exception,
         string tipoError,
         string? ruta = null,
@@ -53,16 +55,18 @@ public sealed class ErrorLogService(
     {
         try
         {
-            PrepararRegistro(exception, tipoError, ruta, metodoHttp, traceIdentifier);
+            var registro = PrepararRegistro(exception, tipoError, ruta, metodoHttp, traceIdentifier);
             dbContext.SaveChanges();
+            return registro.IdErrorLog;
         }
         catch (Exception registroException)
         {
             logger.LogError(registroException, "No fue posible guardar el error en ErrorLog.");
+            return null;
         }
     }
 
-    private void PrepararRegistro(
+    private ErrorLog PrepararRegistro(
         Exception exception,
         string tipoError,
         string? ruta,
@@ -86,6 +90,7 @@ public sealed class ErrorLogService(
         // Evita volver a intentar cambios pendientes de la operación que falló.
         dbContext.ChangeTracker.Clear();
         dbContext.ErrorLogs.Add(error);
+        return error;
     }
 
     private static string? Limitar(string? valor, int maximo)

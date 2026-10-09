@@ -1,0 +1,21 @@
+@model List<ClinicaServices.AseguradoraTarifaCatalogoItem>
+@{ ViewData["Title"]="Tarifas de aseguradora"; var aseguradoras=(IEnumerable<ClinicaDomain.Aseguradora>)ViewBag.Aseguradoras; var conceptos=(IEnumerable<ClinicaServices.AseguradoraTarifaConceptoItem>)ViewBag.ConceptosDisponibles; }
+<div class="card shadow-lg mt-4"><div class="card-header bg-white"><a href="@Url.Action("Aseguradoras")" class="btn btn-outline-secondary btn-sm me-2"><i class="fa-solid fa-arrow-left"></i></a><h4 class="d-inline">Tarifas pactadas</h4></div><div class="card-body">
+@if(TempData["Error"] is string e){<div class="alert alert-warning">@e</div>}
+<form method="get" class="row g-2 mb-3"><div class="col-md-6"><label class="form-label">Aseguradora</label><select name="idAseguradora" class="form-select" onchange="this.form.submit()">@foreach(var a in aseguradoras){<option value="@a.IdAseguradora" selected="@(ViewBag.IdAseguradora==a.IdAseguradora)">@a.Nombre@(!a.Activa ? " (inactiva)" : "")</option>}</select></div><div class="col-md-3 align-self-end"><span class="text-muted small">@Model.Count conceptos tarifados</span></div></form>
+<p class="small text-muted">La tarifa convenida se aplica normalmente. Completa emergencia solo cuando el contrato con esta aseguradora establezca otro monto; si queda vacío, se usa la tarifa convenida.</p>
+@if (conceptos.Any())
+{
+<form method="post" asp-action="CrearTarifaAseguradora" class="row g-2 align-items-end border rounded p-3 mb-3">
+    <input type="hidden" name="idAseguradora" value="@ViewBag.IdAseguradora" />
+    <div class="col-md-6"><label class="form-label">Agregar producto o servicio</label><select name="concepto" class="form-select" required><option value="">Seleccione...</option>@foreach(var c in conceptos){<option value="@c.Clave">@c.Tipo · @c.Descripcion@(string.IsNullOrWhiteSpace(c.UnidadArea) ? "" : $" · {c.UnidadArea}")</option>}</select></div>
+    <div class="col-md-2"><label class="form-label">Tarifa convenida</label><input name="precioConvenido" type="number" min="0" step=".01" value="0.00" class="form-control" required /></div>
+    <div class="col-md-2"><label class="form-label">Emergencia (opcional)</label><input name="precioEmergencia" type="number" min="0" step=".01" class="form-control" /></div>
+    <div class="col-md-2"><button class="btn btn-primary w-100">Agregar</button></div>
+</form>
+}
+<div class="table-responsive"><table class="table table-sm table-striped table-hover" id="tablaTarifas"><thead class="table-dark"><tr><th>Tipo</th><th>Área / Unidad</th><th>Descripción oficial</th><th>Tarifa convenida</th><th>Emergencia (opcional)</th><th></th></tr></thead><tbody>
+@foreach(var t in Model){var formId=$"tarifa-{t.IdTarifa}";<tr class="@(t.Activa ? "" : "table-secondary")"><td>@t.Tipo</td><td>@t.UnidadArea</td><td>@t.Descripcion</td><td><input form="@formId" name="precioConvenido" type="number" min="0" step=".01" value="@t.PrecioConvenido.ToString("0.00",System.Globalization.CultureInfo.InvariantCulture)" class="form-control form-control-sm" style="min-width:110px"/></td><td><input form="@formId" name="precioEmergencia" type="number" min="0" step=".01" value="@(t.PrecioEmergencia?.ToString("0.00",System.Globalization.CultureInfo.InvariantCulture))" class="form-control form-control-sm" placeholder="Igual a tarifa convenida" style="min-width:160px"/></td><td class="text-nowrap"><form id="@formId" method="post" asp-action="ActualizarTarifaAseguradora"><input type="hidden" name="idAseguradora" value="@t.IdAseguradora"/><input type="hidden" name="idTarifa" value="@t.IdTarifa"/><button class="btn btn-sm btn-outline-primary">Guardar</button></form><form method="post" asp-action="ToggleTarifaAseguradora" class="mt-1"><input type="hidden" name="idAseguradora" value="@t.IdAseguradora"/><input type="hidden" name="idTarifa" value="@t.IdTarifa"/><input type="hidden" name="activa" value="@(!t.Activa)"/><button class="btn btn-sm @(t.Activa ? "btn-outline-secondary" : "btn-outline-success")">@(t.Activa ? "Desactivar" : "Activar")</button></form></td></tr>}
+</tbody></table></div>
+</div></div>
+@section Scripts { <partial name="_DataTablesButtonsScripts" /> }

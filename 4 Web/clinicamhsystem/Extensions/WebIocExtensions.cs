@@ -36,6 +36,9 @@ public static class WebIocExtensions
         services.AddScoped<IProductoService, ProductoService>();
         services.AddScoped<IMovimientoInventarioService, MovimientoInventarioService>();
         services.AddScoped<IVentaService, VentaService>();
+        services.AddScoped<IAseguradoraService, AseguradoraService>();
+        services.AddScoped<IAseguradoraTarifaService, AseguradoraTarifaService>();
+        services.AddScoped<IEstadoCuentaService, EstadoCuentaService>();
         services.AddScoped<IMetodoPagoService, MetodoPagoService>();
         services.AddScoped<ICategoriaGastoService, CategoriaGastoService>();
         services.AddScoped<IGastoService, GastoService>();

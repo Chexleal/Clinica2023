@@ -1,8 +1,67 @@
 @model List<ClinicaDomain.Aseguradora>
-@{ ViewData["Title"]="Aseguradoras"; }
-<div class="card shadow-lg mt-4"><div class="card-header"><h4>Aseguradoras</h4></div><div class="card-body">
-@if(TempData["Error"] is string e){<div class="alert alert-warning">@e</div>}
-<form method="post" asp-action="GuardarAseguradora" class="row g-2 mb-3"><div class="col"><label>Nombre</label><input name="nombre" class="form-control" required /></div><div class="col"><label>Identificador fiscal</label><input name="identificadorFiscal" class="form-control" /></div><div class="col"><label>Contacto</label><input name="contacto" class="form-control" /></div><div class="col"><label>Copago default</label><input name="copagoDefault" type="number" step=".01" min="0" value="0" class="form-control" /></div><div class="col"><label>Coaseguro %</label><input name="coaseguroPorcDefault" type="number" step=".01" min="0" max="100" value="0" class="form-control" /></div><div class="col-auto align-self-end"><button class="btn btn-primary">Agregar</button></div></form>
-<div class="table-responsive"><table class="table"><thead><tr><th>Nombre</th><th>Identificador fiscal</th><th>Contacto</th><th>Copago</th><th>Coaseguro</th><th>Activa</th><th></th><th>Tarifas</th></tr></thead><tbody>
-@foreach(var a in Model){var formId=$"aseguradora-{a.IdAseguradora}";<tr><td><input form="@formId" name="nombre" value="@a.Nombre" required class="form-control form-control-sm"/></td><td><input form="@formId" name="identificadorFiscal" value="@a.IdentificadorFiscal" class="form-control form-control-sm"/></td><td><input form="@formId" name="contacto" value="@a.Contacto" class="form-control form-control-sm"/></td><td><input form="@formId" name="copagoDefault" value="@a.CopagoDefault.ToString("0.00",System.Globalization.CultureInfo.InvariantCulture)" type="number" step=".01" min="0" class="form-control form-control-sm"/></td><td><input form="@formId" name="coaseguroPorcDefault" value="@a.CoaseguroPorcDefault.ToString("0.00",System.Globalization.CultureInfo.InvariantCulture)" type="number" step=".01" min="0" max="100" class="form-control form-control-sm"/></td><td><input form="@formId" type="checkbox" name="activa" value="true" checked="@a.Activa"/><input form="@formId" type="hidden" name="activa" value="false"/></td><td><form id="@formId" method="post" asp-action="GuardarAseguradora"><input type="hidden" name="id" value="@a.IdAseguradora"/><button class="btn btn-sm btn-outline-primary">Guardar</button></form></td><td><a class="btn btn-sm btn-outline-secondary" href="@Url.Action("TarifasAseguradora",new{idAseguradora=a.IdAseguradora})">Ver / editar</a></td></tr>}
-</tbody></table></div></div></div>
+@{
+    ViewData["Title"] = "Aseguradoras";
+}
+<div class="card shadow-lg p-3 mb-4 mt-4">
+    <div class="card-header bg-white d-flex align-items-center gap-2">
+        <a href="@Url.Action("Index", "Configuraciones")" class="btn btn-outline-secondary btn-sm" title="Volver a Configuraciones"><i class="fa-solid fa-arrow-left"></i></a>
+        <h4 class="mb-0"><i class="fa-solid fa-shield-halved" style="color:#2d8f77"></i> Aseguradoras</h4>
+    </div>
+    <div class="card-body">
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger py-2">@TempData["Error"]</div>
+        }
+        @if (TempData["Ok"] != null)
+        {
+            <div class="alert alert-success py-2">@TempData["Ok"]</div>
+        }
+        <h6>Agregar aseguradora</h6>
+        <form method="post" asp-action="GuardarAseguradora" class="row g-2 mb-3">
+            <div class="col-3"><label class="fw-bold small">Nombre *</label><input name="nombre" class="form-control form-control-sm" required /></div>
+            <div class="col-3"><label class="fw-bold small">Identificador fiscal</label><input name="identificadorFiscal" class="form-control form-control-sm" /></div>
+            <div class="col-2"><label class="fw-bold small">Contacto</label><input name="contacto" class="form-control form-control-sm" /></div>
+            <div class="col-2"><label class="fw-bold small">Copago default</label><input name="copagoDefault" type="number" step=".01" min="0" value="0" class="form-control form-control-sm" /></div>
+            <div class="col-2"><label class="fw-bold small">Coaseguro %</label><input name="coaseguroPorcDefault" type="number" step=".01" min="0" max="100" value="0" class="form-control form-control-sm" /></div>
+            <div class="col-12"><button class="btn btn-dark btn-sm"><i class="fa-solid fa-plus"></i> Agregar</button></div>
+        </form>
+
+        <hr class="mt-1 mb-3" />
+        <div class="table-responsive">
+            <table class="table table-sm table-hover tabla-config" data-search-placeholder="Buscar aseguradora" data-export-name="Aseguradoras">
+                <thead class="table-dark"><tr><th>Nombre</th><th>Identificador fiscal</th><th>Contacto</th><th>Copago</th><th>Coaseguro</th><th>Activa</th><th></th></tr></thead>
+                <tbody>
+                    @foreach (var a in Model)
+                    {
+                        var formId = $"aseguradora-{a.IdAseguradora}";
+                        <tr>
+                            <td><input form="@formId" name="nombre" value="@a.Nombre" required class="form-control form-control-sm" /></td>
+                            <td><input form="@formId" name="identificadorFiscal" value="@a.IdentificadorFiscal" class="form-control form-control-sm" /></td>
+                            <td><input form="@formId" name="contacto" value="@a.Contacto" class="form-control form-control-sm" /></td>
+                            <td><input form="@formId" name="copagoDefault" value="@a.CopagoDefault.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)" type="number" step=".01" min="0" class="form-control form-control-sm" /></td>
+                            <td><input form="@formId" name="coaseguroPorcDefault" value="@a.CoaseguroPorcDefault.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)" type="number" step=".01" min="0" max="100" class="form-control form-control-sm" /></td>
+                            <td><input form="@formId" type="checkbox" name="activa" value="true" checked="@a.Activa" /><input form="@formId" type="hidden" name="activa" value="false" /></td>
+                            <td class="text-nowrap text-end">
+                                <partial name="_AuditInfo" model="a" />
+                                <form id="@formId" method="post" asp-action="GuardarAseguradora" style="display:inline">
+                                    <input type="hidden" name="id" value="@a.IdAseguradora" />
+                                    <button class="btn btn-sm btn-outline-primary" title="Guardar"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+                                </form>
+                                <a class="btn btn-sm btn-outline-secondary" href="@Url.Action("TarifasAseguradora", new { idAseguradora = a.IdAseguradora })">Tarifas</a>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="7" class="text-center text-muted">Sin aseguradoras registradas.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_DataTablesButtonsScripts" />
+    <script src="~/js/pages/audit-info.js" asp-append-version="true"></script>
+    <script src="~/js/pages/tablas-config.js" asp-append-version="true"></script>
+}

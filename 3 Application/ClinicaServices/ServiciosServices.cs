@@ -16,7 +16,7 @@ namespace ClinicaServices
 
         public void AddServicio(MotivoCobro servicio);
 
-        public void UpdateServicio(Guid id, string descripcion, decimal precioSugerido);
+        public void UpdateServicio(Guid id, string descripcion, decimal precioSugerido, Guid? idCategoriaProducto = null, decimal? precioEmergenciaGeneral = null);
 
     }
     public class ServiciosServices(ClinicaContext dbContext) : IServiciosServices
@@ -42,6 +42,8 @@ namespace ClinicaServices
 
             //var servicioExistente = dbContext.MotivoCobros.FirstOrDefault(x=>x.Descripcion.Trim().ToLower().Replace(" ", "") == "");
 
+                if (servicio.PrecioSugerido < 0 || servicio.PrecioEmergenciaGeneral < 0) throw new ArgumentException("Los precios no pueden ser negativos.");
+                ValidarCategoriaServicio(servicio.IdCategoriaProducto);
                 servicio.IdMotivoCobro = Guid.NewGuid();
                 servicio.EstadoEliminado = false;
                 servicio.Descripcion = servicio.Descripcion.TextoCatalogo();
@@ -60,15 +62,30 @@ namespace ClinicaServices
                 dbContext.SaveChanges();
             }
         }
-        public void UpdateServicio(Guid id, string descripcion, decimal precioSugerido)
+        public void UpdateServicio(Guid id, string descripcion, decimal precioSugerido, Guid? idCategoriaProducto = null, decimal? precioEmergenciaGeneral = null)
         {
             var servicio = GetServicio(id);
             if (servicio is null) return;
             if (string.IsNullOrWhiteSpace(descripcion)) throw new ArgumentException("Descripción requerida.");
+            if (precioSugerido < 0 || precioEmergenciaGeneral < 0) throw new ArgumentException("Los precios no pueden ser negativos.");
+            if (idCategoriaProducto.HasValue) ValidarCategoriaServicio(idCategoriaProducto);
             servicio.Descripcion = descripcion.TextoCatalogo();
             servicio.PrecioSugerido = precioSugerido < 0 ? 0 : precioSugerido;
+            servicio.IdCategoriaProducto = idCategoriaProducto;
+            servicio.PrecioEmergenciaGeneral = precioEmergenciaGeneral;
             servicio.BeforeSaveChanges();
             dbContext.SaveChanges();
+        }
+
+        private void ValidarCategoriaServicio(Guid? idCategoriaProducto)
+        {
+            var categoria = idCategoriaProducto.HasValue
+                ? dbContext.CategoriasProducto.FirstOrDefault(c => c.IdCategoriaProducto == idCategoriaProducto.Value)
+                : null;
+            if (categoria is null || categoria.Tipo != "Servicio")
+                throw new ArgumentException("Seleccione una categoría activa para servicios.");
+            if (!categoria.Activo)
+                throw new ArgumentException("La categoría seleccionada está inactiva.");
         }
     }
 }

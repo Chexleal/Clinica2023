@@ -8,7 +8,7 @@ public interface ICategoriaProductoService
 {
     List<CategoriaProducto> GetAll(bool soloActivos = true);
     CategoriaProducto? Get(Guid id);
-    CategoriaProducto Crear(string nombre, string tipo, bool exigeLote, bool exigeVencimiento);
+    CategoriaProducto Crear(string nombre, string tipo, bool exigeLote, bool exigeVencimiento, int orden = 99);
     void Actualizar(CategoriaProducto categoria);
     void CambiarActivo(Guid id, bool activo);
     void EnsureSeed();
@@ -21,7 +21,7 @@ public class CategoriaProductoService(ClinicaContext db) : ICategoriaProductoSer
     {
         var q = db.CategoriasProducto.AsQueryable();
         if (soloActivos) q = q.Where(x => x.Activo);
-        var lista = q.OrderBy(x => x.Nombre).ToList();
+        var lista = q.OrderBy(x => x.Orden).ThenBy(x => x.Nombre).ToList();
         AuditoriaNombres.Completar(db, lista);
         return lista;
     }
@@ -29,20 +29,21 @@ public class CategoriaProductoService(ClinicaContext db) : ICategoriaProductoSer
     public CategoriaProducto? Get(Guid id) =>
         db.CategoriasProducto.FirstOrDefault(x => x.IdCategoriaProducto == id);
 
-    public CategoriaProducto Crear(string nombre, string tipo, bool exigeLote, bool exigeVencimiento)
+    public CategoriaProducto Crear(string nombre, string tipo, bool exigeLote, bool exigeVencimiento, int orden = 99)
     {
         var limpio = nombre.TextoCatalogo();
         if (string.IsNullOrWhiteSpace(limpio)) throw new ArgumentException("Nombre requerido.");
         if (tipo != "Bien" && tipo != "Servicio") tipo = "Bien";
-        var existente = db.CategoriasProducto.FirstOrDefault(x => x.Nombre.ToLower() == limpio.ToLower());
+        var existente = db.CategoriasProducto.FirstOrDefault(x => x.Nombre.ToLower() == limpio.ToLower() && x.Tipo == tipo);
         if (existente is not null) return existente;
         var nuevo = new CategoriaProducto
         {
             IdCategoriaProducto = Guid.NewGuid(),
             Nombre = limpio,
             Tipo = tipo,
-            ExigeLoteDefault = exigeLote,
-            ExigeVencimientoDefault = exigeVencimiento,
+            Orden = orden,
+            ExigeLoteDefault = tipo == "Bien" && exigeLote,
+            ExigeVencimientoDefault = tipo == "Bien" && exigeLote && exigeVencimiento,
             Activo = true
         };
         nuevo.BeforeSaveChanges();
@@ -53,6 +54,14 @@ public class CategoriaProductoService(ClinicaContext db) : ICategoriaProductoSer
 
     public void Actualizar(CategoriaProducto categoria)
     {
+        var entry = db.Entry(categoria);
+        var tipoOriginal = entry.State == EntityState.Detached
+            ? Get(categoria.IdCategoriaProducto)?.Tipo
+            : entry.Property(x => x.Tipo).OriginalValue;
+        if (!string.Equals(tipoOriginal, categoria.Tipo, StringComparison.Ordinal)
+            && (db.Productos.Any(p => p.IdCategoriaProducto == categoria.IdCategoriaProducto)
+                || db.MotivoCobros.Any(m => m.IdCategoriaProducto == categoria.IdCategoriaProducto)))
+            throw new InvalidOperationException("No se puede cambiar el tipo de una categoría que ya tiene productos o servicios asignados.");
         categoria.Nombre = categoria.Nombre.TextoCatalogo();
         categoria.BeforeSaveChanges();
         db.SaveChanges();
@@ -68,15 +77,30 @@ public class CategoriaProductoService(ClinicaContext db) : ICategoriaProductoSer
 
     public void EnsureSeed()
     {
-        if (db.CategoriasProducto.Any()) return;
-        var seeds = new (string Nombre, string Tipo, bool Lote, bool Vence)[]
+        if (db.CategoriasProducto.Any())
         {
-            ("MEDICAMENTO", "Bien", true, true),
-            ("MATERIAL ORTOPÉDICO", "Bien", false, false),
-            ("INSUMO DESECHABLE", "Bien", false, false),
-            ("MATERIAL DE CURACIÓN", "Bien", false, false),
-            ("SUPLEMENTOS / DERMOCOSMÉTICA", "Bien", false, false),
-            ("SERVICIOS MÉDICOS", "Servicio", false, false),
+            if (!db.CategoriasProducto.Any(c => c.Tipo == "Servicio" && c.Activo))
+            {
+                db.CategoriasProducto.Add(new CategoriaProducto
+                {
+                    IdCategoriaProducto = Guid.NewGuid(),
+                    Nombre = "SERVICIOS MÉDICOS",
+                    Tipo = "Servicio",
+                    Orden = 60,
+                    Activo = true
+                });
+                db.SaveChanges();
+            }
+            return;
+        }
+        var seeds = new (string Nombre, string Tipo, bool Lote, bool Vence, int Orden)[]
+        {
+            ("MEDICAMENTO", "Bien", true, true, 10),
+            ("MATERIAL ORTOPÉDICO", "Bien", false, false, 20),
+            ("INSUMO DESECHABLE", "Bien", false, false, 30),
+            ("MATERIAL DE CURACIÓN", "Bien", false, false, 40),
+            ("SUPLEMENTOS / DERMOCOSMÉTICA", "Bien", false, false, 50),
+            ("SERVICIOS MÉDICOS", "Servicio", false, false, 60),
         };
         foreach (var s in seeds)
         {
@@ -85,6 +109,7 @@ public class CategoriaProductoService(ClinicaContext db) : ICategoriaProductoSer
                 IdCategoriaProducto = Guid.NewGuid(),
                 Nombre = s.Nombre,
                 Tipo = s.Tipo,
+                Orden = s.Orden,
                 ExigeLoteDefault = s.Lote,
                 ExigeVencimientoDefault = s.Vence,
                 Activo = true
@@ -142,6 +167,7 @@ public class ProductoService(ClinicaContext db) : IProductoService
 
     public Producto Crear(Producto p)
     {
+        if (p.PrecioVenta < 0 || p.PrecioEmergenciaGeneral < 0) throw new ArgumentException("Los precios no pueden ser negativos.");
         p.IdProducto = Guid.NewGuid();
         p.StockActual = 0;
         p.Activo = true;
@@ -165,6 +191,7 @@ public class ProductoService(ClinicaContext db) : IProductoService
 
     public void Actualizar(Producto p)
     {
+        if (p.PrecioVenta < 0 || p.PrecioEmergenciaGeneral < 0) throw new ArgumentException("Los precios no pueden ser negativos.");
         p.Nombre = p.Nombre.TextoCatalogo();
         p.Sku = p.Sku.TextoCatalogo();
         p.UnidadMedida = p.UnidadMedida.TextoCatalogo();

@@ -14,5 +14,6 @@ namespace clinicamhsystem.Models
         // Tipos de pago de la cuenta
         public List<MetodoPago>? Metodos { get; set; }
         public List<VentaPago>? Pagos { get; set; }
+        public ClinicaServices.AseguradoraTarifaPrecios TarifasAseguradora { get; set; } = new();
     }
 }

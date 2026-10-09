@@ -150,6 +150,7 @@ public class PacienteServices(ClinicaContext dbContext, IErrorLogService errorLo
         if (pacienteDB is not null)
         {
             pacienteDB.Dpi = paciente.Dpi;
+            pacienteDB.IdentificadorFiscal = paciente.IdentificadorFiscal;
             pacienteDB.Nombre = paciente.Nombre.NombrePropio();
             pacienteDB.Apellido = paciente.Apellido.NombrePropio();
             pacienteDB.FechaNacimiento = paciente.FechaNacimiento;

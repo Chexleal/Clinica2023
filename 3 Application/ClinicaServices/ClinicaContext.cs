@@ -68,6 +68,8 @@ public partial class ClinicaContext : DbContext
     public virtual DbSet<VentaPago> VentaPagos { get; set; }
     public virtual DbSet<CategoriaGasto> CategoriasGasto { get; set; }
     public virtual DbSet<Gasto> Gastos { get; set; }
+    public virtual DbSet<Aseguradora> Aseguradoras { get; set; }
+    public virtual DbSet<AseguradoraTarifa> AseguradoraTarifas { get; set; }
 
     public override int SaveChanges()
     {
@@ -347,11 +349,46 @@ public partial class ClinicaContext : DbContext
                 .HasMaxLength(250)
                 .IsUnicode(false)
                 .HasColumnName("descripcion");
+            entity.Property(e => e.Area).HasMaxLength(100).IsUnicode(false).HasColumnName("area");
             entity.Property(e => e.EstadoEliminado).HasColumnName("estado_eliminado");
             entity.Property(e => e.PrecioSugerido)
                 .HasColumnType("decimal(15, 2)")
                 .HasColumnName("precio_sugerido");
+            entity.Property(e => e.PrecioEmergenciaGeneral).HasColumnType("decimal(15, 2)").HasColumnName("precio_emergencia_general");
+            entity.Property(e => e.IdCategoriaProducto).HasColumnName("id_categoria_producto");
+            entity.HasIndex(e => e.IdCategoriaProducto).HasDatabaseName("IX_MotivoCobro_CategoriaProducto");
 
+        });
+
+        modelBuilder.Entity<Aseguradora>(entity =>
+        {
+            entity.HasKey(e => e.IdAseguradora).HasName("PK_Aseguradora");
+            entity.ToTable("Aseguradora");
+            entity.Property(e => e.IdAseguradora).ValueGeneratedNever().HasColumnName("id_aseguradora");
+            entity.Property(e => e.IdHospital).HasColumnName("id_hospital");
+            entity.Property(e => e.Nombre).HasMaxLength(150).IsUnicode(false).HasColumnName("nombre").IsRequired();
+            entity.Property(e => e.IdentificadorFiscal).HasMaxLength(50).IsUnicode(false).HasColumnName("identificador_fiscal");
+            entity.Property(e => e.Contacto).HasMaxLength(200).IsUnicode(false).HasColumnName("contacto");
+            entity.Property(e => e.CopagoDefault).HasColumnType("decimal(15, 2)").HasColumnName("copago_default");
+            entity.Property(e => e.CoaseguroPorcDefault).HasColumnType("decimal(5, 2)").HasColumnName("coaseguro_porc_default");
+            entity.Property(e => e.Activa).HasColumnName("activa");
+            entity.HasIndex(e => new { e.IdHospital, e.Nombre }).IsUnique().HasDatabaseName("UQ_Aseguradora_Hospital_Nombre");
+        });
+
+        modelBuilder.Entity<AseguradoraTarifa>(entity =>
+        {
+            entity.HasKey(e => e.IdAseguradoraTarifa).HasName("PK_AseguradoraTarifa");
+            entity.ToTable("Aseguradora_tarifa");
+            entity.Property(e => e.IdAseguradoraTarifa).ValueGeneratedNever().HasColumnName("id_aseguradora_tarifa");
+            entity.Property(e => e.IdHospital).HasColumnName("id_hospital");
+            entity.Property(e => e.IdAseguradora).HasColumnName("id_aseguradora");
+            entity.Property(e => e.IdProducto).HasColumnName("id_producto");
+            entity.Property(e => e.IdMotivoCobro).HasColumnName("id_motivo_cobro");
+            entity.Property(e => e.PrecioConvenido).HasColumnType("decimal(15, 2)").HasColumnName("precio_convenido");
+            entity.Property(e => e.PrecioEmergencia).HasColumnType("decimal(15, 2)").HasColumnName("precio_emergencia");
+            entity.Property(e => e.Activa).HasColumnName("activa");
+            entity.HasIndex(e => new { e.IdAseguradora, e.IdProducto }).IsUnique().HasFilter("[id_producto] IS NOT NULL").HasDatabaseName("UQ_AseguradoraTarifa_Producto");
+            entity.HasIndex(e => new { e.IdAseguradora, e.IdMotivoCobro }).IsUnique().HasFilter("[id_motivo_cobro] IS NOT NULL").HasDatabaseName("UQ_AseguradoraTarifa_Servicio");
         });
 
         modelBuilder.Entity<Paciente>(entity =>
@@ -383,6 +420,7 @@ public partial class ClinicaContext : DbContext
                 .HasMaxLength(100)
                 .IsUnicode(false)
                 .HasColumnName("direccion");
+            entity.Property(e => e.IdentificadorFiscal).HasMaxLength(50).IsUnicode(false).HasColumnName("identificador_fiscal");
             entity.Property(e => e.Dpi)
                 .HasMaxLength(16)
                 .IsUnicode(false)
@@ -663,6 +701,8 @@ public partial class ClinicaContext : DbContext
             entity.Property(e => e.ExigeLoteDefault).HasColumnName("exige_lote_default");
             entity.Property(e => e.ExigeVencimientoDefault).HasColumnName("exige_vencimiento_default");
             entity.Property(e => e.Activo).HasColumnName("activo");
+            entity.Property(e => e.Orden).HasColumnName("orden");
+            entity.HasIndex(e => new { e.IdHospital, e.Orden }).HasDatabaseName("IX_CategoriaProducto_Hospital_Orden");
         });
 
         modelBuilder.Entity<Producto>(entity =>
@@ -675,6 +715,7 @@ public partial class ClinicaContext : DbContext
             entity.Property(e => e.IdCategoriaProducto).HasColumnName("id_categoria_producto");
             entity.Property(e => e.UnidadMedida).HasMaxLength(30).IsUnicode(false).HasColumnName("unidad_medida");
             entity.Property(e => e.PrecioVenta).HasColumnType("decimal(15, 2)").HasColumnName("precio_venta");
+            entity.Property(e => e.PrecioEmergenciaGeneral).HasColumnType("decimal(15, 2)").HasColumnName("precio_emergencia_general");
             entity.Property(e => e.CostoUltimo).HasColumnType("decimal(15, 2)").HasColumnName("costo_ultimo");
             entity.Property(e => e.StockActual).HasColumnType("decimal(18, 2)").HasColumnName("stock_actual");
             entity.Property(e => e.StockMinimo).HasColumnType("decimal(18, 2)").HasColumnName("stock_minimo");
@@ -730,6 +771,13 @@ public partial class ClinicaContext : DbContext
             entity.Property(e => e.Observaciones).HasMaxLength(300).IsUnicode(false).HasColumnName("observaciones");
             entity.Property(e => e.FiadoResponsable).HasMaxLength(200).IsUnicode(false).HasColumnName("fiado_responsable");
             entity.Property(e => e.FechaPromesa).HasColumnName("fecha_promesa");
+            entity.Property(e => e.IdAseguradora).HasColumnName("id_aseguradora");
+            entity.Property(e => e.PolizaCertificado).HasMaxLength(100).IsUnicode(false).HasColumnName("poliza_certificado");
+            entity.Property(e => e.Autorizacion).HasMaxLength(100).IsUnicode(false).HasColumnName("autorizacion");
+            entity.Property(e => e.ServicioAtencion).HasMaxLength(150).IsUnicode(false).HasColumnName("servicio_atencion");
+            entity.Property(e => e.TipoAtencion).HasConversion<string>().HasMaxLength(20).IsUnicode(false).HasColumnName("tipo_atencion").HasDefaultValue(TipoAtencion.Normal);
+            entity.Property(e => e.Copago).HasColumnType("decimal(15, 2)").HasColumnName("copago");
+            entity.Property(e => e.CoaseguroPorc).HasColumnType("decimal(5, 2)").HasColumnName("coaseguro_porc");
             entity.HasIndex(e => e.Folio).IsUnique().HasDatabaseName("UQ_Venta_Folio");
             entity.HasIndex(e => e.IdConsulta).HasDatabaseName("IX_Venta_Consulta");
         });
@@ -878,6 +926,8 @@ public partial class ClinicaContext : DbContext
         modelBuilder.Entity<EstudioImagen>().Property(e => e.IdClinica).HasColumnName("id_clinica");
         modelBuilder.Entity<Venta>().Property(e => e.IdClinica).HasColumnName("id_clinica");
         modelBuilder.Entity<Venta>().Property(e => e.IdHospital).HasColumnName("id_hospital");
+        modelBuilder.Entity<Aseguradora>().Property(e => e.IdHospital).HasColumnName("id_hospital");
+        modelBuilder.Entity<AseguradoraTarifa>().Property(e => e.IdHospital).HasColumnName("id_hospital");
         modelBuilder.Entity<Gasto>().Property(e => e.IdClinica).HasColumnName("id_clinica");
         modelBuilder.Entity<Gasto>().Property(e => e.IdHospital).HasColumnName("id_hospital");
         modelBuilder.Entity<Producto>().Property(e => e.IdHospital).HasColumnName("id_hospital");
@@ -946,6 +996,8 @@ public partial class ClinicaContext : DbContext
         modelBuilder.Entity<MovimientoInventario>().HasQueryFilter(e => BypassHospitalTenant || e.IdHospital == TenantHospitalId || e.IdHospital == Guid.Empty);
         modelBuilder.Entity<MotivoCobro>().HasQueryFilter(e => BypassHospitalTenant || e.IdHospital == TenantHospitalId || e.IdHospital == Guid.Empty);
         modelBuilder.Entity<CategoriaProducto>().HasQueryFilter(e => BypassHospitalTenant || e.IdHospital == TenantHospitalId || e.IdHospital == Guid.Empty);
+        modelBuilder.Entity<Aseguradora>().HasQueryFilter(e => BypassHospitalTenant || e.IdHospital == TenantHospitalId || e.IdHospital == Guid.Empty);
+        modelBuilder.Entity<AseguradoraTarifa>().HasQueryFilter(e => BypassHospitalTenant || e.IdHospital == TenantHospitalId || e.IdHospital == Guid.Empty);
         modelBuilder.Entity<CategoriaGasto>().HasQueryFilter(e => BypassHospitalTenant || e.IdHospital == TenantHospitalId || e.IdHospital == Guid.Empty);
         modelBuilder.Entity<MetodoPago>().HasQueryFilter(e => BypassHospitalTenant || e.IdHospital == TenantHospitalId || e.IdHospital == Guid.Empty);
         modelBuilder.Entity<CatalogoIndicacion>().HasQueryFilter(e => BypassHospitalTenant || e.IdHospital == TenantHospitalId || e.IdHospital == Guid.Empty);

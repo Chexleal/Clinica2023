@@ -16,6 +16,9 @@ public partial class Producto : Base, IHospitalTenant
 
     public decimal PrecioVenta { get; set; }
 
+    /// <summary>Precio general excepcional para emergencias; una tarifa de aseguradora tiene precedencia.</summary>
+    public decimal? PrecioEmergenciaGeneral { get; set; }
+
     public decimal CostoUltimo { get; set; }
 
     public decimal StockActual { get; set; }

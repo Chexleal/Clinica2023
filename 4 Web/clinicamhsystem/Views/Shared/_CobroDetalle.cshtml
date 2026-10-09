@@ -13,8 +13,12 @@
     var total = subServicios + subProductos;
     string fmt(decimal v) => v.ToString("0.00");
     var inv = System.Globalization.CultureInfo.InvariantCulture;
-    var primerPrecioProd = (Model.Productos?.FirstOrDefault()?.PrecioVenta ?? 0) > 0
-        ? Model.Productos!.First().PrecioVenta.ToString("0.00", inv) : "";
+    decimal PrecioPorContexto(ClinicaServices.AseguradoraTarifaPrecio? tarifa, decimal catalogo, decimal? emergenciaGeneral) => tarifa is null
+        ? (venta?.TipoAtencion == ClinicaDomain.TipoAtencion.Emergencia ? emergenciaGeneral ?? catalogo : catalogo)
+        : venta?.TipoAtencion == ClinicaDomain.TipoAtencion.Emergencia ? tarifa.Emergencia ?? tarifa.Convenido : tarifa.Convenido;
+    var primerProducto = Model.Productos?.FirstOrDefault();
+    var primerPrecioValor = primerProducto is null ? 0 : PrecioPorContexto(Model.TarifasAseguradora.Productos.GetValueOrDefault(primerProducto.IdProducto), primerProducto.PrecioVenta, primerProducto.PrecioEmergenciaGeneral);
+    var primerPrecioProd = primerPrecioValor > 0 ? primerPrecioValor.ToString("0.00", inv) : "";
 }
 
 <style>
@@ -78,13 +82,18 @@
         <form id="agregarDetalleForm" method="POST">
             <input hidden id="IdConsulta" name="idConsulta" value="@Model.consulta?.IdConsulta" />
             <input hidden id="IdVentaServ" name="idVenta" value="@venta?.IdVenta" />
+            <input type="hidden" name="tipoAtencion" value="@venta?.TipoAtencion" class="js-tipo-atencion" />
             <div class="row g-2 align-items-end">
                 <div class="col-md-5">
                     <label class="small fw-bold" for="idMotivoCobro">Servicio</label>
                     <select class="form-select form-select-sm select2" id="idMotivoCobro" name="idMotivoCobro" style="width:100%;">
                         @foreach (var opcion in (Model.Servicios ?? new List<ClinicaDomain.MotivoCobro>()))
                         {
-                            <option value="@opcion.IdMotivoCobro" data-precio="@opcion.PrecioSugerido.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)">@opcion.Descripcion (Q@(fmt(opcion.PrecioSugerido)))</option>
+                            var tarifaServicio = Model.TarifasAseguradora.Servicios.GetValueOrDefault(opcion.IdMotivoCobro);
+                            var precioBase = tarifaServicio?.Convenido ?? opcion.PrecioSugerido;
+                            var precioUrgencia = tarifaServicio is not null ? tarifaServicio.Emergencia ?? tarifaServicio.Convenido : opcion.PrecioEmergenciaGeneral ?? opcion.PrecioSugerido;
+                            var precioCatalogo = PrecioPorContexto(tarifaServicio, opcion.PrecioSugerido, opcion.PrecioEmergenciaGeneral);
+                            <option value="@opcion.IdMotivoCobro" data-precio-general="@opcion.PrecioSugerido.ToString("0.00", inv)" data-emergencia-general="@(opcion.PrecioEmergenciaGeneral?.ToString("0.00", inv))" data-precio-base="@precioBase.ToString("0.00", inv)" data-precio-emergencia="@precioUrgencia.ToString("0.00", inv)" data-precio="@precioCatalogo.ToString("0.00", inv)">@(string.IsNullOrWhiteSpace(opcion.Area) ? "" : $"{opcion.Area} — ")@opcion.Descripcion (Q@(fmt(precioCatalogo)))</option>
                         }
                     </select>
                 </div>
@@ -110,13 +119,18 @@
     <div id="panel-agregar-producto" class="border rounded-3 p-3 bg-light-subtle" style="display:none;">
         <form id="agregarProductoForm" method="POST">
             <input hidden id="IdVentaProd" name="idVenta" value="@venta?.IdVenta" />
+            <input type="hidden" name="tipoAtencion" value="@venta?.TipoAtencion" class="js-tipo-atencion" />
             <div class="row g-2 align-items-end">
                 <div class="col-md-4">
                     <label class="small fw-bold" for="idProducto">Producto de inventario</label>
                         <select class="form-select form-select-sm select2" id="idProducto" name="idProducto" style="width:100%;">
                         @foreach (var p in (Model.Productos ?? new List<ClinicaDomain.Producto>()))
                         {
-                            <option value="@p.IdProducto" data-precio="@p.PrecioVenta.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)">@p.Nombre - Q@(fmt(p.PrecioVenta)) (stock: @p.StockActual)</option>
+                            var tarifaProducto = Model.TarifasAseguradora.Productos.GetValueOrDefault(p.IdProducto);
+                            var precioBase = tarifaProducto?.Convenido ?? p.PrecioVenta;
+                            var precioUrgencia = tarifaProducto is not null ? tarifaProducto.Emergencia ?? tarifaProducto.Convenido : p.PrecioEmergenciaGeneral ?? p.PrecioVenta;
+                            var precioCatalogo = PrecioPorContexto(tarifaProducto, p.PrecioVenta, p.PrecioEmergenciaGeneral);
+                            <option value="@p.IdProducto" data-precio-general="@p.PrecioVenta.ToString("0.00", inv)" data-emergencia-general="@(p.PrecioEmergenciaGeneral?.ToString("0.00", inv))" data-precio-base="@precioBase.ToString("0.00", inv)" data-precio-emergencia="@precioUrgencia.ToString("0.00", inv)" data-precio="@precioCatalogo.ToString("0.00", inv)">@p.Nombre@(string.IsNullOrWhiteSpace(p.UnidadMedida) || p.UnidadMedida == "Unidad" ? "" : $" · {p.UnidadMedida}") - Q@(fmt(precioCatalogo)) (stock: @p.StockActual)</option>
                         }
                     </select>
                 </div>

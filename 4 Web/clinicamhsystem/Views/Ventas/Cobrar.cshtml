@@ -9,8 +9,12 @@
 <div class="card shadow-lg mt-4">
     <div class="card-header bg-white d-flex flex-wrap align-items-center gap-2">
         <h4 class="mb-0">Cobrar <span class="badge bg-secondary ms-2">@venta?.Folio</span></h4>
-        <span class="small text-muted ms-2">Venta de mostrador (sin consulta)</span>
-        <a href="@Url.Action("Index", "Ventas", new { guardado = venta?.Folio })" class="btn btn-outline-primary btn-sm ms-auto"><i class="fa-solid fa-floppy-disk me-1"></i>Guardar temporal</a>
+        <span class="small text-muted ms-2">@(venta?.IdConsulta.HasValue == true ? "Cuenta vinculada a consulta" : "Venta de mostrador (sin consulta)")</span>
+        <form id="guardarTemporalForm" asp-controller="Ventas" asp-action="GuardarTemporal" method="post" class="d-none">
+            <input type="hidden" name="id" value="@venta?.IdVenta" />
+        </form>
+        <button type="submit" form="guardarTemporalForm" class="btn btn-outline-primary btn-sm ms-auto"><i class="fa-solid fa-floppy-disk me-1"></i>Guardar temporal</button>
+        <a id="estadoCuentaLink" href="@Url.Action("Ver", "EstadosCuenta", new { id = venta?.IdVenta })" target="_blank" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-print me-1"></i>Imprimir</a>
         <a href="@Url.Action("Index", "Ventas", new { guardado = venta?.Folio })" class="btn btn-outline-secondary btn-sm">Volver</a>
         @if ((Model.VentaDetalles == null || !Model.VentaDetalles.Any()) && (Model.Pagos == null || !Model.Pagos.Any()))
         {
@@ -27,9 +31,45 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         }
+        <div class="border rounded p-3 mb-3">
+            <div class="row g-2 mb-2"><div class="col-md-4"><label class="form-label" for="tipoAtencion">Tipo de atención</label><select id="tipoAtencion" name="tipoAtencion" form="guardarTemporalForm" data-coverage-name="tipoAtencion" class="form-select"><option value="Normal" selected="@(venta?.TipoAtencion != ClinicaDomain.TipoAtencion.Emergencia)">Normal</option><option value="Emergencia" selected="@(venta?.TipoAtencion == ClinicaDomain.TipoAtencion.Emergencia)">Emergencia</option></select></div></div>
+            <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="usaAseguradora" checked="@(venta?.IdAseguradora != null)" /><label class="form-check-label" for="usaAseguradora">Cuenta aseguradora</label></div>
+            <div id="coberturaCampos" class="row g-2">
+                <div class="col-md-4"><label class="form-label">Aseguradora</label><select id="idAseguradora" name="idAseguradora" form="guardarTemporalForm" data-coverage-name="idAseguradora" class="form-select"><option value="">Seleccione...</option>@foreach (var a in (IEnumerable<ClinicaDomain.Aseguradora>)(ViewBag.Aseguradoras ?? new List<ClinicaDomain.Aseguradora>())) { <option value="@a.IdAseguradora" data-copago="@a.CopagoDefault" data-coaseguro="@a.CoaseguroPorcDefault" selected="@(venta?.IdAseguradora == a.IdAseguradora)">@a.Nombre (@a.IdentificadorFiscal)</option> }</select></div>
+                <div class="col-md-2"><label class="form-label">Copago</label><input name="copago" id="copago" form="guardarTemporalForm" data-coverage-name="copago" type="number" min="0" step="0.01" class="form-control" value="@(venta?.Copago ?? 0)" /></div>
+                <div class="col-md-2"><label class="form-label">Coaseguro %</label><input name="coaseguroPorc" id="coaseguroPorc" form="guardarTemporalForm" data-coverage-name="coaseguroPorc" type="number" min="0" max="100" step="0.01" class="form-control" value="@(venta?.CoaseguroPorc ?? 0)" /></div>
+                <div class="col-md-4"><label class="form-label">Póliza / Certificado</label><input name="polizaCertificado" form="guardarTemporalForm" data-coverage-name="polizaCertificado" class="form-control" value="@venta?.PolizaCertificado" /></div>
+                <div class="col-md-4"><label class="form-label">Autorización</label><input name="autorizacion" form="guardarTemporalForm" data-coverage-name="autorizacion" class="form-control" value="@venta?.Autorizacion" /></div>
+                <div class="col-md-4"><label class="form-label">Servicio de atención</label><input name="servicioAtencion" form="guardarTemporalForm" data-coverage-name="servicioAtencion" class="form-control" value="@venta?.ServicioAtencion" /></div>
+            </div>
+        </div>
         <partial name="_CobroDetalle" model="Model" />
     </div>
 </div>
 @section Scripts{
     <script src="~/js/pages/pagos.js" asp-append-version="true"></script>
+    <script>
+        (() => { const toggle=document.getElementById('usaAseguradora'), campos=document.getElementById('coberturaCampos'), select=document.getElementById('idAseguradora');
+        const update=()=>{ campos.hidden=!toggle.checked; if(!toggle.checked){select.value=''; select.dispatchEvent(new Event('change'));} };
+        toggle.addEventListener('change',update); update();
+        select.addEventListener('change',()=>{const o=select.selectedOptions[0]; if(o?.dataset.copago!==undefined){document.getElementById('copago').value=o.dataset.copago; document.getElementById('coaseguroPorc').value=o.dataset.coaseguro;}}); })();
+        (() => {
+            const coverageFields = [...document.querySelectorAll('[data-coverage-name]')];
+            const insurerEnabled = document.getElementById('usaAseguradora');
+            document.querySelectorAll('form[action*="/Ventas/Finalizar"], form[action*="/Ventas/PendientePago"]').forEach(form => {
+                form.addEventListener('submit', () => {
+                    form.querySelectorAll('[data-coverage-copy="true"]').forEach(input => input.remove());
+                    const enabled = insurerEnabled.checked;
+                    const flag = document.createElement('input');
+                    flag.type = 'hidden'; flag.name = 'guardarCobertura'; flag.value = 'true'; flag.dataset.coverageCopy = 'true'; form.appendChild(flag);
+                    coverageFields.forEach(field => {
+                        const hidden = document.createElement('input');
+                        hidden.type = 'hidden'; hidden.name = field.dataset.coverageName;
+                        hidden.value = !enabled && hidden.name === 'idAseguradora' ? '' : field.value;
+                        hidden.dataset.coverageCopy = 'true'; form.appendChild(hidden);
+                    });
+                });
+            });
+        })();
+    </script>
 }

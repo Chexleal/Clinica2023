@@ -32,6 +32,10 @@
                         <span asp-validation-for="Dpi" class="text-danger"></span>
                     </div>
                     <div class="form-group">
+                        <label asp-for="IdentificadorFiscal" class="control-label">Identificador fiscal</label>
+                        <input asp-for="IdentificadorFiscal" class="form-control" autocomplete="off" />
+                    </div>
+                    <div class="form-group">
                         <label asp-for="FechaNacimiento" class="control-label">Fecha de nacimiento</label>
                         <input asp-for="FechaNacimiento" type="date" class="form-control" />
                         <span asp-validation-for="FechaNacimiento" class="text-danger"></span>

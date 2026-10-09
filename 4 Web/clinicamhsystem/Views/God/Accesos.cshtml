@@ -44,8 +44,8 @@
         <div class="card-header py-3">Clínicas asignadas <small class="text-muted fw-normal">· marca la de inicio con "Default"</small></div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light"><tr><th style="width:3rem">Acceso</th><th>Clínica</th><th>Hospital</th><th style="width:6rem">Default</th></tr></thead>
+                <table class="table table-hover align-middle mb-0 tabla-config" data-search-placeholder="Buscar clínica" data-export-name="AccesosClinicas">
+                    <thead class="table-light"><tr><th style="width:3rem">Acceso</th><th>Clínica</th><th>Hospital</th><th style="width:6rem">Default</th><th class="text-end">Info</th></tr></thead>
                     <tbody>
                     @foreach (var c in clinicas)
                     {
@@ -54,11 +54,12 @@
                             <td class="fw-semibold">@c.Nombre</td>
                             <td class="text-muted">@c.Hospital?.Nombre</td>
                             <td><input type="radio" class="form-check-input" name="defaultClinicaId" value="@c.IdClinica" @(def == c.IdClinica ? "checked" : "") /></td>
+                            <td class="text-end"><partial name="_AuditInfo" model="c" /></td>
                         </tr>
                     }
                     @if (!clinicas.Any())
                     {
-                        <tr><td colspan="4" class="text-center text-muted py-4">Sin clínicas activas.</td></tr>
+                        <tr><td colspan="5" class="text-center text-muted py-4">Sin clínicas activas.</td></tr>
                     }
                     </tbody>
                 </table>
@@ -70,3 +71,9 @@
         <a class="btn btn-outline-secondary" asp-action="Usuarios">Volver</a>
     </div>
 </form>
+
+@section Scripts {
+    <partial name="_DataTablesButtonsScripts" />
+    <script src="~/js/pages/audit-info.js" asp-append-version="true"></script>
+    <script src="~/js/pages/tablas-config.js" asp-append-version="true"></script>
+}

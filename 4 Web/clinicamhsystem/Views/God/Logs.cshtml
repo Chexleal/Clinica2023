@@ -68,7 +68,7 @@
             <div class="card-header py-3"><i class="fa-solid fa-clock-rotate-left me-1"></i>Últimos movimientos (200)</div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
+                    <table class="table table-hover align-middle mb-0 tabla-config" data-search-placeholder="Buscar movimiento" data-export-name="Auditoria">
                         <thead class="table-light"><tr><th>Fecha</th><th>Entidad</th><th>Registro</th><th>Acción</th><th>Usuario</th><th>Ámbito</th></tr></thead>
                         <tbody>
                         @foreach (var ev in auditoria)
@@ -122,7 +122,17 @@
 
 @section Scripts {
     <partial name="_DataTablesButtonsScripts" />
+    <script src="~/js/pages/audit-info.js" asp-append-version="true"></script>
+    <script src="~/js/pages/tablas-config.js" asp-append-version="true"></script>
     <script>
+        // Reajusta DataTables al mostrar un tab (las tablas ocultas calculan mal el ancho).
+        document.querySelectorAll('button[data-bs-toggle="pill"]').forEach(function (btn) {
+            btn.addEventListener('shown.bs.tab', function () {
+                if (window.jQuery && $.fn.dataTable) {
+                    $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
+                }
+            });
+        });
         function escHtml(s) {
             return String(s == null ? '' : s)
                 .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -167,10 +177,12 @@
                     {
                         targets: 6,
                         render: function (data, type, row) {
-                            return '<button class="btn btn-sm btn-outline-dark" onclick="verError(\'' + row.idErrorLog + '\')"><i class="fa-solid fa-eye me-1"></i>Ver</button>';
+                            return '<span class="audit-info me-1" tabindex="0" role="button" data-bs-toggle="popover" data-bs-trigger="manual-hover" data-bs-placement="top" data-bs-html="true" data-audit-id="' + escHtml(row.idErrorLog) + '" data-audit-autor="sistema"><i class="fa-solid fa-circle-info"></i></span>'
+                                + '<button class="btn btn-sm btn-outline-dark" onclick="verError(\'' + row.idErrorLog + '\')"><i class="fa-solid fa-eye me-1"></i>Ver</button>';
                         }
                     }
                 ],
+                drawCallback: function () { if (typeof initAuditPopovers === 'function') initAuditPopovers(); },
                 language: DataTablesCommon.withLanguage({ searchPlaceholder: 'Buscar en logs' }),
                 buttons: DataTablesCommon.exportButtons('Errores', [0, 1, 2, 3, 4, 5], false)
             });

@@ -35,7 +35,8 @@
                             <td>@item.MotivoConsulta</td>
                             <td>@item.Total</td>
                             <td>
-                                <div class="options d-flex ">
+                                <div class="options d-flex align-items-center gap-1">
+                                    <partial name="_AuditInfo" model="item" />
                                     <a class="option" href="@Url.Action("Pagar","Consultas",new{consultaId=item.IdConsulta})">Pagar</a>
                                     <button class="option" onclick="ShowEditModal('@item.IdConsulta')">Editar</button>
                                     <form asp-action="Eliminar" asp-route-id="@item.IdConsulta">
@@ -52,6 +53,7 @@
 </div>
 
 @section Scripts{
+    <script src="~/js/pages/audit-info.js" asp-append-version="true"></script>
     <script src="~/js/pages/consultas.js" asp-append-version="true"></script>
     <script>
         let urls = {

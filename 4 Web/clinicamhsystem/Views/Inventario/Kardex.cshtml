@@ -13,18 +13,21 @@
         @if (producto.RequiereLote)
         {
             <h6>Lotes disponibles</h6>
-            <table class="table table-sm"><thead><tr><th>Lote</th><th>Vence</th><th>Stock</th><th>Costo</th></tr></thead>
-            <tbody>@foreach (var l in lotes){<tr><td>@l.CodigoLote</td><td>@l.FechaVencimiento?.ToString("d")</td><td>@l.Stock</td><td>@l.CostoUnitario</td></tr>}</tbody></table>
+            <table class="table table-sm"><thead><tr><th>Lote</th><th>Vence</th><th>Stock</th><th>Costo</th><th class="text-end">Info</th></tr></thead>
+            <tbody>@foreach (var l in lotes){<tr><td>@l.CodigoLote</td><td>@l.FechaVencimiento?.ToString("d")</td><td>@l.Stock</td><td>@l.CostoUnitario</td><td class="text-end"><partial name="_AuditInfo" model="l" /></td></tr>}</tbody></table>
         }
         <h6 class="mt-3">Movimientos</h6>
         <table class="table table-sm table-striped">
-            <thead class="table-dark"><tr><th>Fecha</th><th>Tipo</th><th>Cantidad</th><th>Costo</th><th>Motivo</th></tr></thead>
+            <thead class="table-dark"><tr><th>Fecha</th><th>Tipo</th><th>Cantidad</th><th>Costo</th><th>Motivo</th><th class="text-end">Info</th></tr></thead>
             <tbody>
                 @foreach (var m in Model)
                 {
-                    <tr><td>@m.Fecha.ToString("g")</td><td>@m.Tipo</td><td>@m.Cantidad</td><td>@m.CostoUnitario</td><td>@m.Motivo</td></tr>
+                    <tr><td>@m.Fecha.ToString("g")</td><td>@m.Tipo</td><td>@m.Cantidad</td><td>@m.CostoUnitario</td><td>@m.Motivo</td><td class="text-end"><partial name="_AuditInfo" model="m" /></td></tr>
                 }
             </tbody>
         </table>
     </div>
 </div>
+@section Scripts {
+    <script src="~/js/pages/audit-info.js" asp-append-version="true"></script>
+}

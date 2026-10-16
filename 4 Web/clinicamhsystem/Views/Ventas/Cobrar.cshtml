@@ -31,6 +31,17 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         }
+        @if (ViewBag.PuedeVenderSinInventario == true)
+        {
+            <form asp-controller="Ventas" asp-action="ConfigurarSinAfectarInventario" method="post" class="alert alert-warning d-flex align-items-center gap-2">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="idVenta" value="@venta?.IdVenta" />
+                <input class="form-check-input mt-0" type="checkbox" id="sinAfectarInventario" name="habilitado" value="true" checked="@(venta?.SinAfectarInventario == true)" disabled="@(venta?.Estado != "Pendiente")" onchange="this.form.submit()" />
+                <input type="hidden" name="habilitado" value="false" />
+                <label class="form-check-label" for="sinAfectarInventario"><strong>No descontar inventario</strong> en esta venta completa</label>
+                @if (venta?.SinAfectarInventario == true) { <span class="small">No se validará ni modificará el stock al cobrar.</span> }
+            </form>
+        }
         <div class="border rounded p-3 mb-3">
             <div class="row g-2 mb-2"><div class="col-md-4"><label class="form-label" for="tipoAtencion">Tipo de atención</label><select id="tipoAtencion" name="tipoAtencion" form="guardarTemporalForm" data-coverage-name="tipoAtencion" class="form-select"><option value="Normal" selected="@(venta?.TipoAtencion != ClinicaDomain.TipoAtencion.Emergencia)">Normal</option><option value="Emergencia" selected="@(venta?.TipoAtencion == ClinicaDomain.TipoAtencion.Emergencia)">Emergencia</option></select></div></div>
             <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="usaAseguradora" checked="@(venta?.IdAseguradora != null)" /><label class="form-check-label" for="usaAseguradora">Cuenta aseguradora</label></div>

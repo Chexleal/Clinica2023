@@ -24,13 +24,14 @@ public class GodController(
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult GuardarHospital(Hospital hospital)
+    public IActionResult GuardarHospital(Hospital hospital, bool permitirVentasSinInventario = false)
     {
         if (string.IsNullOrWhiteSpace(hospital.Nombre))
         {
             TempData["Error"] = "El nombre del hospital es requerido.";
             return RedirectToAction("Index");
         }
+        hospital.Features = permitirVentasSinInventario ? new List<string> { "ventas_sin_inventario" } : new List<string>();
         clinicaAdminService.GuardarHospital(hospital);
         TempData["Success"] = "Hospital guardado.";
         return RedirectToAction("Index");

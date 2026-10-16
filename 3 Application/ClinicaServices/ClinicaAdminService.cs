@@ -39,6 +39,7 @@ public class ClinicaAdminService(ClinicaContext dbContext) : IClinicaAdminServic
         {
             db.Nombre = hospital.Nombre;
             db.Activo = hospital.Activo;
+            db.Features = hospital.Features ?? new List<string>();
             db.BeforeSaveChanges();
         }
         dbContext.SaveChanges();

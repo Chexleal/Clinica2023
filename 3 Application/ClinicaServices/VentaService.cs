@@ -59,7 +59,7 @@ public class VentaService(ClinicaContext db, ICurrentUser? currentUser = null) :
     public bool PuedeVenderSinInventario(Guid idVenta)
     {
         var venta = GetVenta(idVenta);
-        return venta is not null && db.Hospitales.FirstOrDefault(h => h.IdHospital == venta.IdHospital)?.TieneFeature("ventas_sin_inventario") == true;
+        return venta is not null && db.Hospitales.FirstOrDefault(h => h.IdHospital == venta.IdHospital)?.TieneFeature(HospitalFeatures.VentasSinInventario) == true;
     }
 
     public void ConfigurarSinAfectarInventario(Guid idVenta, bool habilitado)

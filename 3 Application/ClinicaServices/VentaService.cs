@@ -6,6 +6,8 @@ namespace ClinicaServices;
 
 public interface IVentaService
 {
+    bool PuedeVenderSinInventario(Guid idVenta);
+    void ConfigurarSinAfectarInventario(Guid idVenta, bool habilitado);
     void GuardarCobertura(Guid idVenta, Guid? idAseguradora, string? polizaCertificado, string? autorizacion, string? servicioAtencion, TipoAtencion tipoAtencion, decimal copago, decimal coaseguroPorc);
     Venta GetOrCreatePorConsulta(Guid idConsulta);
     Venta CrearVentaLibre(Guid? idPaciente, string? observaciones = null);
@@ -54,6 +56,20 @@ public interface IVentaService
 
 public class VentaService(ClinicaContext db, ICurrentUser? currentUser = null) : IVentaService
 {
+    public bool PuedeVenderSinInventario(Guid idVenta)
+    {
+        var venta = GetVenta(idVenta);
+        return venta is not null && db.Hospitales.FirstOrDefault(h => h.IdHospital == venta.IdHospital)?.TieneFeature("ventas_sin_inventario") == true;
+    }
+
+    public void ConfigurarSinAfectarInventario(Guid idVenta, bool habilitado)
+    {
+        var venta = GetVenta(idVenta) ?? throw new InvalidOperationException("Venta no encontrada.");
+        if (venta.Estado != "Pendiente") throw new InvalidOperationException("Solo se puede cambiar esta opción en una venta pendiente.");
+        if (habilitado && !PuedeVenderSinInventario(idVenta)) throw new InvalidOperationException("La función no está habilitada para este hospital.");
+        venta.SinAfectarInventario = habilitado;
+        db.SaveChanges();
+    }
     public void GuardarCobertura(Guid idVenta, Guid? idAseguradora, string? polizaCertificado, string? autorizacion, string? servicioAtencion, TipoAtencion tipoAtencion, decimal copago, decimal coaseguroPorc)
     {
         var venta=GetVenta(idVenta) ?? throw new InvalidOperationException("Venta no encontrada.");
@@ -311,7 +327,7 @@ public class VentaService(ClinicaContext db, ICurrentUser? currentUser = null) :
             throw new ArgumentException($"Indica el valor de '{producto.Nombre}': el catálogo lo tiene en Q0.00.");
 
         // Sobre pedido por línea (ej. plantilla mandada a hacer): no valida ni descuenta stock.
-        if (!esSobrePedido)
+        if (!venta.SinAfectarInventario && !esSobrePedido)
         {
             // Validar stock disponible (sin descontar aún; el descuento real es al Pagar).
             var disponible = producto.RequiereLote
@@ -322,7 +338,7 @@ public class VentaService(ClinicaContext db, ICurrentUser? currentUser = null) :
                 throw new InvalidOperationException($"Stock insuficiente de {producto.Nombre}. Disponible: {disponible}. Si es sobre pedido, marca el check S/pedido al agregarlo.");
         }
 
-        if (producto.RequiereLote && loteId.HasValue)
+        if (!venta.SinAfectarInventario && producto.RequiereLote && loteId.HasValue)
         {
             var lote = db.LotesProducto.FirstOrDefault(l => l.IdLote == loteId.Value && l.IdProducto == productoId)
                 ?? throw new InvalidOperationException("Lote no válido para este producto.");
@@ -498,6 +514,7 @@ public class VentaService(ClinicaContext db, ICurrentUser? currentUser = null) :
     /// <summary>Reingresa al inventario lo descontado al cobrar (el stock ya salió con SalidaVenta).</summary>
     private void ReversarInventario(Venta venta, string contexto)
     {
+        if (venta.SinAfectarInventario) return;
         var detalles = db.VentaDetalles.Where(d => d.IdVenta == venta.IdVenta).ToList();
         foreach (var d in detalles.Where(x => x.TipoLinea == "Producto" && x.IdProducto.HasValue))
         {
@@ -703,6 +720,7 @@ public class VentaService(ClinicaContext db, ICurrentUser? currentUser = null) :
         {
             foreach (var d in detalles.Where(x => x.TipoLinea == "Producto" && x.IdProducto.HasValue))
             {
+                if (venta.SinAfectarInventario) continue;
                 var producto = db.Productos.FirstOrDefault(p => p.IdProducto == d.IdProducto!.Value)
                     ?? throw new InvalidOperationException($"Producto no encontrado: {d.Descripcion}");
                 var cantidad = d.Cantidad;
@@ -870,23 +888,26 @@ public class VentaService(ClinicaContext db, ICurrentUser? currentUser = null) :
                 db.SaveChanges();
             }
 
-            // Entrada express por la cantidad a vender (queda costo registrado, sin negativos).
             var costo = costoUnitario ?? producto.CostoUltimo;
-            producto.StockActual += cantidad;
             producto.CostoUltimo = costo;
             if (precioVenta > 0) producto.PrecioVenta = precioVenta;
-            db.MovimientosInventario.Add(new MovimientoInventario
+            if (!venta.SinAfectarInventario)
             {
-                IdMovimiento = Guid.NewGuid(),
-                Fecha = DateTime.Now,
-                IdProducto = producto.IdProducto,
-                Tipo = "EntradaCompra",
-                Cantidad = cantidad,
-                CostoUnitario = costo,
-                IdVenta = venta.IdVenta,
-                IdConsulta = venta.IdConsulta,
-                Motivo = "Alta rápida desde caja"
-            });
+                // En modo inventario normal, se registra una entrada para el alta rápida.
+                producto.StockActual += cantidad;
+                db.MovimientosInventario.Add(new MovimientoInventario
+                {
+                    IdMovimiento = Guid.NewGuid(),
+                    Fecha = DateTime.Now,
+                    IdProducto = producto.IdProducto,
+                    Tipo = "EntradaCompra",
+                    Cantidad = cantidad,
+                    CostoUnitario = costo,
+                    IdVenta = venta.IdVenta,
+                    IdConsulta = venta.IdConsulta,
+                    Motivo = "Alta rápida desde caja"
+                });
+            }
             db.SaveChanges();
 
             tx.Commit();

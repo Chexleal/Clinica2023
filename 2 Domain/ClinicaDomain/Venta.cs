@@ -37,4 +37,7 @@ public partial class Venta : Base, IClinicaTenant, IHospitalTenant
     public TipoAtencion TipoAtencion { get; set; } = TipoAtencion.Normal;
     public decimal Copago { get; set; }
     public decimal CoaseguroPorc { get; set; }
+
+    /// <summary>La venta no valida, descuenta ni repone existencias al procesarse.</summary>
+    public bool SinAfectarInventario { get; set; }
 }

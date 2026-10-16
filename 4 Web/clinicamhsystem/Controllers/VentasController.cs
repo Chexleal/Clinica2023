@@ -61,6 +61,7 @@ public class VentasController(IVentaService ventas, IServiciosServices servicios
         var venta = ventas.GetVenta(id);
         if (venta is null) return RedirectToAction("Index");
         ViewBag.CobroModo = "pagina";
+        ViewBag.PuedeVenderSinInventario = ventas.PuedeVenderSinInventario(id);
         var opcionesAseguradora = aseguradoras.GetActivas();
         if (venta.IdAseguradora.HasValue && opcionesAseguradora.All(a => a.IdAseguradora != venta.IdAseguradora.Value)
             && aseguradoras.Get(venta.IdAseguradora.Value) is { } aseguradoraHistorica)
@@ -84,6 +85,15 @@ public class VentasController(IVentaService ventas, IServiciosServices servicios
         };
         modelo.TarifasAseguradora = tarifas.GetPrecios(venta.IdAseguradora);
         return View(modelo);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult ConfigurarSinAfectarInventario(Guid idVenta, bool habilitado)
+    {
+        try { ventas.ConfigurarSinAfectarInventario(idVenta, habilitado); }
+        catch (Exception ex) { TempData["ErrorCobro"] = ex.Message; }
+        return RedirectToAction("Cobrar", new { id = idVenta });
     }
 
     [HttpGet]

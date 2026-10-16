@@ -778,6 +778,7 @@ public partial class ClinicaContext : DbContext
             entity.Property(e => e.TipoAtencion).HasConversion<string>().HasMaxLength(20).IsUnicode(false).HasColumnName("tipo_atencion").HasDefaultValue(TipoAtencion.Normal);
             entity.Property(e => e.Copago).HasColumnType("decimal(15, 2)").HasColumnName("copago");
             entity.Property(e => e.CoaseguroPorc).HasColumnType("decimal(5, 2)").HasColumnName("coaseguro_porc");
+            entity.Property(e => e.SinAfectarInventario).HasColumnName("sin_afectar_inventario").HasDefaultValue(false);
             entity.HasIndex(e => e.Folio).IsUnique().HasDatabaseName("UQ_Venta_Folio");
             entity.HasIndex(e => e.IdConsulta).HasDatabaseName("IX_Venta_Consulta");
         });
@@ -882,6 +883,9 @@ public partial class ClinicaContext : DbContext
             entity.Property(e => e.IdHospital).ValueGeneratedNever().HasColumnName("id_hospital");
             entity.Property(e => e.Nombre).HasMaxLength(200).IsUnicode(false).HasColumnName("nombre");
             entity.Property(e => e.Activo).HasColumnName("activo");
+            entity.Property(e => e.Features).HasColumnType("nvarchar(max)").HasColumnName("features")
+                .HasConversion(v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                    v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>());
         });
 
         modelBuilder.Entity<Clinica>(entity =>

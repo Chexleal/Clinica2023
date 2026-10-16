@@ -39,7 +39,9 @@ public class ClinicaAdminService(ClinicaContext dbContext) : IClinicaAdminServic
         {
             db.Nombre = hospital.Nombre;
             db.Activo = hospital.Activo;
-            db.Features = hospital.Features ?? new List<string>();
+            db.Features = hospital.Features is null
+                ? new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase)
+                : new Dictionary<string, bool>(hospital.Features, StringComparer.OrdinalIgnoreCase);
             db.BeforeSaveChanges();
         }
         dbContext.SaveChanges();

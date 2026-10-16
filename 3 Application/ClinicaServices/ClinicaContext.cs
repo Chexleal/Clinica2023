@@ -885,7 +885,8 @@ public partial class ClinicaContext : DbContext
             entity.Property(e => e.Activo).HasColumnName("activo");
             entity.Property(e => e.Features).HasColumnType("nvarchar(max)").HasColumnName("features")
                 .HasConversion(v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
-                    v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>());
+                    v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(v, (System.Text.Json.JsonSerializerOptions?)null)
+                        ?? new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase));
         });
 
         modelBuilder.Entity<Clinica>(entity =>

@@ -8,10 +8,10 @@ public partial class Hospital : Base
 
     public bool Activo { get; set; } = true;
 
-    /// <summary>Claves de funciones habilitadas para este hospital.</summary>
-    public List<string> Features { get; set; } = new();
+    /// <summary>Estado explícito de cada función configurable del hospital.</summary>
+    public Dictionary<string, bool> Features { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
-    public bool TieneFeature(string feature) => Features.Contains(feature, StringComparer.OrdinalIgnoreCase);
+    public bool TieneFeature(string feature) => Features.TryGetValue(feature, out var habilitada) && habilitada;
 
     public ICollection<Clinica> Clinicas { get; set; } = new List<Clinica>();
 
@@ -19,4 +19,9 @@ public partial class Hospital : Base
     {
         Nombre ??= string.Empty;
     }
+}
+
+public static class HospitalFeatures
+{
+    public const string VentasSinInventario = "ventas_sin_inventario";
 }

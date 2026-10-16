@@ -31,7 +31,13 @@ public class GodController(
             TempData["Error"] = "El nombre del hospital es requerido.";
             return RedirectToAction("Index");
         }
-        hospital.Features = permitirVentasSinInventario ? new List<string> { "ventas_sin_inventario" } : new List<string>();
+        var featuresExistentes = hospital.IdHospital == Guid.Empty
+            ? null
+            : clinicaAdminService.GetHospital(hospital.IdHospital)?.Features;
+        hospital.Features = featuresExistentes is null
+            ? new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase)
+            : new Dictionary<string, bool>(featuresExistentes, StringComparer.OrdinalIgnoreCase);
+        hospital.Features[HospitalFeatures.VentasSinInventario] = permitirVentasSinInventario;
         clinicaAdminService.GuardarHospital(hospital);
         TempData["Success"] = "Hospital guardado.";
         return RedirectToAction("Index");
